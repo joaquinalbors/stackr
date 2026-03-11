@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stackr — Get Started</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: #2a2a2a;
+    --accent: #c8f135;
+    --accent2: #f1c135;
+    --text: #f0f0f0;
+    --muted: #666;
+    --red: #ff4d4d;
+  }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* BACKGROUND */
+  .bg-glow {
+    position: fixed;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(200,241,53,0.06) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* LAYOUT */
+  .onboarding-wrap {
+    width: 100%;
+    max-width: 520px;
+    padding: 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* LOGO */
+  .logo {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 40px;
+  }
+
+  .logo span { color: var(--accent); }
+
+  /* PROGRESS */
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 40px;
+  }
+
+  .progress-step {
+    flex: 1;
+    height: 3px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+
+  .progress-step.done { background: var(--accent); }
+  .progress-step.active { background: rgba(200,241,53,0.4); }
+
+  .progress-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px;
+    animation: slideUp 0.4s ease forwards;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .step-title {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+
+  .step-subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  /* FORM ELEMENTS */
+  .field {
+    margin-bottom: 16px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .field input, .field select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+  }
+
+  .field input:focus, .field select:focus {
+    border-color: var(--accent);
+  }
+
+  .field input::placeholder { color: var(--muted); font-weight: 400; }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* PLATFORM SELECTOR */
+  .platform-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .platform-chip {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .platform-chip:hover { border-color: #444; }
+
+  .platform-chip.selected {
+    border-color: var(--accent);
+    background: rgba(200,241,53,0.08);
+  }
+
+  .platform-emoji { font-size: 22px; margin-bottom: 6px; }
+
+  .platform-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  .platform-chip.selected .platform-name { color: var(--accent); }
+
+  /* INCOME SLIDER */
+  .slider-wrap {
+    margin-bottom: 8px;
+  }
+
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .slider-value {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  input[type=range] {
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 99px;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 0 0 4px rgba(200,241,53,0.2);
+  }
+
+  /* TAX RATE SELECTOR */
+  .tax-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .tax-option {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .tax-option:hover { border-color: #444; }
+  .tax-option.selected { border-color: var(--accent); background: rgba(200,241,53,0.08); }
+
+  .tax-rate {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+
+  .tax-option.selected .tax-rate { color: var(--accent); }
+
+  .tax-desc {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* SERVICE CONNECT */
+  .service-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .service-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .service-row:hover { border-color: #444; }
+  .service-row.connected { border-color: rgba(200,241,53,0.4); }
+
+  .service-icon { font-size: 22px; }
+
+  .service-info { flex: 1; }
+  .service-name { font-size: 13px; font-weight: 700; }
+  .service-desc { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+
+  .connect-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .connect-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .connect-btn.done { background: rgba(200,241,53,0.1); border-color: rgba(200,241,53,0.3); color: var(--accent); }
+
+  /* SUMMARY */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .summary-item {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .summary-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .summary-value {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .summary-value.accent { color: var(--accent); }
+
+  .vault-preview {
+    background: linear-gradient(135deg, rgba(200,241,53,0.1), rgba(241,193,53,0.05));
+    border: 1px solid rgba(200,241,53,0.2);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  .vault-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .vault-desc {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* BUTTONS */
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 28px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 15px;
+    border-radius: 10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .btn-primary:hover { background: #d4ff40; transform: translateY(-1px); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    flex: 0 0 auto;
+    padding: 15px 20px;
+  }
+
+  .btn-ghost:hover { color: var(--text); border-color: #444; }
+
+  /* SUCCESS */
+  .success-icon {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    margin: 0 auto 24px;
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .success-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+
+  .success-sub {
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  /* STEP VISIBILITY */
+  .step { display: none; }
+  .step.active { display: block; }
+
+  /* HELPER TEXT */
+  .helper {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+
+<div class="onboarding-wrap">
+  <div class="logo">stackr<span>.</span></div>
+
+  <!-- PROGRESS -->
+  <div id="progressWrap">
+    <div class="progress-label" id="progressLabel">Step 1 of 5 — Your Profile</div>
+    <div class="progress-wrap">
+      <div class="progress-step active" id="p1"></div>
+      <div class="progress-step" id="p2"></div>
+      <div class="progress-step" id="p3"></div>
+      <div class="progress-step" id="p4"></div>
+      <div class="progress-step" id="p5"></div>
+    </div>
+  </div>
+
+  <!-- STEP 1: PROFILE -->
+  <div class="card step active" id="step1">
+    <div class="step-tag">Step 01 / 05</div>
+    <div class="step-title">Let's set up your account</div>
+    <div class="step-subtitle">Tell us a bit about yourself so we can personalize your financial setup.</div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>First Name</label>
+        <input type="text" placeholder="Alex" id="firstName">
+      </div>
+      <div class="field">
+        <label>Last Name</label>
+        <input type="text" placeholder="Rivera">
+      </div>
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" placeholder="alex@yourchannel.com">
+    </div>
+    <div class="field">
+      <label>Creator Handle</label>
+      <input type="text" placeholder="@alexcreates" id="handle">
+    </div>
+    <div class="field">
+      <label>What best describes you?</label>
+      <select>
+        <option>YouTube Creator</option>
+        <option>Podcaster</option>
+        <option>Newsletter Writer</option>
+        <option>Streamer / Twitch</option>
+        <option>Course Creator</option>
+        <option>Multi-platform Creator</option>
+      </select>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="nextStep(2)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: PLATFORMS -->
+  <div class="card step" id="step2">
+    <div class="step-tag">Step 02 / 05</div>
+    <div class="step-title">Where do you earn?</div>
+    <div class="step-subtitle">Select all the platforms you currently make money from. We'll track income from each one.</div>
+
+    <div class="platform-grid">
+      <div class="platform-chip selected" onclick="togglePlatform(this)">
+        <div class="platform-emoji">▶️</div>
+        <div class="platform-name">YouTube</div>
+      </div>
+      <div class="platform-chip" onclick="togglePlatform(this)">
+        <div class="platform-emoji">📧</div>
+        <div class="platform-name">Substack</div>
+      </div>
+      <div class="platform-chip" onclick="togglePlatform(this)">
+        <div class="platform-emoji">🎁</div>
+        <div class="platform-name">Patreon</div>
+      </div>
+      <div class="platform-chip" onclick="togglePlatform(this)">
+        <div class="platform-emoji">🎮</div>
+        <div class="platform-name">Twitch</div>
+      </div>
+      <div class="platform-chip" onclick="togglePlatform(this)">
+        <div class="platform-emoji">🎵</div>
+        <div class="platform-name">TikTok</div>
+      </div>
+      <div class="platform-chip" onclick="togglePlatform(this)">
+        <div class="platform-emoji">📸</div>
+        <div class="platform-name">Instagram</div>
+      </div>
+      <div class="platform-chip" onclick="togglePlatform(this)">
+        <div class="platform-emoji">🛍️</div>
+        <div class="platform-name">Merch</div>
+      </div>
+      <div class="platform-chip" onclick="togglePlatform(this)">
+        <div class="platform-emoji">🤝</div>
+        <div class="platform-name">Brand Deals</div>
+      </div>
+      <div class="platform-chip" onclick="togglePlatform(this)">
+        <div class="platform-emoji">📚</div>
+        <div class="platform-name">Courses</div>
+      </div>
+    </div>
+    <div class="helper">Select all that apply — you can always add more later.</div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="nextStep(1)">←</button>
+      <button class="btn btn-primary" onclick="nextStep(3)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: INCOME + TAX -->
+  <div class="card step" id="step3">
+    <div class="step-tag">Step 03 / 05</div>
+    <div class="step-title">Your income & tax setup</div>
+    <div class="step-subtitle">We'll automatically set aside the right % of every payment so you're never caught off guard at tax time.</div>
+
+    <div class="slider-wrap">
+      <div class="slider-value" id="incomeDisplay">$5,000 / mo</div>
+      <input type="range" min="500" max="50000" step="500" value="5000"
+        oninput="updateIncome(this.value)">
+      <div class="slider-labels">
+        <span>$500</span>
+        <span>Average monthly income</span>
+        <span>$50k+</span>
+      </div>
+    </div>
+
+    <div style="margin: 24px 0 12px;">
+      <div class="step-subtitle" style="margin-bottom: 12px;">Choose your estimated tax rate:</div>
+      <div class="tax-options">
+        <div class="tax-option" onclick="selectTax(this, '22%')">
+          <div class="tax-rate">22%</div>
+          <div class="tax-desc">Under $89k/yr</div>
+        </div>
+        <div class="tax-option selected" onclick="selectTax(this, '28%')">
+          <div class="tax-rate">28%</div>
+          <div class="tax-desc">$89k–$190k/yr</div>
+        </div>
+        <div class="tax-option" onclick="selectTax(this, '35%')">
+          <div class="tax-rate">35%</div>
+          <div class="tax-desc">$190k+/yr</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="vault-preview" style="margin-top: 20px;">
+      <div class="vault-title">🔒 Your Tax Vault will auto-save <span id="vaultAmt" style="color: var(--accent)">$1,400</span> / month</div>
+      <div class="vault-desc">Every time income hits your account, 28% goes straight to your vault. You'll never owe a surprise tax bill again.</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="nextStep(2)">←</button>
+      <button class="btn btn-primary" onclick="nextStep(4)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: CONNECT SERVICES -->
+  <div class="card step" id="step4">
+    <div class="step-tag">Step 04 / 05</div>
+    <div class="step-title">Connect your services</div>
+    <div class="step-subtitle">Stackr runs on best-in-class partners. Connect the ones you want — skip the rest for now.</div>
+
+    <div class="service-list">
+      <div class="service-row connected" id="svc-stripe">
+        <div class="service-icon">💳</div>
+        <div class="service-info">
+          <div class="service-name">Stripe Treasury</div>
+          <div class="service-desc">Business banking & payments</div>
+        </div>
+        <button class="connect-btn done" onclick="toggleService('stripe')">✓ Connected</button>
+      </div>
+      <div class="service-row" id="svc-alpaca">
+        <div class="service-icon">🦙</div>
+        <div class="service-info">
+          <div class="service-name">Alpaca</div>
+          <div class="service-desc">Auto-invest your income</div>
+        </div>
+        <button class="connect-btn" onclick="toggleService('alpaca')">Connect</button>
+      </div>
+      <div class="service-row" id="svc-dwolla">
+        <div class="service-icon">🔄</div>
+        <div class="service-info">
+          <div class="service-name">Dwolla</div>
+          <div class="service-desc">Fast ACH bank transfers</div>
+        </div>
+        <button class="connect-btn" onclick="toggleService('dwolla')">Connect</button>
+      </div>
+      <div class="service-row" id="svc-taxfyle">
+        <div class="service-icon">👨‍💼</div>
+        <div class="service-info">
+          <div class="service-name">Taxfyle CPA</div>
+          <div class="service-desc">File taxes with a real CPA</div>
+        </div>
+        <button class="connect-btn" onclick="toggleService('taxfyle')">Connect</button>
+      </div>
+    </div>
+
+    <div class="helper" style="margin-top: 12px;">You can connect additional services anytime from your dashboard.</div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="nextStep(3)">←</button>
+      <button class="btn btn-primary" onclick="nextStep(5)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: REVIEW -->
+  <div class="card step" id="step5">
+    <div class="step-tag">Step 05 / 05</div>
+    <div class="step-title">You're almost in.</div>
+    <div class="step-subtitle">Here's your personalized Stackr setup. Looks good?</div>
+
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="summary-label">Monthly Income</div>
+        <div class="summary-value" id="sumIncome">$5,000</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Tax Rate</div>
+        <div class="summary-value accent" id="sumRate">28%</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Auto-saved / mo</div>
+        <div class="summary-value accent" id="sumVault">$1,400</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Spendable / mo</div>
+        <div class="summary-value" id="sumSpend">$3,600</div>
+      </div>
+    </div>
+
+    <div class="vault-preview">
+      <div class="vault-title">✅ Banking connected · 🦙 Investing ready · 🔒 Tax vault active</div>
+      <div class="vault-desc" style="margin-top: 6px;">Every dollar that comes in will be automatically split — taxes aside, investing on autopilot, the rest is yours to spend.</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="nextStep(4)">←</button>
+      <button class="btn btn-primary" onclick="nextStep(6)">Launch My Dashboard 🚀</button>
+    </div>
+  </div>
+
+  <!-- STEP 6: SUCCESS -->
+  <div class="card step" id="step6">
+    <div class="success-icon">⚡</div>
+    <div class="success-title">Welcome to Stackr<span style="color:var(--accent)">.</span></div>
+    <div class="success-sub">Your financial stack is live. Income is being tracked, taxes are on autopilot, and your portfolio is ready to grow.</div>
+
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="summary-label">Tax Vault</div>
+        <div class="summary-value accent">$0.00</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Portfolio</div>
+        <div class="summary-value accent">$0.00</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Balance</div>
+        <div class="summary-value">$0.00</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Next Tax Due</div>
+        <div class="summary-value">Apr 15</div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" style="width:100%; margin-top: 8px;" onclick="window.location.href='creator-finance-app.html'">
+      Go to Dashboard →
+    </button>
+  </div>
+
+</div>
+
+<script>
+  let currentIncome = 5000;
+  let currentRate = 0.28;
+  let currentRateLabel = '28%';
+
+  function nextStep(n) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById('step' + n).classList.add('active');
+
+    // Update progress
+    const labels = ['', 'Your Profile', 'Platforms', 'Income & Tax', 'Connect Services', 'Review', ''];
+    const progressLabel = document.getElementById('progressLabel');
+
+    if (n <= 5) {
+      progressLabel.textContent = `Step ${n} of 5 — ${labels[n]}`;
+      document.getElementById('progressWrap').style.display = 'block';
+    } else {
+      document.getElementById('progressWrap').style.display = 'none';
+    }
+
+    for (let i = 1; i <= 5; i++) {
+      const p = document.getElementById('p' + i);
+      p.className = 'progress-step';
+      if (i < n) p.classList.add('done');
+      else if (i === n) p.classList.add('active');
+    }
+
+    // Update summary on step 5
+    if (n === 5) updateSummary();
+
+    window.scrollTo(0, 0);
+  }
+
+  function togglePlatform(el) {
+    el.classList.toggle('selected');
+  }
+
+  function updateIncome(val) {
+    currentIncome = parseInt(val);
+    const formatted = currentIncome >= 1000
+      ? '$' + (currentIncome / 1000).toFixed(currentIncome % 1000 === 0 ? 0 : 1) + 'k'
+      : '$' + currentIncome;
+    document.getElementById('incomeDisplay').textContent = formatted + ' / mo';
+    updateVault();
+  }
+
+  function selectTax(el, rate) {
+    document.querySelectorAll('.tax-option').forEach(t => t.classList.remove('selected'));
+    el.classList.add('selected');
+    currentRateLabel = rate;
+    currentRate = parseInt(rate) / 100;
+    updateVault();
+  }
+
+  function updateVault() {
+    const vault = Math.round(currentIncome * currentRate);
+    const formatted = '$' + vault.toLocaleString();
+    document.getElementById('vaultAmt').textContent = formatted;
+  }
+
+  function updateSummary() {
+    const vault = Math.round(currentIncome * currentRate);
+    const spend = currentIncome - vault;
+    document.getElementById('sumIncome').textContent = '$' + currentIncome.toLocaleString();
+    document.getElementById('sumRate').textContent = currentRateLabel;
+    document.getElementById('sumVault').textContent = '$' + vault.toLocaleString();
+    document.getElementById('sumSpend').textContent = '$' + spend.toLocaleString();
+  }
+
+  function toggleService(svc) {
+    const row = document.getElementById('svc-' + svc);
+    const btn = row.querySelector('.connect-btn');
+    if (btn.classList.contains('done')) {
+      btn.classList.remove('done');
+      btn.textContent = 'Connect';
+      row.classList.remove('connected');
+    } else {
+      btn.classList.add('done');
+      btn.textContent = '✓ Connected';
+      row.classList.add('connected');
+    }
+  }
+</script>
+</body>
+</html>

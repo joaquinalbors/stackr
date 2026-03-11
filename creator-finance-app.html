@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stackr — Creator Finance</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: #2a2a2a;
+    --accent: #c8f135;
+    --accent2: #f1c135;
+    --text: #f0f0f0;
+    --muted: #666;
+    --red: #ff4d4d;
+    --green: #c8f135;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 32px 0;
+    z-index: 100;
+  }
+
+  .logo {
+    padding: 0 24px 40px;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .logo span {
+    color: var(--accent);
+  }
+
+  .nav-section {
+    padding: 0 12px;
+    flex: 1;
+  }
+
+  .nav-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    padding: 0 12px 8px;
+    text-transform: uppercase;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    transition: all 0.15s;
+    margin-bottom: 2px;
+  }
+
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--accent); color: #000; }
+
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .sidebar-bottom {
+    padding: 0 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+    margin: 0 12px;
+  }
+
+  .user-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--surface2);
+  }
+
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: #000;
+  }
+
+  .user-info { flex: 1; }
+  .user-name { font-size: 13px; font-weight: 700; }
+  .user-plan { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+  /* MAIN */
+  .main {
+    margin-left: 220px;
+    padding: 40px;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+  }
+
+  .page-title {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .date-chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 6px;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+  .btn-primary:hover { background: #d4ff40; transform: translateY(-1px); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { background: var(--surface2); }
+
+  /* STAT CARDS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .stat-card:hover { border-color: #444; }
+
+  .stat-card.accent-card {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .accent-card .stat-label { color: rgba(0,0,0,0.5); }
+
+  .stat-value {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .accent-card .stat-value { color: #000; }
+
+  .stat-change {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .up { color: var(--green); }
+  .down { color: var(--red); }
+  .accent-card .stat-change { color: rgba(0,0,0,0.6); }
+
+  .stat-icon {
+    position: absolute;
+    top: 20px; right: 20px;
+    font-size: 22px;
+    opacity: 0.2;
+  }
+
+  .accent-card .stat-icon { opacity: 0.3; }
+
+  /* INCOME SOURCES */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .card-subtitle {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  /* INCOME BARS */
+  .income-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .income-platform {
+    width: 90px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .income-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .income-bar {
+    height: 100%;
+    border-radius: 99px;
+    background: var(--accent);
+    animation: growBar 1s ease forwards;
+    transform-origin: left;
+  }
+
+  @keyframes growBar {
+    from { width: 0% !important; }
+  }
+
+  .income-amount {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    width: 60px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* TAX VAULT */
+  .tax-vault {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .tax-vault-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .tax-vault-label {
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .tax-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    background: rgba(200, 241, 53, 0.15);
+    color: var(--accent);
+    border: 1px solid rgba(200, 241, 53, 0.3);
+    padding: 3px 8px;
+    border-radius: 99px;
+  }
+
+  .tax-progress-wrap {
+    height: 8px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .tax-progress {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    width: 68%;
+    animation: growBar 1.2s ease forwards;
+  }
+
+  .tax-meta {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* TRANSACTIONS */
+  .txn-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .txn-item:last-child { border-bottom: none; }
+
+  .txn-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .txn-info { flex: 1; }
+  .txn-name { font-size: 13px; font-weight: 700; }
+  .txn-date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+
+  .txn-amount {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .txn-amount.credit { color: var(--green); }
+  .txn-amount.debit { color: var(--muted); }
+
+  /* SERVICES GRID */
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .service-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .service-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .service-card.connected { border-color: rgba(200, 241, 53, 0.3); }
+
+  .service-logo {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+
+  .service-name {
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .service-status {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .service-card.connected .service-status {
+    color: var(--accent);
+  }
+
+  /* ANIMATIONS */
+  .fade-in {
+    animation: fadeIn 0.5s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  .fade-in:nth-child(1) { animation-delay: 0.05s; }
+  .fade-in:nth-child(2) { animation-delay: 0.1s; }
+  .fade-in:nth-child(3) { animation-delay: 0.15s; }
+  .fade-in:nth-child(4) { animation-delay: 0.2s; }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+  }
+
+  .see-all {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  /* ALERT BANNER */
+  .alert-banner {
+    background: rgba(200, 241, 53, 0.08);
+    border: 1px solid rgba(200, 241, 53, 0.2);
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+    font-size: 13px;
+  }
+
+  .alert-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .alert-text { flex: 1; }
+  .alert-text strong { color: var(--accent); }
+
+  /* MINI CHART */
+  .mini-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 40px;
+    margin-top: 12px;
+  }
+
+  .bar {
+    flex: 1;
+    background: var(--border);
+    border-radius: 3px 3px 0 0;
+    transition: background 0.2s;
+    animation: growUp 0.6s ease forwards;
+    transform-origin: bottom;
+  }
+
+  .bar:hover { background: var(--accent); }
+  .bar.this-month { background: rgba(200, 241, 53, 0.4); }
+
+  @keyframes growUp {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+  }
+
+  .bar:nth-child(1) { animation-delay: 0.05s; }
+  .bar:nth-child(2) { animation-delay: 0.1s; }
+  .bar:nth-child(3) { animation-delay: 0.15s; }
+  .bar:nth-child(4) { animation-delay: 0.2s; }
+  .bar:nth-child(5) { animation-delay: 0.25s; }
+  .bar:nth-child(6) { animation-delay: 0.3s; }
+  .bar:nth-child(7) { animation-delay: 0.35s; height: 100% !important; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">stackr<span>.</span></div>
+  <nav class="nav-section">
+    <div class="nav-label">Main</div>
+    <div class="nav-item active"><span class="nav-icon">⚡</span> Dashboard</div>
+    <div class="nav-item"><span class="nav-icon">💳</span> Banking</div>
+    <div class="nav-item"><span class="nav-icon">📈</span> Investing</div>
+    <div class="nav-item"><span class="nav-icon">🧾</span> Taxes</div>
+    <div class="nav-item"><span class="nav-icon">↔️</span> Transfers</div>
+    <div style="margin-top:20px"></div>
+    <div class="nav-label">Settings</div>
+    <div class="nav-item"><span class="nav-icon">🔗</span> Integrations</div>
+    <div class="nav-item"><span class="nav-icon">⚙️</span> Preferences</div>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="user-chip">
+      <div class="avatar">JA</div>
+      <div class="user-info">
+        <div class="user-name">Joaquin A.</div>
+        <div class="user-plan">Pro Plan</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="page-title">Dashboard</div>
+    <div class="topbar-right">
+      <div class="date-chip">March 2026</div>
+      <button class="btn btn-ghost">+ Add Income</button>
+      <button class="btn btn-primary">Pay Taxes Now</button>
+    </div>
+  </div>
+
+  <!-- ALERT -->
+  <div class="alert-banner">
+    <div class="alert-dot"></div>
+    <div class="alert-text">
+      <strong>Q1 estimated taxes due April 15.</strong> Your vault has $4,820 set aside — you need ~$6,200. We're auto-saving 28% of new income to close the gap.
+    </div>
+    <button class="btn btn-ghost" style="font-size:12px; padding: 7px 14px;">Review</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card accent-card fade-in">
+      <div class="stat-label">Total Balance</div>
+      <div class="stat-value">$24,830</div>
+      <div class="stat-change">↑ +12.4% vs last month</div>
+      <div class="stat-icon">🏦</div>
+    </div>
+    <div class="stat-card fade-in">
+      <div class="stat-label">This Month Income</div>
+      <div class="stat-value">$8,340</div>
+      <div class="stat-change up">↑ +$1,200 vs avg</div>
+      <div class="stat-icon">💰</div>
+    </div>
+    <div class="stat-card fade-in">
+      <div class="stat-label">Tax Vault</div>
+      <div class="stat-value">$4,820</div>
+      <div class="stat-change down">⚠ $1,380 short for Q1</div>
+      <div class="stat-icon">🔒</div>
+    </div>
+    <div class="stat-card fade-in">
+      <div class="stat-label">Portfolio Value</div>
+      <div class="stat-value">$11,240</div>
+      <div class="stat-change up">↑ +3.2% this week</div>
+      <div class="stat-icon">📈</div>
+    </div>
+  </div>
+
+  <!-- CONNECTED SERVICES -->
+  <div class="section-header">
+    <div class="section-title">Connected Services</div>
+    <a class="see-all">Manage →</a>
+  </div>
+  <div class="services-grid">
+    <div class="service-card connected">
+      <div class="service-logo">🦙</div>
+      <div class="service-name">Alpaca</div>
+      <div class="service-status">● Connected</div>
+    </div>
+    <div class="service-card connected">
+      <div class="service-logo">💳</div>
+      <div class="service-name">Stripe Treasury</div>
+      <div class="service-status">● Connected</div>
+    </div>
+    <div class="service-card connected">
+      <div class="service-logo">🔄</div>
+      <div class="service-name">Dwolla</div>
+      <div class="service-status">● Connected</div>
+    </div>
+    <div class="service-card">
+      <div class="service-logo">📋</div>
+      <div class="service-name">TaxSlayer</div>
+      <div class="service-status">Not connected</div>
+    </div>
+    <div class="service-card">
+      <div class="service-logo">👨‍💼</div>
+      <div class="service-name">Taxfyle CPA</div>
+      <div class="service-status">Not connected</div>
+    </div>
+  </div>
+
+  <!-- MIDDLE GRID -->
+  <div class="grid-2">
+
+    <!-- INCOME SOURCES -->
+    <div class="card">
+      <div class="card-title">Income Sources</div>
+      <div class="card-subtitle">March 2026 · 7 platforms</div>
+
+      <div class="income-item">
+        <div class="income-platform">YouTube</div>
+        <div class="income-bar-wrap"><div class="income-bar" style="width:82%"></div></div>
+        <div class="income-amount">$3,420</div>
+      </div>
+      <div class="income-item">
+        <div class="income-platform">Substack</div>
+        <div class="income-bar-wrap"><div class="income-bar" style="width:54%"></div></div>
+        <div class="income-amount">$2,250</div>
+      </div>
+      <div class="income-item">
+        <div class="income-platform">Brand Deals</div>
+        <div class="income-bar-wrap"><div class="income-bar" style="width:38%"></div></div>
+        <div class="income-amount">$1,600</div>
+      </div>
+      <div class="income-item">
+        <div class="income-platform">Patreon</div>
+        <div class="income-bar-wrap"><div class="income-bar" style="width:17%"></div></div>
+        <div class="income-amount">$720</div>
+      </div>
+      <div class="income-item">
+        <div class="income-platform">Merch</div>
+        <div class="income-bar-wrap"><div class="income-bar" style="width:8%"></div></div>
+        <div class="income-amount">$350</div>
+      </div>
+
+      <div class="mini-chart" style="margin-top: 20px;">
+        <div class="bar" style="height:45%"></div>
+        <div class="bar" style="height:60%"></div>
+        <div class="bar" style="height:40%"></div>
+        <div class="bar" style="height:75%"></div>
+        <div class="bar" style="height:55%"></div>
+        <div class="bar" style="height:68%"></div>
+        <div class="bar this-month" style="height:100%"></div>
+      </div>
+    </div>
+
+    <!-- TAX + TRANSFERS -->
+    <div class="card">
+      <div class="card-title">Tax Vault</div>
+      <div class="card-subtitle">Auto-saving 28% of income · Q1 due Apr 15</div>
+
+      <div class="tax-vault">
+        <div class="tax-vault-header">
+          <div class="tax-vault-label">Federal Estimated Tax</div>
+          <div class="tax-badge">28% rate</div>
+        </div>
+        <div class="tax-progress-wrap">
+          <div class="tax-progress"></div>
+        </div>
+        <div class="tax-meta">
+          <span>$4,820 saved</span>
+          <span>$6,200 target</span>
+        </div>
+      </div>
+
+      <div class="tax-vault" style="margin-bottom:0">
+        <div class="tax-vault-header">
+          <div class="tax-vault-label">State (TX) Estimated Tax</div>
+          <div class="tax-badge">No income tax</div>
+        </div>
+        <div class="tax-progress-wrap">
+          <div class="tax-progress" style="width:100%; background: var(--accent)"></div>
+        </div>
+        <div class="tax-meta">
+          <span>Texas has no state income tax 🎉</span>
+        </div>
+      </div>
+
+      <div style="margin-top: 16px; display:flex; gap:8px;">
+        <button class="btn btn-primary" style="flex:1; font-size:12px;">File with Taxfyle</button>
+        <button class="btn btn-ghost" style="flex:1; font-size:12px;">Download Summary</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RECENT TRANSACTIONS -->
+  <div class="section-header">
+    <div class="section-title">Recent Transactions</div>
+    <a class="see-all">See all →</a>
+  </div>
+  <div class="card">
+    <div class="txn-item">
+      <div class="txn-icon">▶️</div>
+      <div class="txn-info">
+        <div class="txn-name">YouTube AdSense Payout</div>
+        <div class="txn-date">Mar 10, 2026 · Auto-split: 28% → Tax Vault</div>
+      </div>
+      <div class="txn-amount credit">+$3,420</div>
+    </div>
+    <div class="txn-item">
+      <div class="txn-icon">📧</div>
+      <div class="txn-info">
+        <div class="txn-name">Substack Subscription Revenue</div>
+        <div class="txn-date">Mar 08, 2026 · Auto-split: 28% → Tax Vault</div>
+      </div>
+      <div class="txn-amount credit">+$2,250</div>
+    </div>
+    <div class="txn-item">
+      <div class="txn-icon">🤝</div>
+      <div class="txn-info">
+        <div class="txn-name">Brand Deal — Nike Campaign</div>
+        <div class="txn-date">Mar 05, 2026 · Invoice #INV-0042</div>
+      </div>
+      <div class="txn-amount credit">+$1,600</div>
+    </div>
+    <div class="txn-item">
+      <div class="txn-icon">📈</div>
+      <div class="txn-info">
+        <div class="txn-name">Alpaca — Auto-invest $500</div>
+        <div class="txn-date">Mar 01, 2026 · SPY + QQQ split</div>
+      </div>
+      <div class="txn-amount debit">−$500</div>
+    </div>
+    <div class="txn-item">
+      <div class="txn-icon">🎁</div>
+      <div class="txn-info">
+        <div class="txn-name">Patreon Monthly Payout</div>
+        <div class="txn-date">Feb 28, 2026 · 86 patrons</div>
+      </div>
+      <div class="txn-amount credit">+$720</div>
+    </div>
+  </div>
+
+</main>
+
+</body>
+</html>
