@@ -1,1 +1,710 @@
-TEST_CONTENT_PLACEHOLDER
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Apexa</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c3aed">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Apexa">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#fff;--surface:#f7f7f5;--border:#ebebeb;--text:#0a0a0a;--muted:#999;--muted2:#bbb;
+  --accent:#7c3aed;--accent-light:rgba(124,58,237,0.1);--accent-dark:#6d28d9;--accent2:#a78bfa;
+  --green:#00c853;--green-light:rgba(0,200,83,0.1);
+  --tax:#f59e0b;--tax-light:rgba(245,158,11,0.1);
+  --red:#ef4444;--red-light:rgba(239,68,68,0.1);
+  --r:18px;--rs:12px;
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:420px;margin:0 auto;overflow-x:hidden}
+.screen{display:none;min-height:100vh;padding-bottom:90px}
+.screen.active{display:block;animation:fu .3s ease forwards}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 16px;position:sticky;top:0;background:var(--bg);z-index:50}
+.page-title{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;cursor:pointer}
+.badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;display:flex;align-items:center;gap:4px}
+.badge.live{background:var(--green-light);color:var(--green)}
+.badge.demo{background:var(--accent-light);color:var(--accent)}
+.bdot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sh{display:flex;justify-content:space-between;align-items:center;padding:4px 24px 14px}
+.st{font-size:15px;font-weight:800;letter-spacing:-.3px}
+.sa{font-size:12px;font-weight:600;color:var(--accent);cursor:pointer}
+.btn{display:block;width:100%;padding:16px;border:none;border-radius:var(--rs);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;text-align:center}
+.btn-p{background:var(--accent);color:#fff}.btn-p:active{background:var(--accent-dark);transform:scale(.98)}
+.btn-d{background:var(--text);color:#fff}.btn-d:active{transform:scale(.98);opacity:.9}
+.btn-l{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.btn-g{background:var(--green);color:#fff}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px}
+.pill-g{background:var(--green-light);color:var(--green)}
+.pill-p{background:var(--accent-light);color:var(--accent)}
+.pill-y{background:var(--tax-light);color:var(--tax)}
+/* NAV */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:var(--bg);border-top:1px solid var(--border);display:flex;padding:10px 0 20px;z-index:100}
+.nt{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0}
+.nti{font-size:20px}.ntl{font-size:10px;font-weight:600;color:var(--muted);transition:color .15s}
+.nt.active .ntl{color:var(--accent)}
+.nc{flex:0 0 64px;display:flex;align-items:center;justify-content:center;margin-top:-22px}
+.ncb{width:52px;height:52px;border-radius:16px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,.4);transition:all .15s}
+.ncb:active{transform:scale(.93)}
+/* CARDS */
+.card{background:var(--surface);border-radius:var(--r);padding:20px;margin:0 16px 12px}
+.mc{border-radius:var(--r);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:transform .15s;margin:0 16px 10px}
+.mc:active{transform:scale(.98)}
+.mc-p{background:var(--accent-light)}.mc-y{background:var(--tax-light)}.mc-g{background:var(--green-light)}
+.cl{display:flex;align-items:center;gap:12px}
+.ci{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.ci-p{background:rgba(124,58,237,.15)}.ci-y{background:rgba(245,158,11,.15)}.ci-g{background:rgba(0,200,83,.15)}
+.ct{font-size:14px;font-weight:700;margin-bottom:2px}.cs{font-size:11px;color:var(--muted);font-weight:500}
+.ca{text-align:right}.cv{font-size:20px;font-weight:800;letter-spacing:-.5px}
+.cv-p{color:var(--accent)}.cv-y{color:var(--tax)}.cv-g{color:var(--green)}
+.carrow{font-size:13px;color:var(--muted2);margin-top:3px}
+/* ACTIVITY */
+.al{padding:0 16px}
+.ai{display:flex;align-items:center;gap:12px;padding:13px 8px;border-bottom:1px solid var(--border);cursor:pointer;border-radius:var(--rs);transition:background .15s;animation:fu .4s ease forwards;opacity:0}
+.ai:last-child{border-bottom:none}.ai:active{background:var(--surface)}
+.ai:nth-child(1){animation-delay:.1s}.ai:nth-child(2){animation-delay:.15s}.ai:nth-child(3){animation-delay:.2s}.ai:nth-child(4){animation-delay:.25s}.ai:nth-child(5){animation-delay:.3s}
+.aic{width:42px;height:42px;border-radius:13px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:1px solid var(--border)}
+.aii{flex:1;min-width:0}
+.ain{font-size:14px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aid{font-size:11px;color:var(--muted);font-weight:500}
+.air{text-align:right;flex-shrink:0}
+.aia{font-size:15px;font-weight:700}
+.cr{color:var(--green)}.db{color:var(--muted)}
+/* MODALS */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+.mo.open{display:flex}
+.modal{background:var(--bg);border-radius:24px 24px 0 0;padding:24px 24px 40px;width:100%;max-width:420px;animation:su .3s cubic-bezier(.32,.72,0,1) forwards;position:relative}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mh{width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 20px}
+.mt{font-size:20px;font-weight:800;margin-bottom:4px;letter-spacing:-.5px}
+.ms{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.5}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.field input,.field select{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;outline:none;color:var(--text);transition:border-color .2s;appearance:none}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.field input::placeholder{color:var(--muted2);font-weight:400}
+.rb{background:var(--accent-light);border-radius:var(--rs);padding:16px;margin-bottom:16px;display:none}
+.rb.show{display:block}
+.rr{display:flex;justify-content:space-between;align-items:center;padding:6px 0}
+.rr+.rr{border-top:1px solid rgba(124,58,237,.1)}
+.rl{font-size:13px;color:var(--muted)}.rv{font-size:15px;font-weight:800}
+.rv-g{color:var(--green)}.rv-r{color:var(--red)}.rv-p{color:var(--accent)}
+/* HOME */
+.bh{padding:8px 24px 28px;text-align:center}
+.bl{font-size:13px;color:var(--muted);font-weight:500;margin-bottom:8px}
+.ba{font-size:58px;font-weight:800;letter-spacing:-3px;line-height:1;margin-bottom:10px}
+.acts{display:flex;justify-content:center;gap:12px;padding:0 24px 28px}
+.ab{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;flex:1;max-width:68px}
+.abic{width:50px;height:50px;border-radius:15px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:20px;transition:all .15s;border:1px solid var(--border)}
+.ab:active .abic{transform:scale(.92);background:var(--border)}
+.abl{font-size:11px;font-weight:600;color:var(--muted)}
+.alert{margin:0 16px 20px;border-radius:16px;padding:14px 16px;display:flex;gap:10px;align-items:center}
+.alert-y{background:var(--tax-light);border:1.5px solid rgba(245,158,11,.3)}
+.adot{width:8px;height:8px;border-radius:50%;background:var(--tax);flex-shrink:0;animation:pulse 2s infinite}
+.atxt{flex:1;font-size:13px;font-weight:600;color:var(--tax);line-height:1.4}
+.asub{color:var(--muted);font-weight:500;font-size:12px;display:block}
+.acta{font-size:12px;font-weight:700;padding:6px 12px;border-radius:8px;flex-shrink:0;cursor:pointer;border:none;font-family:'Plus Jakarta Sans',sans-serif;background:rgba(245,158,11,.15);color:var(--tax)}
+/* BANK */
+.bcard{background:linear-gradient(135deg,#1e1040 0%,#2d1b69 100%);border-radius:20px;margin:0 16px 20px;padding:24px;position:relative;overflow:hidden}
+.bcard::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(124,58,237,.2)}
+.bcard::after{content:'';position:absolute;bottom:-30px;left:-20px;width:140px;height:140px;border-radius:50%;background:rgba(167,139,250,.1)}
+.bchead{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;position:relative;z-index:1}
+.bclogo{font-size:16px;font-weight:800;color:#fff;letter-spacing:-.3px}
+.bcbadge{font-size:10px;font-weight:700;color:rgba(255,255,255,.5);background:rgba(255,255,255,.1);padding:4px 8px;border-radius:6px}
+.bcnum{font-size:16px;color:rgba(255,255,255,.6);letter-spacing:3px;margin-bottom:24px;position:relative;z-index:1;font-weight:500}
+.bcfoot{display:flex;justify-content:space-between;position:relative;z-index:1}
+.bcfl{font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px}
+.bcfv{font-size:13px;font-weight:700;color:rgba(255,255,255,.9)}
+.bcbal{font-size:32px;font-weight:800;color:var(--accent2);letter-spacing:-1px}
+.qag{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 20px}
+.qab{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
+.qab:active{background:var(--border)}
+.qaico{font-size:20px}.qal{font-size:13px;font-weight:700}.qas{font-size:11px;color:var(--muted)}
+/* INVEST */
+.ph{background:linear-gradient(160deg,#0a0a1a 0%,#1a1040 100%);border-radius:20px;margin:0 16px 20px;padding:24px;position:relative;overflow:hidden}
+.ph::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.2) 0%,transparent 70%)}
+.phl{font-size:12px;color:rgba(255,255,255,.4);font-weight:500;margin-bottom:6px}
+.phv{font-size:42px;font-weight:800;color:var(--accent2);letter-spacing:-2px;line-height:1;margin-bottom:8px;position:relative;z-index:1}
+.phc{font-size:13px;font-weight:700;color:rgba(167,139,250,.8);margin-bottom:20px}
+.csvg{width:100%;height:64px}
+.clbs{display:flex;justify-content:space-between;margin-top:6px}
+.clb{font-size:10px;color:rgba(255,255,255,.3);font-weight:500}
+.sr{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 20px}
+.sb{background:var(--surface);border-radius:var(--rs);padding:16px}
+.sbl{font-size:11px;color:var(--muted);font-weight:500;margin-bottom:6px}
+.sbv{font-size:20px;font-weight:800;letter-spacing:-.5px;margin-bottom:3px}
+.sbc{font-size:11px;font-weight:600}
+.sg{color:var(--green)}.sr2{color:var(--red)}.sm{color:var(--muted)}
+.hi{display:flex;align-items:center;gap:12px;padding:13px 8px;border-bottom:1px solid var(--border);animation:fu .4s ease forwards;opacity:0}
+.hi:last-child{border-bottom:none}
+.hi:nth-child(1){animation-delay:.1s}.hi:nth-child(2){animation-delay:.15s}.hi:nth-child(3){animation-delay:.2s}.hi:nth-child(4){animation-delay:.25s}
+.htk{width:44px;height:44px;border-radius:13px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--accent);flex-shrink:0}
+.hin{flex:1}.hinn{font-size:13px;font-weight:700;margin-bottom:2px}.hins{font-size:11px;color:var(--muted)}
+.hir{text-align:right}.hirv{font-size:14px;font-weight:800}.hirc{font-size:11px;font-weight:600;margin-top:2px}
+/* TAXES */
+.th{background:linear-gradient(160deg,#1a0f00 0%,#1a1400 100%);border-radius:20px;margin:0 16px 20px;padding:24px}
+.thl{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:6px}
+.thv{font-size:42px;font-weight:800;color:var(--tax);letter-spacing:-2px;margin-bottom:6px}
+.ths{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:20px}
+.tpw{height:8px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden;margin-bottom:8px}
+.tpf{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--tax),#fbbf24);animation:gb 1s ease forwards}
+@keyframes gb{from{width:0%!important}}
+.tpl2{display:flex;justify-content:space-between}
+.tpl{font-size:11px;color:rgba(255,255,255,.4)}
+.tq{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 20px}
+.tqi{background:var(--surface);border-radius:var(--rs);padding:16px;border:1.5px solid transparent}
+.tqa{border-color:rgba(245,158,11,.3);background:var(--tax-light)}
+.tqil{font-size:11px;color:var(--muted);margin-bottom:4px}
+.tqiv{font-size:18px;font-weight:800;margin-bottom:4px}
+.tqid{font-size:11px;color:var(--muted)}
+.is{margin-bottom:14px}
+.ish{display:flex;justify-content:space-between;margin-bottom:6px}
+.isn{font-size:13px;font-weight:700}.isa{font-size:13px;font-weight:700;color:var(--green)}
+.isb{height:6px;background:var(--border);border-radius:99px;overflow:hidden}
+.isf{height:100%;border-radius:99px;background:var(--accent);animation:gb 1s ease forwards}
+/* CHAT */
+#screen-chat{padding-bottom:0}
+.ctb{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 16px;background:var(--bg);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.ctt{font-size:18px;font-weight:800;letter-spacing:-.5px}
+.cts{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--accent);font-weight:600;margin-top:2px}
+.ctsd{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+.cms{padding:16px;display:flex;flex-direction:column;gap:12px;min-height:calc(100vh - 280px);overflow-y:auto}
+.msg{display:flex;flex-direction:column;max-width:85%;animation:fu .3s ease forwards}
+.mb{align-self:flex-start}.mu{align-self:flex-end}
+.mbu{padding:12px 16px;border-radius:18px;font-size:14px;line-height:1.5;font-weight:500}
+.mb .mbu{background:var(--surface);color:var(--text);border-bottom-left-radius:4px;border:1px solid var(--border)}
+.mu .mbu{background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+.mti{font-size:10px;color:var(--muted);margin-top:4px;font-weight:500}
+.mu .mti{text-align:right;padding-right:4px}.mb .mti{padding-left:4px}
+.bav{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:12px;margin-bottom:6px}
+.ti{display:flex;align-items:center;gap:4px;padding:12px 16px;background:var(--surface);border-radius:18px;border-bottom-left-radius:4px;border:1px solid var(--border);width:fit-content}
+.td{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:td 1.2s infinite}
+.td:nth-child(2){animation-delay:.2s}.td:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+.qr{display:flex;flex-wrap:wrap;gap:8px;padding:8px 16px 12px}
+.qrb{background:var(--surface);border:1.5px solid var(--border);border-radius:99px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;transition:all .15s;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap}
+.qrb:active{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.ciw{position:sticky;bottom:0;background:var(--bg);border-top:1px solid var(--border);padding:12px 16px 20px;display:flex;gap:10px;align-items:flex-end}
+.cinp{flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:22px;padding:12px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:500;outline:none;color:var(--text);resize:none;max-height:100px;transition:border-color .2s;line-height:1.4}
+.cinp:focus{border-color:var(--accent)}.cinp::placeholder{color:var(--muted)}
+.csend{width:44px;height:44px;border-radius:50%;background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .15s;font-size:18px;color:#fff}
+.csend:active{transform:scale(.93)}
+/* EXPERT */
+.eh{padding:24px 24px 20px;text-align:center}
+.eico{font-size:52px;margin-bottom:12px}
+.etit{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px}
+.esub{font-size:14px;color:var(--muted);line-height:1.6}
+.estat{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 16px 20px}
+.esi{background:var(--surface);border-radius:var(--rs);padding:14px;text-align:center}
+.esv{font-size:20px;font-weight:800;color:var(--accent);margin-bottom:4px}
+.esl{font-size:10px;color:var(--muted);font-weight:600}
+.eopts{padding:0 16px 20px;display:flex;flex-direction:column;gap:12px}
+.ec{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all .2s}
+.ec:active{transform:scale(.98)}
+.ec.feat{border-color:rgba(124,58,237,.3);background:var(--accent-light)}
+.eci{font-size:28px;flex-shrink:0}
+.ecin{flex:1}.ecit{font-size:15px;font-weight:800;margin-bottom:3px}
+.ecis{font-size:12px;color:var(--muted);line-height:1.4}
+.ecb{font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;flex-shrink:0}
+.ecb-p{background:var(--accent-light);color:var(--accent)}
+.ecb-g{background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+.etm{margin:0 16px 20px;background:var(--surface);border-radius:var(--r);padding:20px;border-left:3px solid var(--accent)}
+.etmt{font-size:13px;line-height:1.6;color:var(--text);margin-bottom:10px;font-style:italic}
+.etma{font-size:12px;font-weight:700;color:var(--muted)}
+/* PROFILE */
+.proh{padding:24px;text-align:center}
+.proav{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;margin:0 auto 14px}
+.proname{font-size:20px;font-weight:800;margin-bottom:4px}
+.prohan{font-size:13px;color:var(--muted);margin-bottom:12px}
+.prosts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 16px 20px}
+.psi{background:var(--surface);border-radius:var(--rs);padding:14px;text-align:center}
+.psv{font-size:18px;font-weight:800;margin-bottom:4px}.psl{font-size:10px;color:var(--muted);font-weight:600}
+.svl{padding:0 16px 20px;display:flex;flex-direction:column;gap:10px}
+.svi{background:var(--surface);border-radius:var(--rs);padding:16px;display:flex;align-items:center;gap:14px;border:1.5px solid transparent}
+.svi.con{border-color:rgba(124,58,237,.25)}
+.svic{font-size:24px;flex-shrink:0}.svin{flex:1}
+.svit{font-size:14px;font-weight:700;margin-bottom:2px}.svid{font-size:11px;color:var(--muted)}
+.svst{font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px}
+.svst-c{background:var(--accent-light);color:var(--accent)}.svst-p{background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+/* ONBOARD */
+#screen-onboard{padding-bottom:0;background:var(--bg)}
+.ow{padding:40px 24px;min-height:100vh;display:flex;flex-direction:column}
+.olog{font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:48px}
+.olog span{color:var(--accent)}
+.obs{display:none;flex:1;flex-direction:column}.obs.active{display:flex}
+.obtag{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
+.obtit{font-size:28px;font-weight:800;letter-spacing:-1px;line-height:1.15;margin-bottom:8px}
+.obsub{font-size:14px;color:var(--muted);margin-bottom:32px;line-height:1.5}
+.obprog{display:flex;gap:6px;margin-bottom:32px}
+.obdot{flex:1;height:3px;border-radius:99px;background:var(--border);transition:background .3s}
+.obdot.done{background:var(--accent)}
+.pg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+.pc{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer;transition:all .15s}
+.pc.sel{border-color:var(--accent);background:var(--accent-light)}.pc:active{transform:scale(.96)}
+.pce{font-size:22px;margin-bottom:6px}.pcn{font-size:11px;font-weight:700;color:var(--muted)}
+.pc.sel .pcn{color:var(--accent)}
+.slv{text-align:center;font-size:36px;font-weight:800;letter-spacing:-1px;color:var(--accent);margin-bottom:12px}
+input[type=range]{width:100%;height:4px;background:var(--border);border-radius:99px;outline:none;appearance:none;cursor:pointer;margin-bottom:8px}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 0 4px rgba(124,58,237,.2)}
+.sll{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:24px}
+.tos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+.to{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:16px 10px;text-align:center;cursor:pointer;transition:all .15s}
+.to.sel{border-color:var(--accent);background:var(--accent-light)}
+.tor{font-size:22px;font-weight:800;margin-bottom:4px}.to.sel .tor{color:var(--accent)}
+.tod{font-size:10px;color:var(--muted)}
+.vp{background:var(--accent-light);border:1px solid rgba(124,58,237,.2);border-radius:12px;padding:16px;margin-bottom:24px}
+.vpt{font-size:13px;font-weight:700;margin-bottom:4px}.vps{font-size:12px;color:var(--muted);line-height:1.5}
+.obbtn{padding:16px;background:var(--accent);color:#fff;border:none;border-radius:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:auto}
+.obbtn:active{background:var(--accent-dark);transform:scale(.98)}
+.obbtnb{padding:14px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px}
+.suci{width:72px;height:72px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 20px;animation:pi .5s cubic-bezier(.175,.885,.32,1.275) forwards}
+@keyframes pi{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.smg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.smi{background:var(--surface);border-radius:10px;padding:16px}
+.smil{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.smiv{font-size:18px;font-weight:800}.smiv-p{color:var(--accent)}
+#installBanner{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:388px;background:var(--text);color:#fff;border-radius:16px;padding:16px;z-index:150;display:none;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#0a0a0a;--surface:#1a1a1a;--border:#2a2a2a;--text:#f0f0f0;--muted:#666;--muted2:#444;
+    --accent-light:rgba(124,58,237,.12);--green-light:rgba(0,200,83,.1);--tax-light:rgba(245,158,11,.1);--red-light:rgba(239,68,68,.1)}
+  .mu .mbu{background:var(--accent);color:#fff}
+}
+</style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div class="screen active" id="screen-onboard">
+<div class="ow">
+  <div class="olog">apexa<span>.</span></div>
+  <div class="obprog"><div class="obdot done" id="od1"></div><div class="obdot" id="od2"></div><div class="obdot" id="od3"></div><div class="obdot" id="od4"></div></div>
+
+  <div class="obs active" id="ob1">
+    <div class="obtag">Step 01 / 04</div>
+    <div class="obtit">Your money,<br>finally under control.</div>
+    <div class="obsub">Apexa handles taxes, banking, and investing automatically — so you can focus on creating.</div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px">
+      <div style="display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:14px;padding:16px"><div style="font-size:24px">🔒</div><div><div style="font-size:14px;font-weight:700;margin-bottom:2px">Auto Tax Vault</div><div style="font-size:12px;color:var(--muted)">28% set aside from every payment automatically</div></div></div>
+      <div style="display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:14px;padding:16px"><div style="font-size:24px">📈</div><div><div style="font-size:14px;font-weight:700;margin-bottom:2px">Auto Investing</div><div style="font-size:12px;color:var(--muted)">Your income grows in the stock market on autopilot</div></div></div>
+      <div style="display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:14px;padding:16px"><div style="font-size:24px">💳</div><div><div style="font-size:14px;font-weight:700;margin-bottom:2px">Creator Banking</div><div style="font-size:12px;color:var(--muted)">Banking that accepts your income, no questions asked</div></div></div>
+    </div>
+    <button class="obbtn" onclick="obNext(2)">Get Started →</button>
+  </div>
+
+  <div class="obs" id="ob2">
+    <div class="obtag">Step 02 / 04</div>
+    <div class="obtit">Where do you earn?</div>
+    <div class="obsub">Select all platforms you get paid from. We'll track income from each automatically.</div>
+    <div class="pg">
+      <div class="pc sel" onclick="this.classList.toggle('sel')"><div class="pce">🔞</div><div class="pcn">OnlyFans</div></div>
+      <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">▶️</div><div class="pcn">YouTube</div></div>
+      <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">📸</div><div class="pcn">Instagram</div></div>
+      <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🎵</div><div class="pcn">TikTok</div></div>
+      <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🤝</div><div class="pcn">Brand Deals</div></div>
+      <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🎁</div><div class="pcn">Patreon</div></div>
+      <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">📧</div><div class="pcn">Substack</div></div>
+      <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🛍️</div><div class="pcn">Merch</div></div>
+      <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🎮</div><div class="pcn">Twitch</div></div>
+    </div>
+    <button class="obbtn" onclick="obNext(3)">Continue →</button>
+    <button class="obbtnb" onclick="obNext(1)">← Back</button>
+  </div>
+
+  <div class="obs" id="ob3">
+    <div class="obtag">Step 03 / 04</div>
+    <div class="obtit">Your income & tax setup</div>
+    <div class="obsub">We'll auto-save the right % from every payment so you're never surprised at tax time.</div>
+    <div class="slv" id="slDisp">$8,000 / mo</div>
+    <input type="range" min="1000" max="100000" step="1000" value="8000" oninput="updSlider(this.value)">
+    <div class="sll"><span>$1k</span><span>Average monthly income</span><span>$100k+</span></div>
+    <div class="tos">
+      <div class="to" onclick="selTax(this,'22%',.22)"><div class="tor">22%</div><div class="tod">Under $89k/yr</div></div>
+      <div class="to sel" onclick="selTax(this,'28%',.28)"><div class="tor">28%</div><div class="tod">$89k–$190k</div></div>
+      <div class="to" onclick="selTax(this,'35%',.35)"><div class="tor">35%</div><div class="tod">$190k+/yr</div></div>
+    </div>
+    <div class="vp"><div class="vpt">🔒 Auto-saving <span id="vaultPrev" style="color:var(--accent)">$2,240</span> / month to your Tax Vault</div><div class="vps">Every payment is split automatically. You'll never owe a surprise tax bill again.</div></div>
+    <button class="obbtn" onclick="obNext(4)">Continue →</button>
+    <button class="obbtnb" onclick="obNext(2)">← Back</button>
+  </div>
+
+  <div class="obs" id="ob4">
+    <div class="suci">⚡</div>
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-size:26px;font-weight:800;letter-spacing:-1px;margin-bottom:8px">You're all set!</div>
+      <div style="font-size:14px;color:var(--muted);line-height:1.5">Your Apexa account is ready. Taxes on autopilot, investing set up, banking live.</div>
+    </div>
+    <div class="smg">
+      <div class="smi"><div class="smil">Monthly Income</div><div class="smiv smiv-p" id="sumInc">$8,000</div></div>
+      <div class="smi"><div class="smil">Tax Rate</div><div class="smiv smiv-p" id="sumRate">28%</div></div>
+      <div class="smi"><div class="smil">Auto-saved / mo</div><div class="smiv" id="sumVault">$2,240</div></div>
+      <div class="smi"><div class="smil">Yours to spend</div><div class="smiv" id="sumSpend">$5,760</div></div>
+    </div>
+    <button class="obbtn" onclick="enterApp()">Go to My Dashboard →</button>
+  </div>
+</div>
+</div>
+
+<!-- HOME -->
+<div class="screen" id="screen-home">
+  <div class="topbar">
+    <div style="font-size:16px;font-weight:700" id="hgreet">Hey, Creator 👋</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="badge demo" id="apiBadge"><div class="bdot"></div><span id="apiTxt">Demo</span></div>
+      <div class="avatar" onclick="showScreen('profile')">⚡</div>
+    </div>
+  </div>
+  <div class="bh">
+    <div class="bl">Money in your account</div>
+    <div class="ba" id="hBal">$24,830</div>
+    <span class="pill pill-g" id="hChg">↑ +$8,340 this month</span>
+  </div>
+  <div class="acts">
+    <div class="ab" onclick="openModal('sendMod')"><div class="abic">↗️</div><div class="abl">Send</div></div>
+    <div class="ab" onclick="openModal('recvMod')"><div class="abic">↙️</div><div class="abl">Receive</div></div>
+    <div class="ab" onclick="openModal('taxMod')"><div class="abic">🧮</div><div class="abl">Tax Calc</div></div>
+    <div class="ab" onclick="showScreen('invest')"><div class="abic">📈</div><div class="abl">Invest</div></div>
+  </div>
+  <div class="alert alert-y" id="taxAlert">
+    <div class="adot"></div>
+    <div class="atxt">Q1 taxes due Apr 15<span class="asub" id="taxSF">$1,380 short in your vault</span></div>
+    <button class="acta" onclick="showScreen('taxes')">Fix it</button>
+  </div>
+  <div class="mc mc-p" onclick="showScreen('banking')">
+    <div class="cl"><div class="ci ci-p">💳</div><div><div class="ct">Balance</div><div class="cs">Stripe Treasury</div></div></div>
+    <div class="ca"><div class="cv cv-p" id="cBal">$24,830</div><div class="carrow">›</div></div>
+  </div>
+  <div class="mc mc-y" onclick="showScreen('taxes')">
+    <div class="cl"><div class="ci ci-y">🔒</div><div><div class="ct">Tax Vault</div><div class="cs" id="cTaxDue">Due Apr 15</div></div></div>
+    <div class="ca"><div class="cv cv-y" id="cTax">$4,820</div><div class="carrow">›</div></div>
+  </div>
+  <div class="mc mc-g" onclick="showScreen('invest')">
+    <div class="cl"><div class="ci ci-g">📈</div><div><div class="ct">Investments</div><div class="cs">Alpaca · +3.2% this week</div></div></div>
+    <div class="ca"><div class="cv cv-g" id="cInv">$11,240</div><div class="carrow">›</div></div>
+  </div>
+  <div style="height:16px"></div>
+  <div class="sh"><div class="st">Recent Activity</div><div class="sa" onclick="showScreen('banking')">See all →</div></div>
+  <div class="al" id="hAct"></div>
+</div>
+
+<!-- BANKING -->
+<div class="screen" id="screen-banking">
+  <div class="topbar"><div class="page-title">Banking</div><button class="btn btn-p" style="width:auto;padding:8px 16px;font-size:13px" onclick="openModal('sendMod')">+ Transfer</button></div>
+  <div class="bcard">
+    <div class="bchead"><div class="bclogo">apexa banking</div><div class="bcbadge">FDIC Insured</div></div>
+    <div class="bcnum">•••• •••• •••• 4821</div>
+    <div style="margin-bottom:16px;position:relative;z-index:1"><div class="bcfl">Available Balance</div><div class="bcbal" id="bnkBal">$24,830</div></div>
+    <div class="bcfoot">
+      <div><div class="bcfl">Routing</div><div class="bcfv">026073150</div></div>
+      <div><div class="bcfl">Account</div><div class="bcfv">••••4821</div></div>
+      <div><div class="bcfl">Pending</div><div class="bcfv" id="bnkPend">$1,200</div></div>
+    </div>
+  </div>
+  <div class="qag">
+    <div class="qab" onclick="openModal('sendMod')"><div class="qaico">↗️</div><div><div class="qal">Send Money</div><div class="qas">Via Dwolla ACH</div></div></div>
+    <div class="qab" onclick="openModal('recvMod')"><div class="qaico">↙️</div><div><div class="qal">Receive</div><div class="qas">Share details</div></div></div>
+    <div class="qab" onclick="showScreen('taxes')"><div class="qaico">🔒</div><div><div class="qal">Tax Vault</div><div class="qas">Set aside funds</div></div></div>
+    <div class="qab" onclick="showScreen('invest')"><div class="qaico">📈</div><div><div class="qal">Auto-Invest</div><div class="qas">Alpaca portfolio</div></div></div>
+  </div>
+  <div class="sh"><div class="st">Transactions</div><div class="sa">Filter ↓</div></div>
+  <div class="al" id="bnkAct"></div>
+</div>
+
+<!-- INVESTING -->
+<div class="screen" id="screen-invest">
+  <div class="topbar"><div class="page-title">Investing</div><button class="btn btn-p" style="width:auto;padding:8px 16px;font-size:13px" onclick="openModal('invMod')">+ Invest</button></div>
+  <div class="ph">
+    <div class="phl">Portfolio Value</div>
+    <div class="phv" id="invVal">$11,240</div>
+    <div class="phc" id="invChg">↑ +$348 (+3.2%) this week</div>
+    <svg class="csvg" viewBox="0 0 400 64" preserveAspectRatio="none">
+      <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a78bfa" stop-opacity=".3"/><stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/></linearGradient></defs>
+      <path d="M0,52 L57,46 L114,50 L171,36 L228,40 L285,28 L342,32 L400,16" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+      <path d="M0,52 L57,46 L114,50 L171,36 L228,40 L285,28 L342,32 L400,16 L400,64 L0,64 Z" fill="url(#cg)"/>
+    </svg>
+    <div class="clbs"><span class="clb">Sep</span><span class="clb">Oct</span><span class="clb">Nov</span><span class="clb">Dec</span><span class="clb">Jan</span><span class="clb">Feb</span><span class="clb">Mar</span></div>
+  </div>
+  <div class="sr">
+    <div class="sb"><div class="sbl">Total Invested</div><div class="sbv" id="invTot">$9,500</div><div class="sbc sg" id="invRet">+18.3% return</div></div>
+    <div class="sb"><div class="sbl">Unrealized Gain</div><div class="sbv" id="invGain">$1,740</div><div class="sbc sg">↑ This week</div></div>
+    <div class="sb"><div class="sbl">Auto-Invest</div><div class="sbv">$500</div><div class="sbc sm">Monthly · On</div></div>
+    <div class="sb"><div class="sbl">Dividends YTD</div><div class="sbv">$124</div><div class="sbc sg">Reinvested</div></div>
+  </div>
+  <div class="sh"><div class="st">Holdings</div><div class="sa">Edit →</div></div>
+  <div class="al" id="holdList"></div>
+</div>
+
+<!-- TAXES -->
+<div class="screen" id="screen-taxes">
+  <div class="topbar"><div class="page-title">Tax Vault</div><button class="btn btn-d" style="width:auto;padding:8px 16px;font-size:13px" onclick="openModal('taxMod')">Calculator</button></div>
+  <div class="th">
+    <div class="thl">Vault Balance</div>
+    <div class="thv" id="txVault">$4,820</div>
+    <div class="ths" id="txSub">$1,380 short for Q1 — due April 15</div>
+    <div class="tpw"><div class="tpf" id="txProg" style="width:78%"></div></div>
+    <div class="tpl2"><span class="tpl" id="txSaved">$4,820 saved</span><span class="tpl" id="txTarg">$6,200 target</span></div>
+  </div>
+  <div class="tq">
+    <div class="tqi tqa"><div class="tqil">Q1 2026</div><div class="tqiv cv-y" id="q1v">$4,820</div><div class="tqid">Due Apr 15 ⚠️</div></div>
+    <div class="tqi"><div class="tqil">Q2 2026</div><div class="tqiv">$0</div><div class="tqid">Due Jun 15</div></div>
+    <div class="tqi"><div class="tqil">Q3 2026</div><div class="tqiv">$0</div><div class="tqid">Due Sep 15</div></div>
+    <div class="tqi"><div class="tqil">Q4 2026</div><div class="tqiv">$0</div><div class="tqid">Due Jan 15</div></div>
+  </div>
+  <div class="sh"><div class="st">Income by Platform</div><div class="sa">March 2026</div></div>
+  <div style="padding:0 16px 20px" id="incSrc"></div>
+  <div style="padding:0 16px 20px">
+    <div style="background:var(--green-light);border:1.5px solid rgba(0,200,83,.2);border-radius:var(--rs);padding:16px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:4px">🎉 No state income tax</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5">You only owe federal taxes. Effective rate: 28% based on your bracket.</div>
+    </div>
+  </div>
+  <div style="padding:0 16px 20px;display:flex;flex-direction:column;gap:10px">
+    <button class="btn btn-p" onclick="showScreen('expert')">👨‍💼 File with a CPA →</button>
+    <button class="btn btn-l" onclick="openModal('taxMod')">🧮 Tax Calculator</button>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div class="screen" id="screen-chat" style="padding-bottom:0">
+  <div class="ctb">
+    <div><div class="ctt">Apexa AI</div><div class="cts"><div class="ctsd"></div>Online · Replies instantly</div></div>
+    <button class="btn btn-p" style="width:auto;padding:8px 16px;font-size:12px" onclick="showScreen('expert')">👨‍💼 Expert</button>
+  </div>
+  <div class="cms" id="chatMsgs"></div>
+  <div class="qr" id="quickR">
+    <button class="qrb" onclick="sendQ('How much should I save for taxes?')">💰 Tax savings</button>
+    <button class="qrb" onclick="sendQ('How does the tax vault work?')">🔒 Tax vault</button>
+    <button class="qrb" onclick="sendQ('How do I start investing?')">📈 Investing</button>
+    <button class="qrb" onclick="sendQ('What is my tax rate?')">🧾 My rate</button>
+    <button class="qrb" onclick="sendQ('I need a CPA')">👨‍💼 Find CPA</button>
+  </div>
+  <div class="ciw">
+    <textarea class="cinp" id="chatIn" placeholder="Ask anything about your finances..." rows="1" onkeydown="ckKey(event)" oninput="autoR(this)"></textarea>
+    <button class="csend" onclick="sendMsg()">↑</button>
+  </div>
+</div>
+
+<!-- EXPERT -->
+<div class="screen" id="screen-expert">
+  <div class="topbar"><div class="page-title">Talk to Expert</div></div>
+  <div class="eh">
+    <div class="eico">👨‍💼</div>
+    <div class="etit">Real experts, real answers</div>
+    <div class="esub">Licensed CPAs who understand creator finances. No judgment, total privacy.</div>
+  </div>
+  <div class="estat">
+    <div class="esi"><div class="esv">500+</div><div class="esl">CPAs Available</div></div>
+    <div class="esi"><div class="esv">48hr</div><div class="esl">Avg Response</div></div>
+    <div class="esi"><div class="esv">4.9★</div><div class="esl">Avg Rating</div></div>
+  </div>
+  <div class="eopts">
+    <div class="ec feat" onclick="cExp('cpa')"><div class="eci">🧾</div><div class="ecin"><div class="ecit">File with a CPA</div><div class="ecis">Licensed CPA reviews your Apexa data and files your taxes. From $299.</div></div><div class="ecb ecb-p">Popular</div></div>
+    <div class="ec" onclick="cExp('consult')"><div class="eci">💬</div><div class="ecin"><div class="ecit">Tax Consultation</div><div class="ecis">30-min video call with a CPA. Get answers fast. $75.</div></div><div class="ecb ecb-g">30 min</div></div>
+    <div class="ec" onclick="cExp('plan')"><div class="eci">📊</div><div class="ecin"><div class="ecit">Financial Planning</div><div class="ecis">Build a wealth plan for your creator income. $150.</div></div><div class="ecb ecb-g">1 hour</div></div>
+    <div class="ec" onclick="cExp('books')"><div class="eci">📚</div><div class="ecin"><div class="ecit">Bookkeeping Setup</div><div class="ecis">Get your books clean and organized. $199 one-time.</div></div><div class="ecb ecb-g">One-time</div></div>
+  </div>
+  <div class="etm">
+    <div class="etmt">"I had no idea how much I owed until Apexa. The CPA they connected me with saved me over $8,000 in deductions I didn't know about."</div>
+    <div class="etma">— Creator · 180k followers · $22k/mo</div>
+  </div>
+  <div style="padding:0 16px 20px"><button class="btn btn-p" onclick="cExp('cpa')">Connect with a CPA Now →</button></div>
+</div>
+
+<!-- PROFILE -->
+<div class="screen" id="screen-profile">
+  <div class="topbar"><div class="page-title">Profile</div><span class="pill pill-p">Pro</span></div>
+  <div class="proh">
+    <div class="proav">⚡</div>
+    <div class="proname" id="proName">Your Account</div>
+    <div class="prohan" id="proHan">@creator</div>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap" id="proPlatforms"></div>
+  </div>
+  <div class="prosts">
+    <div class="psi"><div class="psv cv-p" id="psInc">$8,340</div><div class="psl">This Month</div></div>
+    <div class="psi"><div class="psv" id="psPlat">5</div><div class="psl">Platforms</div></div>
+    <div class="psi"><div class="psv" id="psRate">28%</div><div class="psl">Tax Rate</div></div>
+  </div>
+  <div class="sh"><div class="st">Connected Services</div><div class="sa">Manage →</div></div>
+  <div class="svl">
+    <div class="svi con"><div class="svic">💳</div><div class="svin"><div class="svit">Stripe Treasury</div><div class="svid">Banking & payments</div></div><div class="svst svst-c">● Live</div></div>
+    <div class="svi con"><div class="svic">🦙</div><div class="svin"><div class="svit">Alpaca</div><div class="svid">Investing & auto-invest</div></div><div class="svst svst-c">● Live</div></div>
+    <div class="svi"><div class="svic">🔞</div><div class="svin"><div class="svit">OnlyFans</div><div class="svid">Income sync</div></div><div class="svst svst-p" style="cursor:pointer" onclick="alert('OnlyFans connection coming soon!')">Connect</div></div>
+    <div class="svi"><div class="svic">🔄</div><div class="svin"><div class="svit">Dwolla</div><div class="svid">Fast ACH transfers</div></div><div class="svst svst-p">Connect</div></div>
+    <div class="svi"><div class="svic">👨‍💼</div><div class="svin"><div class="svit">Taxfyle CPA</div><div class="svid">File taxes with a real CPA</div></div><div class="svst svst-p" style="cursor:pointer" onclick="showScreen('expert')">Connect</div></div>
+  </div>
+  <div style="padding:0 16px 20px;display:flex;flex-direction:column;gap:10px">
+    <button class="btn btn-l">⚙️ Account Settings</button>
+    <button class="btn btn-l" style="color:var(--red)" onclick="showScreen('onboard')">Sign Out</button>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bnav" id="bnav" style="display:none">
+  <div class="nt active" onclick="showScreen('home')"><div class="nti">🏠</div><div class="ntl">Home</div></div>
+  <div class="nt" onclick="showScreen('banking')"><div class="nti">💳</div><div class="ntl">Banking</div></div>
+  <div class="nc"><div class="ncb" onclick="showScreen('chat')">💬</div></div>
+  <div class="nt" onclick="showScreen('invest')"><div class="nti">📈</div><div class="ntl">Invest</div></div>
+  <div class="nt" onclick="showScreen('expert')"><div class="nti">👨‍💼</div><div class="ntl">Expert</div></div>
+</nav>
+
+<!-- MODALS -->
+<div class="mo" id="taxMod" onclick="closeBg(event,'taxMod')">
+  <div class="modal"><div class="mh"></div><div class="mt">Tax Calculator</div><div class="ms">Enter your income to see exactly how to split it.</div>
+    <div class="field"><label>Monthly Income</label><input type="number" id="txInc" placeholder="$0" oninput="calcTax()"></div>
+    <div class="field"><label>Tax Rate</label><select id="txRate" onchange="calcTax()"><option value=".22">22% — Under $89k/yr</option><option value=".28" selected>28% — $89k–$190k</option><option value=".35">35% — $190k+/yr</option></select></div>
+    <div class="rb" id="txRes">
+      <div class="rr"><span class="rl">Income</span><span class="rv rv-p" id="rcI">—</span></div>
+      <div class="rr"><span class="rl">→ Tax Vault</span><span class="rv rv-r" id="rcT">—</span></div>
+      <div class="rr"><span class="rl">→ Yours to spend</span><span class="rv rv-g" id="rcS">—</span></div>
+    </div>
+    <button class="btn btn-p" onclick="closeModal('taxMod')">Done</button>
+  </div>
+</div>
+
+<div class="mo" id="sendMod" onclick="closeBg(event,'sendMod')">
+  <div class="modal"><div class="mh"></div><div class="mt">Send Money</div><div class="ms">Transfer funds via Dwolla ACH — arrives in 1–2 business days.</div>
+    <div class="field"><label>Send To</label><select><option>Tax Vault</option><option>Alpaca Portfolio</option><option>External Bank Account</option></select></div>
+    <div class="field"><label>Amount</label><input type="text" placeholder="$0.00"></div>
+    <div class="field"><label>Note (optional)</label><input type="text" placeholder="What's this for?"></div>
+    <button class="btn btn-p" onclick="closeModal('sendMod')">Send Now →</button>
+  </div>
+</div>
+
+<div class="mo" id="recvMod" onclick="closeBg(event,'recvMod')">
+  <div class="modal"><div class="mh"></div><div class="mt">Receive Money</div><div class="ms">Share your Apexa banking details to receive payments.</div>
+    <div style="background:var(--surface);border-radius:var(--rs);padding:20px;margin-bottom:16px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px">Account Holder</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:16px" id="recvHolder">Your Account</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Routing</div><div style="font-size:15px;font-weight:700">026073150</div></div>
+        <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Account</div><div style="font-size:15px;font-weight:700">••••4821</div></div>
+      </div>
+    </div>
+    <button class="btn btn-p" onclick="closeModal('recvMod')">Copy Details</button>
+  </div>
+</div>
+
+<div class="mo" id="invMod" onclick="closeBg(event,'invMod')">
+  <div class="modal"><div class="mh"></div><div class="mt">Invest Now</div><div class="ms">Funds go to your Alpaca portfolio based on your allocation.</div>
+    <div class="field"><label>Amount</label><input type="text" placeholder="$0.00"></div>
+    <div class="field"><label>Strategy</label><select><option>My allocation (50% SPY · 30% QQQ · 20% JEPI)</option><option>All SPY — S&P 500</option><option>All QQQ — Nasdaq 100</option><option>Custom split</option></select></div>
+    <div style="background:var(--accent-light);border-radius:var(--rs);padding:14px;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:700;color:var(--accent)">Auto-invest is ON</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">$500 invested automatically on the 1st of every month.</div>
+    </div>
+    <button class="btn btn-p" onclick="closeModal('invMod')">Invest Now →</button>
+  </div>
+</div>
+
+<div id="installBanner">
+  <div style="font-size:24px">⚡</div>
+  <div style="flex:1"><div style="font-size:14px;font-weight:700">Add Apexa to Home Screen</div><div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:2px">Works like a native app</div></div>
+  <button onclick="instApp()" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;cursor:pointer">Add</button>
+  <button onclick="document.getElementById('installBanner').style.display='none'" style="background:transparent;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer">✕</button>
+</div>
+
+<script>
+const API='http://localhost:8000';
+let obInc=8000,obRate=.28,obRateLbl='28%',chatHist=[],isTyping=false;
+
+// FORMAT
+const fmt=n=>'$'+Number(n).toLocaleString('en-US',{maximumFractionDigits:0});
+const ICONS={'OnlyFans':'🔞','YouTube':'▶️','Substack':'📧','Patreon':'🎁','Nike Brand Deal':'🤝','Brand Deal':'🤝','Alpaca Auto-invest':'📈','Merch':'🛍️','Twitch':'🎮','TikTok':'🎵','Instagram':'📸'};
+
+// ONBOARDING
+function obNext(s){
+  document.querySelectorAll('.obs').forEach(x=>x.classList.remove('active'));
+  document.getElementById('ob'+s).classList.add('active');
+  for(let i=1;i<=4;i++) document.getElementById('od'+i).className='obdot'+(i<=s?' done':'');
+  if(s===4) updSum();
+}
+function updSlider(v){obInc=parseInt(v);const d=obInc>=1000?'$'+(obInc/1000).toFixed(obInc%1000===0?0:1)+'k':'$'+obInc;document.getElementById('slDisp').textContent=d+' / mo';updVault()}
+function selTax(el,lbl,r){document.querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');obRateLbl=lbl;obRate=r;updVault()}
+function updVault(){document.getElementById('vaultPrev').textContent=fmt(Math.round(obInc*obRate))}
+function updSum(){const v=Math.round(obInc*obRate),sp=obInc-v;document.getElementById('sumInc').textContent=fmt(obInc);document.getElementById('sumRate').textContent=obRateLbl;document.getElementById('sumVault').textContent=fmt(v);document.getElementById('sumSpend').textContent=fmt(sp)}
+function enterApp(){document.getElementById('bnav').style.display='flex';showScreen('home');loadAll()}
+
+// NAV
+function showScreen(n){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+n).classList.add('active');
+  const tabs={home:0,banking:1,invest:3,expert:4};
+  document.querySelectorAll('.nt').forEach(t=>t.classList.remove('active'));
+  if(tabs[n]!==undefined) document.querySelectorAll('.nt')[tabs[n]].classList.add('active');
+  window.scrollTo(0,0);
+  if(n==='chat'&&chatHist.length===0) initChat();
+}
+
+// MODALS
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function closeBg(e,id){if(e.target===document.getElementById(id))closeModal(id)}
+
+// DATA
+async function loadAll(){
+  try{
+    const[s,t,p,i]=await Promise.all([
+      fetch(API+'/api/dashboard/summary').then(r=>r.json()),
+      fetch(API+'/api/stripe/transactions').then(r=>r.json()),
+      fetch(API+'/api/alpaca/portfolio').then(r=>r.json()),
+      fetch(API+'/api/income/sources').then(r=>r.json()),
+    ]);
+    document.querySelectorAll('.badge').forEach(b=>{b.className='badge live';b.innerHTML='<div class="bdot"></div><span>Live</span>'});
+    updHome(s);updBnk(s);updInv(p);updTax(s,i);
+    renderT(t.transactions,'hAct',4);renderT(t.transactions,'bnkAct',10);
+    renderH(p.holdings);renderIS(i.sources);
+  }catch(e){
+    renderT([
+      {platform:'OnlyFans',amount:18000,date:'Mar 10 · 28% → Tax Vault',type:'credit'},
+      {platform:'YouTube',amount:3420,date:'Mar 08 · 28% → Tax Vault',type:'credit'},
+      {platform:'Brand Deal',amount:1600,date:'Mar 05',type:'credit'},
+      {platform:'Alpaca Auto-invest',amount:-500,date:'Mar 01 · SPY + QQQ',type:'debit'},
+    ],'hAct',4);
+    renderT([
+      {platform:'OnlyFans',amount:18000,date:'Mar 10 · 28% → Tax Vault',type:'credit'},
+      {platform:'YouTube',amount:3420,date:'Mar 08 · 28% → Tax Vault',type:'credit'},
+      {platform:'Brand Deal',amount:1600,date:'Mar 05',type:'credit'},
+      {platform:'Alpaca Auto-invest',amount:-500,date:'Mar 01 · SPY + QQQ',type:'debit'},
+      {platform:'Patreon',amount:720,date:'Feb 28',type:'credit'},
+    ],'bnkAct',10);
+    renderH([{ticker:'SPY',name:'S&P 500 ETF',shares:12.4,value:5620,return_pct:8.2},{ticker:'QQQ',name:'Nasdaq 100 ETF',shares:8.2,value:3480,return_pct:9.1},{ticker:'JEPI',name:'JPM Income ETF',shares:18.6,value:1240,return_pct:2.4},{ticker:'IWM',name:'Russell 2000 ETF',shares:5.1,value:740,return_pct:-1.2}]);
+    renderIS([{platform:'OnlyFans',amount:18000,pct:72},{platform:'YouTube',amount:3420,pct:14},{platform:'Brand Deals',amount:1600,pct:6},{platform:'Patreon',amount:720,pct:3},{platform:'Merch',amount:350,pct:1}]);
+  }
+}
+function updHome(d){document.getElementById('hBal').textContent=fmt(d.total_balance);document.getElementById('hChg').textContent='↑ +'+fmt(d.monthly_income)+' this month';document.getElementById('cBal').textContent=fmt(d.total_balance);document.getElementById('cTax').textContent=fmt(d.tax_vault);document.getElementById('cInv').textContent=fmt(d.portfolio_value);const sf=d.tax_vault_target-d.tax_vault;if(sf>0)document.getElementById('taxSF').textContent=fmt(sf)+' short in your vault'}
+function updBnk(d){document.getElementById('bnkBal').textContent=fmt(d.total_balance)}
+function updInv(p){document.getElementById('invVal').textContent=fmt(p.total_value);document.getElementById('invChg').textContent='↑ +'+fmt(p.weekly_change)+' (+'+p.weekly_change_pct+'%) this week';document.getElementById('invTot').textContent=fmt(p.total_invested);document.getElementById('invRet').textContent='+'+p.return_pct+'% return';document.getElementById('invGain').textContent=fmt(p.unrealized_gain)}
+function updTax(d,inc){document.getElementById('txVault').textContent=fmt(d.tax_vault);const sf=d.tax_vault_target-d.tax_vault;document.getElementById('txSub').textContent=sf>0?fmt(sf)+' short for Q1 — due April 15':'✓ On track for Q1';const pct=Math.min(Math.round(d.tax_vault/d.tax_vault_target*100),100);document.getElementById('txProg').style.width=pct+'%';document.getElementById('txSaved').textContent=fmt(d.tax_vault)+' saved';document.getElementById('txTarg').textContent=fmt(d.tax_vault_target)+' target';document.getElementById('q1v').textContent=fmt(d.tax_vault);document.getElementById('psInc').textContent=fmt(inc.total||d.monthly_income)}
+function renderT(txns,id,lim){document.getElementById(id).innerHTML=txns.slice(0,lim).map((t,i)=>`<div class="ai" style="animation-delay:${.05+i*.05}s"><div class="aic">${ICONS[t.platform]||'💸'}</div><div class="aii"><div class="ain">${t.platform}</div><div class="aid">${t.date}</div></div><div class="air"><div class="aia ${t.amount>0?'cr':'db'}">${t.amount>0?'+':''}${fmt(Math.abs(t.amount))}</div></div></div>`).join('')}
+function renderH(h){document.getElementById('holdList').innerHTML=h.map((x,i)=>`<div class="hi" style="animation-delay:${.05+i*.05}s"><div class="htk">${x.ticker}</div><div class="hin"><div class="hinn">${x.name}</div><div class="hins">${x.shares} shares</div></div><div class="hir"><div class="hirv">${fmt(x.value)}</div><div class="hirc ${x.return_pct>=0?'sg':'sr2'}">${x.return_pct>=0?'+':''}${x.return_pct}%</div></div></div>`).join('')}
+function renderIS(s){document.getElementById('incSrc').innerHTML=s.map(x=>`<div class="is"><div class="ish"><span class="isn">${ICONS[x.platform]||'💰'} ${x.platform}</span><span class="isa">${fmt(x.amount)}</span></div><div class="isb"><div class="isf" style="width:${x.pct}%"></div></div></div>`).join('')}
+
+// TAX CALC
+async function calcTax(){const inc=parseFloat(document.getElementById('txInc').value),rate=parseFloat(document.getElementById('txRate').value);if(!inc||inc<=0){document.getElementById('txRes').classList.remove('show');return}try{const r=await fetch(API+'/api/tax/calculate?income='+inc+'&tax_rate='+rate);const d=await r.json();document.getElementById('rcI').textContent=fmt(d.income);document.getElementById('rcT').textContent=fmt(d.tax_amount);document.getElementById('rcS').textContent=fmt(d.spendable)}catch(e){const t=Math.round(inc*rate);document.getElementById('rcI').textContent=fmt(inc);document.getElementById('rcT').textContent=fmt(t);document.getElementById('rcS').textContent=fmt(inc-t)}document.getElementById('txRes').classList.add('show')}
+
+// CHAT
+const BOT={tax:["As a creator, set aside **28-35%** of every payment for taxes. Apexa does this automatically — the moment income hits, it splits instantly into your Tax Vault. 🔒","Your Q1 deadline is **April 15**. Your vault has $4,820 but you need $6,200. Want me to help close that gap?"],vault:["Your Tax Vault automatically receives **28%** of every payment. You can't accidentally spend it. On April 15, just tap 'File Taxes' — done. 💜","Think of the vault as a savings account that only opens at tax time. Every dollar from OnlyFans, YouTube, brand deals — 28% goes straight in."],invest:["Apexa auto-invests **$500 every month** into your Alpaca portfolio — SPY (50%), QQQ (30%), JEPI (20%). You're up **+18.3%** since you started. 📈","Your $11,240 portfolio grows on autopilot. Want to increase your monthly auto-invest? Even an extra $200/mo compounds significantly over 5 years."],rate:["Based on your income, your estimated federal tax rate is **28%**. No state income tax — you're already saving thousands there. 🎉","Your effective rate is **28%** — for every $1,000 you earn, $280 goes to taxes and $720 is yours. Apexa handles that split automatically."],cpa:["I can connect you with a licensed CPA through Taxfyle right now. They specialize in creator finances and understand OnlyFans income. Tap **Expert** above. 👨‍💼","A CPA can find deductions you're missing — home office, equipment, subscriptions. Most creators save $3,000-8,000 more than expected."],of:["Apexa is built specifically for OnlyFans creators. Banking that accepts your income, automatic tax withholding, and investing — all in one app. No judgment, total privacy. 🔒","Your OnlyFans income is treated exactly like any other business income. We set aside your taxes automatically so you're never surprised."],hello:["Hey! I'm Apexa AI — here to help you manage creator finances. Ask me anything about taxes, investing, or banking. 👋💜","Hi! Finances as a creator can feel overwhelming — that's exactly why Apexa exists. Ask me anything, I'm here 24/7. ⚡"],def:["Great question! Apexa handles the heavy lifting — taxes set aside automatically, investing on autopilot, banking that works for you. What would you like to know more about? 💰","Could you tell me a bit more about what you're looking for? Or tap one of the quick options below. 👇","That's something a CPA could give you the most accurate answer on. Tap **Expert** above to connect with one. 👨‍💼"]};
+function getBR(msg){const l=msg.toLowerCase();if(l.includes('onlyfan')||l.includes('of '))return BOT.of;if(l.includes('tax')&&(l.includes('save')||l.includes('much')||l.includes('set aside')||l.includes('owe')))return BOT.tax;if(l.includes('vault'))return BOT.vault;if(l.includes('invest')||l.includes('portfolio')||l.includes('stock'))return BOT.invest;if(l.includes('rate')||l.includes('percent'))return BOT.rate;if(l.includes('cpa')||l.includes('accountant')||l.includes('expert')||l.includes('file'))return BOT.cpa;if(l.includes('hi')||l.includes('hello')||l.includes('hey'))return BOT.hello;return BOT.def}
+function getTime(){return new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
+function addMsg(text,isBot,delay=0){setTimeout(()=>{const msgs=document.getElementById('chatMsgs');const ty=document.getElementById('tyInd');if(ty)ty.remove();const m=document.createElement('div');m.className='msg '+(isBot?'mb':'mu');const html=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');m.innerHTML=`${isBot?'<div class="bav">⚡</div>':''}<div class="mbu">${html}</div><div class="mti">${getTime()}</div>`;msgs.appendChild(m);msgs.scrollTop=msgs.scrollHeight},delay)}
+function showTyping(){const msgs=document.getElementById('chatMsgs');const t=document.createElement('div');t.id='tyInd';t.className='msg mb';t.innerHTML='<div class="bav">⚡</div><div class="ti"><div class="td"></div><div class="td"></div><div class="td"></div></div>';msgs.appendChild(t);msgs.scrollTop=msgs.scrollHeight}
+async function sendMsg(){const inp=document.getElementById('chatIn');const text=inp.value.trim();if(!text||isTyping)return;inp.value='';inp.style.height='auto';document.getElementById('quickR').style.display='none';addMsg(text,false);chatHist.push({role:'user',content:text});isTyping=true;showTyping();try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:`You are Apexa AI, a friendly financial assistant for OnlyFans and content creators. Help with taxes, investing, banking, and financial planning. Be concise, warm, practical. Use emojis occasionally. User has: Balance $24,830 · Tax Vault $4,820 (target $6,200 Q1) · Portfolio $11,240 (+18.3%) · Monthly income ~$8,340 · Tax rate 28% · No state income tax. Never give specific investment advice. Recommend CPAs for complex tax questions. Keep responses under 3 sentences. Never judge income sources.`,messages:chatHist})});if(r.ok){const d=await r.json();const bt=d.content[0].text;isTyping=false;addMsg(bt,true,300);chatHist.push({role:'assistant',content:bt})}else throw new Error()}catch(e){const rs=getBR(text);const bt=rs[Math.floor(Math.random()*rs.length)];isTyping=false;addMsg(bt,true,800);chatHist.push({role:'assistant',content:bt})}}
+function sendQ(t){document.getElementById('chatIn').value=t;sendMsg()}
+function ckKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg()}}
+function autoR(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px'}
+function initChat(){setTimeout(()=>addMsg("Hey! I'm Apexa AI 👋 I help creators manage money, taxes, and investments. What can I help you with today?",true),400)}
+function cExp(t){const m={cpa:"Connecting you with a licensed CPA via Taxfyle. They'll review your Apexa data and have your taxes filed within 48 hours. Check your email shortly.",consult:"Booking your 30-minute tax consultation. A CPA will reach out within 2 hours to confirm your appointment.",plan:"Connecting you with a financial advisor who specializes in creator wealth building.",books:"Starting your bookkeeping setup. Our team will connect all your income sources within 3 business days."};alert(m[t]||"Connecting you with an expert now...")}
+
+// PWA
+let dp;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;document.getElementById('installBanner').style.display='flex'});
+function instApp(){if(dp){dp.prompt();dp.userChoice.then(()=>{document.getElementById('installBanner').style.display='none';dp=null})}}
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body>
+</html>
