@@ -382,31 +382,60 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
       </div>
     </div>
 
-    <div class="field"><label>Monthly business expenses (equipment, software, etc.)</label>
+    <div id="obW2Fields" style="display:none;margin-bottom:14px">
+      <div class="field" style="margin:0"><label>Annual W-2 income</label>
+        <input type="number" id="obW2Inc" placeholder="$0" value="0" oninput="calcObTax()" style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;width:100%;color:var(--text)">
+      </div>
+      <div class="field"><label>Annual W-2 tax withholding</label>
+        <input type="number" id="obW2With" placeholder="$0" value="0" oninput="calcObTax()" style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;width:100%;color:var(--text)">
+      </div>
+    </div>
+
+    <div class="field"><label>Monthly business expenses</label>
       <input type="number" id="obExpenses" placeholder="$0" value="0" oninput="calcObTax()" style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;width:100%;color:var(--text)">
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Equipment, software, subscriptions, travel, etc.</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div class="field" style="margin:0"><label>Tax credits (annual)</label>
+        <input type="number" id="obCredits" placeholder="$0" value="0" oninput="calcObTax()" style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;width:100%;color:var(--text)">
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">Child, earned income, education</div>
+      </div>
+      <div class="field" style="margin:0"><label>Prior payments</label>
+        <input type="number" id="obPriorPay" placeholder="$0" value="0" oninput="calcObTax()" style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;width:100%;color:var(--text)">
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">Quarterly tax already paid this year</div>
+      </div>
     </div>
 
     <div id="obTaxResult" style="background:linear-gradient(135deg,#1a0f00,#1a1400);border-radius:16px;padding:20px;margin-bottom:16px">
       <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:6px">YOUR ESTIMATED TAX RATE</div>
       <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px">
-        <span style="font-size:36px;font-weight:800;color:var(--tax)" id="obEffRate">26.1%</span>
+        <span style="font-size:36px;font-weight:800;color:var(--tax)" id="obEffRate">—</span>
         <span style="font-size:13px;color:rgba(255,255,255,.5)">effective rate</span>
       </div>
       <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid rgba(255,255,255,.1)">
         <span style="font-size:12px;color:rgba(255,255,255,.4)">Self-employment tax</span>
-        <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7)" id="obSETax">$13,564</span>
+        <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7)" id="obSETax">—</span>
       </div>
       <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid rgba(255,255,255,.1)">
         <span style="font-size:12px;color:rgba(255,255,255,.4)">Federal income tax</span>
-        <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7)" id="obFedTax">$11,469</span>
+        <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7)" id="obFedTax">—</span>
       </div>
       <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid rgba(255,255,255,.1)">
-        <span style="font-size:12px;color:rgba(255,255,255,.4)" id="obStateLbl">State tax (PR)</span>
-        <span style="font-size:13px;font-weight:700;color:var(--green)" id="obStateTax">$0</span>
+        <span style="font-size:12px;color:rgba(255,255,255,.4)" id="obStateLbl">State tax</span>
+        <span style="font-size:13px;font-weight:700;color:var(--green)" id="obStateTax">—</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid rgba(255,255,255,.1)">
+        <span style="font-size:12px;color:rgba(255,255,255,.4)">QBI deduction savings</span>
+        <span style="font-size:13px;font-weight:700;color:var(--green)" id="obQBI">—</span>
+      </div>
+      <div id="obAlreadyPaid" style="display:none;justify-content:space-between;padding:6px 0;border-top:1px solid rgba(255,255,255,.1)">
+        <span style="font-size:12px;color:rgba(255,255,255,.4)">Already paid / withheld</span>
+        <span style="font-size:13px;font-weight:700;color:var(--green)" id="obPaidAmt">$0</span>
       </div>
       <div style="display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid rgba(245,158,11,.3);margin-top:4px">
-        <span style="font-size:13px;font-weight:700;color:var(--tax)">Save per quarter</span>
-        <span style="font-size:18px;font-weight:800;color:var(--tax)" id="obQuarterly">$6,258</span>
+        <span style="font-size:13px;font-weight:700;color:var(--tax)">Still owe per quarter</span>
+        <span style="font-size:18px;font-weight:800;color:var(--tax)" id="obQuarterly">—</span>
       </div>
     </div>
     <div style="font-size:10px;color:var(--muted);text-align:center;margin-bottom:16px">This is an estimate, not tax advice. Consult a licensed CPA.</div>
@@ -897,14 +926,20 @@ function obNext(s){
 let obFiling='single',obState='',obW2=false,obW2Inc=0,obHomeOffice=false,obExpenses=0;
 function updSlider(v){obInc=parseInt(v);const d=obInc>=1000?'$'+(obInc/1000).toFixed(obInc%1000===0?0:1)+'k':'$'+obInc;document.getElementById('slDisp').textContent=d}
 function selFiling(el,val){el.closest('.tos').querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');obFiling=val;calcObTax()}
-function selW2(el,val){el.closest('.tos').querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');obW2=val;calcObTax()}
+function selW2(el,val){el.closest('.tos').querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');obW2=val;document.getElementById('obW2Fields').style.display=val?'block':'none';calcObTax()}
 function selHomeOffice(el,val){el.closest('.tos').querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');obHomeOffice=val;calcObTax()}
 async function calcObTax(){
   obState=document.getElementById('obState').value;
+  if(!obState)return;
   obExpenses=parseInt(document.getElementById('obExpenses').value)||0;
   const annual=obInc*12,annualExp=obExpenses*12;
+  const w2Inc=parseInt(document.getElementById('obW2Inc').value)||0;
+  const w2With=parseInt(document.getElementById('obW2With').value)||0;
+  const credits=parseInt(document.getElementById('obCredits').value)||0;
+  const priorPay=parseInt(document.getElementById('obPriorPay').value)||0;
   try{
-    const r=await fetch(API+'/api/tax/calculate-detailed?annual_income='+annual+'&filing_status='+obFiling+'&state='+obState+'&annual_expenses='+annualExp+'&home_office='+obHomeOffice+'&w2_income='+(obW2?30000:0));
+    const params=new URLSearchParams({annual_income:annual,filing_status:obFiling,state:obState,annual_expenses:annualExp,home_office:obHomeOffice,w2_income:w2Inc,w2_withholding:w2With,tax_credits:credits,prior_payments:priorPay});
+    const r=await fetch(API+'/api/tax/calculate-detailed?'+params);
     const d=await r.json();
     obRate=d.effective_rate/100;obRateLbl=d.effective_rate+'%';obTaxPct=Math.round(d.effective_rate);
     document.getElementById('obEffRate').textContent=d.effective_rate+'%';
@@ -913,6 +948,10 @@ async function calcObTax(){
     document.getElementById('obStateLbl').textContent='State tax ('+d.state+')';
     document.getElementById('obStateTax').textContent=d.no_state_tax?'$0 ✓':fmt(d.state_tax);
     document.getElementById('obStateTax').style.color=d.no_state_tax?'var(--green)':'rgba(255,255,255,.7)';
+    document.getElementById('obQBI').textContent='-'+fmt(d.breakdown.qbi_deduction);
+    const alreadyPaid=d.already_paid||0;
+    if(alreadyPaid>0){document.getElementById('obAlreadyPaid').style.display='flex';document.getElementById('obPaidAmt').textContent='-'+fmt(alreadyPaid)}
+    else{document.getElementById('obAlreadyPaid').style.display='none'}
     document.getElementById('obQuarterly').textContent=fmt(d.quarterly_payment);
   }catch(e){}
 }

@@ -247,8 +247,9 @@ STATE_TAX_RATES = {
 
 @app.get("/api/tax/calculate-detailed")
 def calculate_tax_detailed(
-    annual_income: float, filing_status: str = "single", state: str = "PR",
-    annual_expenses: float = 0, home_office: bool = False, w2_income: float = 0
+    annual_income: float, filing_status: str = "single", state: str = "TX",
+    annual_expenses: float = 0, home_office: bool = False, w2_income: float = 0,
+    w2_withholding: float = 0, tax_credits: float = 0, prior_payments: float = 0
 ):
     # Business deductions
     home_office_deduction = 1500 if home_office else 0
@@ -260,6 +261,14 @@ def calculate_tax_detailed(
     se_tax = round(se_taxable * 0.153, 2)
     se_deduction = round(se_tax / 2, 2)
 
+    # QBI deduction — 20% of qualified business income (simplified)
+    # Phase-out starts at $191,950 single / $383,900 married
+    qbi_limit = 191950 if filing_status == "single" else 383900
+    if net_se_income <= qbi_limit:
+        qbi_deduction = round(net_se_income * 0.20, 2)
+    else:
+        qbi_deduction = round(qbi_limit * 0.20, 2)
+
     # AGI includes both SE and W-2
     total_income = net_se_income + w2_income
     agi = total_income - se_deduction
@@ -267,25 +276,42 @@ def calculate_tax_detailed(
     # Standard deduction based on filing status
     std_ded = {"single": 14600, "married": 29200, "head": 21900}
     standard_deduction = std_ded.get(filing_status, 14600)
-    taxable_income = max(agi - standard_deduction, 0)
+
+    # Taxable income after standard deduction + QBI
+    taxable_income = max(agi - standard_deduction - qbi_deduction, 0)
 
     federal_tax = calc_federal_tax(taxable_income)
 
-    # State tax (all 50 states + DC + PR)
+    # Apply tax credits (reduce tax dollar-for-dollar)
+    federal_tax = max(federal_tax - tax_credits, 0)
+
+    # State tax (all 50 states + DC)
     state_rate = STATE_TAX_RATES.get(state.upper(), 0.05)
     state_tax = round(taxable_income * state_rate, 2)
     no_state_tax = state_rate == 0
 
+    # Total tax before credits/payments
     total_tax = round(se_tax + federal_tax + state_tax, 2)
+
+    # What's still owed after withholdings and prior payments
+    already_paid = w2_withholding + prior_payments
+    remaining_owed = max(total_tax - already_paid, 0)
+
     effective_rate = round((total_tax / (annual_income + w2_income)) * 100, 1) if (annual_income + w2_income) > 0 else 0
-    quarterly = round(total_tax / 4, 2)
+    quarterly = round(remaining_owed / 4, 2)
+
+    # Tax savings from deductions
+    total_savings = round(total_deductions + qbi_deduction + standard_deduction, 2)
+
     return {
         "annual_income": annual_income,
         "self_employment_tax": se_tax,
-        "federal_income_tax": federal_tax,
+        "federal_income_tax": round(federal_tax, 2),
         "state_tax": state_tax,
         "state": state.upper(),
         "total_estimated_tax": total_tax,
+        "already_paid": already_paid,
+        "remaining_owed": round(remaining_owed, 2),
         "effective_rate": effective_rate,
         "quarterly_payment": quarterly,
         "quarterly_schedule": [
@@ -301,9 +327,14 @@ def calculate_tax_detailed(
             "home_office_deduction": home_office_deduction,
             "net_se_income": round(net_se_income, 2),
             "se_tax_deduction": se_deduction,
+            "qbi_deduction": qbi_deduction,
             "agi": round(agi, 2),
             "standard_deduction": standard_deduction,
-            "taxable_income": round(taxable_income, 2)
+            "taxable_income": round(taxable_income, 2),
+            "tax_credits_applied": tax_credits,
+            "w2_withholding": w2_withholding,
+            "prior_quarterly_payments": prior_payments,
+            "total_deduction_savings": total_savings
         },
         "no_state_tax": no_state_tax,
         "state_rate_pct": round(state_rate * 100, 1),
