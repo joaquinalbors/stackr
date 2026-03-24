@@ -615,6 +615,22 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
     <div class="ab" onclick="openModal('taxMod')"><div class="abic">🧮</div><div class="abl">Tax Calc</div></div>
     <div class="ab" onclick="showScreen('invest')"><div class="abic">📈</div><div class="abl">Invest</div></div>
   </div>
+  <div style="margin:0 16px 16px;background:var(--surface);border-radius:var(--r);padding:16px;cursor:pointer" onclick="openModal('splitMod')">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:13px;font-weight:700">Income Split</span>
+      <span style="font-size:12px;color:var(--accent);font-weight:600">Adjust →</span>
+    </div>
+    <div style="display:flex;height:10px;border-radius:99px;overflow:hidden;margin-bottom:10px">
+      <div style="background:var(--tax);width:28%" id="hSplitTax"></div>
+      <div style="background:var(--accent);width:10%" id="hSplitInv"></div>
+      <div style="background:var(--green);width:62%" id="hSplitSpend"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px">
+      <span style="color:var(--tax);font-weight:700">🔒 Tax <span id="hSplitTaxPct">28</span>%</span>
+      <span style="color:var(--accent);font-weight:700">📈 Invest <span id="hSplitInvPct">10</span>%</span>
+      <span style="color:var(--green);font-weight:700">💰 Spend <span id="hSplitSpendPct">62</span>%</span>
+    </div>
+  </div>
   <div class="alert alert-y" id="taxAlert">
     <div class="adot"></div>
     <div class="atxt">Q1 taxes due Apr 15<span class="asub" id="taxSF">$1,380 short in your vault</span></div>
@@ -886,6 +902,18 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   </div>
 </div>
 
+<div class="mo" id="splitMod" onclick="closeBg(event,'splitMod')">
+  <div class="modal"><div class="mh"></div><div class="mt">Income Split Simulator</div><div class="ms">See how your next payment gets divided automatically.</div>
+    <div class="field"><label>Payment amount</label><input type="number" id="simAmount" value="5000" oninput="runSplitSim()" style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;width:100%;color:var(--text)"></div>
+    <div class="field"><label>Platform</label><select id="simPlatform" onchange="runSplitSim()" style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;width:100%;color:var(--text)">
+      <option>YouTube</option><option>TikTok</option><option>Instagram</option><option>Brand Deal</option><option>Patreon</option><option>Twitch</option><option>Merch</option><option>Other</option>
+    </select></div>
+    <div id="simResult" style="margin-bottom:16px"></div>
+    <div style="font-size:10px;color:var(--muted);text-align:center;margin-bottom:16px">Funds held by Stripe Treasury. Investments managed by DriveWealth. Apexa does not hold funds.</div>
+    <button class="btn btn-p" onclick="closeModal('splitMod')">Done</button>
+  </div>
+</div>
+
 <div class="mo" id="priceMod" onclick="closeBg(event,'priceMod')">
   <div class="modal"><div class="mh"></div><div class="mt">Choose your plan</div><div class="ms">All plans include a 7-day free trial.</div>
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
@@ -1019,7 +1047,7 @@ function updSum(){
   document.getElementById('sumVault').textContent=fmt(taxAmt);document.getElementById('sumInvest').textContent=fmt(invAmt);
   document.getElementById('sumSpend').textContent=fmt(spAmt);document.getElementById('sumRisk').textContent=rqProfileName;
 }
-function enterApp(){document.getElementById('bnav').style.display='flex';showScreen('home');loadAll();loadLinkedAccounts()}
+function enterApp(){document.getElementById('bnav').style.display='flex';showScreen('home');loadAll();loadLinkedAccounts();updHomeSplit()}
 
 // NAV
 function showScreen(n){
@@ -1033,7 +1061,7 @@ function showScreen(n){
 }
 
 // MODALS
-function openModal(id){document.getElementById(id).classList.add('open')}
+function openModal(id){document.getElementById(id).classList.add('open');if(id==='splitMod')runSplitSim()}
 function closeModal(id){document.getElementById(id).classList.remove('open')}
 function closeBg(e,id){if(e.target===document.getElementById(id))closeModal(id)}
 
@@ -1229,6 +1257,47 @@ function updPlaidProfile(connected){
   if(!el)return;
   if(connected){el.className='svst svst-c';el.textContent='● Live';el.style.cursor='default';el.onclick=null}
   else{el.className='svst svst-p';el.textContent='Connect';el.style.cursor='pointer';el.onclick=()=>openPlaidLink()}
+}
+
+// INCOME SPLIT
+function updHomeSplit(){
+  const tp=obTaxPct||28,ip=obInvPct||10,sp=100-tp-ip;
+  document.getElementById('hSplitTax').style.width=tp+'%';
+  document.getElementById('hSplitInv').style.width=ip+'%';
+  document.getElementById('hSplitSpend').style.width=sp+'%';
+  document.getElementById('hSplitTaxPct').textContent=tp;
+  document.getElementById('hSplitInvPct').textContent=ip;
+  document.getElementById('hSplitSpendPct').textContent=sp;
+}
+async function runSplitSim(){
+  const amt=parseFloat(document.getElementById('simAmount').value)||0;
+  const plat=document.getElementById('simPlatform').value;
+  const tp=obTaxPct||28,ip=obInvPct||10,sp=100-tp-ip;
+  const tax=Math.round(amt*tp/100),inv=Math.round(amt*ip/100),spend=amt-tax-inv;
+  document.getElementById('simResult').innerHTML=`
+    <div style="background:var(--surface);border-radius:var(--rs);padding:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:12px">${plat.toUpperCase()} PAYMENT — ${fmt(amt)}</div>
+      <div style="display:flex;height:12px;border-radius:99px;overflow:hidden;margin-bottom:14px">
+        <div style="background:var(--tax);width:${tp}%;transition:width .3s"></div>
+        <div style="background:var(--accent);width:${ip}%;transition:width .3s"></div>
+        <div style="background:var(--green);width:${sp}%;transition:width .3s"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:18px">🔒</span>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">Tax Vault</div><div style="font-size:11px;color:var(--muted)">Stripe Treasury · ${tp}%</div></div>
+        <span style="font-size:16px;font-weight:800;color:var(--tax)">${fmt(tax)}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:18px">📈</span>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">Investments</div><div style="font-size:11px;color:var(--muted)">DriveWealth · ${ip}%</div></div>
+        <span style="font-size:16px;font-weight:800;color:var(--accent)">${fmt(inv)}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0">
+        <span style="font-size:18px">💰</span>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">Yours to Spend</div><div style="font-size:11px;color:var(--muted)">Available balance · ${sp}%</div></div>
+        <span style="font-size:16px;font-weight:800;color:var(--green)">${fmt(spend)}</span>
+      </div>
+    </div>`;
 }
 
 // INVEST VIA ALPACA
