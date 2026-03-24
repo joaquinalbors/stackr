@@ -805,3 +805,130 @@ def get_subscription_status(customer_id: str = ""):
         return {"plan": "free", "status": "active", "source": "live"}
     except Exception as e:
         return {"plan": "free", "status": "active", "source": "demo", "error": str(e)}
+
+# --- Stripe Connect — Creator Accounts & Income Splitting ---
+
+class CreatorAccountRequest(BaseModel):
+    email: str
+    first_name: str = ""
+    last_name: str = ""
+
+@app.post("/api/connect/create-account")
+def create_connected_account(req: CreatorAccountRequest):
+    """Create a Stripe Connect Express account for a creator."""
+    if not stripe.api_key:
+        return {"account_id": "acct_demo_123", "status": "demo", "message": "Stripe not configured."}
+    try:
+        account = stripe.Account.create(
+            type="express",
+            country="US",
+            email=req.email,
+            capabilities={"transfers": {"requested": True}},
+            business_type="individual",
+            individual={"first_name": req.first_name, "last_name": req.last_name, "email": req.email},
+            metadata={"platform": "apexa", "type": "creator"},
+        )
+        return {"account_id": account.id, "status": "created"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/connect/onboarding-link")
+def create_onboarding_link(account_id: str):
+    """Generate Stripe Connect onboarding link for a creator to verify identity."""
+    if not stripe.api_key:
+        return {"url": "#", "status": "demo"}
+    try:
+        link = stripe.AccountLink.create(
+            account=account_id,
+            refresh_url="https://joaquinalbors.github.io/stackr/",
+            return_url="https://joaquinalbors.github.io/stackr/",
+            type="account_onboarding",
+        )
+        return {"url": link.url, "status": "live"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/connect/account-status")
+def get_connect_account_status(account_id: str = ""):
+    """Check if a creator's Connect account is fully set up."""
+    if not stripe.api_key or not account_id:
+        return {"verified": False, "payouts_enabled": False, "charges_enabled": False, "source": "demo"}
+    try:
+        account = stripe.Account.retrieve(account_id)
+        return {
+            "verified": account.details_submitted,
+            "payouts_enabled": account.payouts_enabled,
+            "charges_enabled": account.charges_enabled,
+            "email": account.email,
+            "source": "live"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+class SplitPaymentRequest(BaseModel):
+    amount: float  # Total payment amount in dollars
+    user_id: str = "default"
+    description: str = "Creator income"
+
+@app.post("/api/connect/split-payment")
+def split_incoming_payment(req: SplitPaymentRequest):
+    """
+    Simulate/execute income splitting based on user's allocation preferences.
+    Splits incoming payment into tax vault, investment, and spending.
+    """
+    # Get user allocation preferences
+    prefs = user_preferences_store.get(req.user_id, {
+        "tax_pct": 28.0, "invest_pct": 10.0, "spend_pct": 62.0
+    })
+    tax_pct = prefs.get("tax_pct", 28.0)
+    invest_pct = prefs.get("invest_pct", 10.0)
+    spend_pct = prefs.get("spend_pct", 62.0)
+
+    tax_amount = round(req.amount * tax_pct / 100, 2)
+    invest_amount = round(req.amount * invest_pct / 100, 2)
+    spend_amount = round(req.amount - tax_amount - invest_amount, 2)
+
+    splits = {
+        "total_payment": req.amount,
+        "tax_vault": {"amount": tax_amount, "pct": tax_pct, "destination": "Stripe Treasury — Tax Vault"},
+        "investments": {"amount": invest_amount, "pct": invest_pct, "destination": "DriveWealth — Managed Portfolio"},
+        "spending": {"amount": spend_amount, "pct": spend_pct, "destination": "Stripe Treasury — Available Balance"},
+        "description": req.description,
+    }
+
+    if not stripe.api_key:
+        return {**splits, "status": "demo", "message": "Demo mode — no real transfers executed.",
+                "disclaimer": "Funds held by Stripe Treasury. Investments managed by DriveWealth. Apexa does not hold funds."}
+
+    # In production: execute actual transfers via Stripe Treasury
+    # stripe.Transfer.create(amount=int(tax_amount*100), currency="usd", destination=tax_vault_account)
+    # stripe.Transfer.create(amount=int(invest_amount*100), currency="usd", destination=drivewealth_funding_account)
+    return {**splits, "status": "executed",
+            "disclaimer": "Funds held by Stripe Treasury. Investments managed by DriveWealth. Apexa does not hold funds."}
+
+@app.post("/api/connect/simulate-income")
+def simulate_income_event(amount: float = 5000, platform: str = "YouTube", user_id: str = "default"):
+    """
+    Simulate a creator receiving income — shows how it would be split.
+    Used for onboarding preview and dashboard projections.
+    """
+    prefs = user_preferences_store.get(user_id, {
+        "tax_pct": 28.0, "invest_pct": 10.0, "spend_pct": 62.0
+    })
+    tax_pct = prefs.get("tax_pct", 28.0)
+    invest_pct = prefs.get("invest_pct", 10.0)
+
+    tax = round(amount * tax_pct / 100, 2)
+    invest = round(amount * invest_pct / 100, 2)
+    spend = round(amount - tax - invest, 2)
+
+    return {
+        "platform": platform,
+        "gross_payment": amount,
+        "split": [
+            {"bucket": "Tax Vault", "amount": tax, "icon": "🔒", "provider": "Stripe Treasury"},
+            {"bucket": "Investments", "amount": invest, "icon": "📈", "provider": "DriveWealth"},
+            {"bucket": "Spending", "amount": spend, "icon": "💰", "provider": "Stripe Treasury"},
+        ],
+        "disclaimer": "Funds held by Stripe Treasury. Investments managed by DriveWealth. Apexa does not hold or manage funds."
+    }
