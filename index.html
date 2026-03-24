@@ -689,7 +689,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
 
 <!-- INVESTING -->
 <div class="screen" id="screen-invest">
-  <div class="topbar"><div class="page-title">Investing</div><button class="btn btn-p" style="width:auto;padding:8px 16px;font-size:13px" onclick="openModal('invMod')">+ Invest</button></div>
+  <div class="topbar"><div class="page-title">Investing</div><button class="btn btn-p" style="width:auto;padding:8px 16px;font-size:13px" onclick="openInvModal()">+ Invest</button></div>
   <div class="ph">
     <div class="phl">Portfolio Value</div>
     <div class="phv" id="invVal">$11,240</div>
@@ -734,6 +734,14 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
     <div style="background:var(--green-light);border:1.5px solid rgba(0,200,83,.2);border-radius:var(--rs);padding:16px;margin-bottom:12px">
       <div style="font-size:13px;font-weight:700;margin-bottom:4px">🎉 No state income tax</div>
       <div style="font-size:12px;color:var(--muted);line-height:1.5">You only owe federal taxes. Effective rate: 28% based on your bracket.</div>
+    </div>
+  </div>
+  <div class="sh"><div class="st">Deduction Finder</div><div class="sa" onclick="loadDeductions()">Scan →</div></div>
+  <div id="deductionsList" style="padding:0 16px 20px">
+    <div style="background:var(--surface);border:1.5px dashed var(--border);border-radius:var(--rs);padding:20px;text-align:center;cursor:pointer" onclick="loadDeductions()">
+      <div style="font-size:24px;margin-bottom:8px">🔍</div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:4px">Scan for deductions</div>
+      <div style="font-size:12px;color:var(--muted)">We'll check your transactions for potential write-offs</div>
     </div>
   </div>
   <div style="padding:0 16px 20px;display:flex;flex-direction:column;gap:10px">
@@ -866,14 +874,15 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
 </div>
 
 <div class="mo" id="invMod" onclick="closeBg(event,'invMod')">
-  <div class="modal"><div class="mh"></div><div class="mt">Invest Now</div><div class="ms">Funds go to your Alpaca portfolio based on your allocation.</div>
-    <div class="field"><label>Amount</label><input type="text" placeholder="$0.00"></div>
-    <div class="field"><label>Strategy</label><select><option>My allocation (50% SPY · 30% QQQ · 20% JEPI)</option><option>All SPY — S&P 500</option><option>All QQQ — Nasdaq 100</option><option>Custom split</option></select></div>
-    <div style="background:var(--accent-light);border-radius:var(--rs);padding:14px;margin-bottom:16px">
-      <div style="font-size:13px;font-weight:700;color:var(--accent)">Auto-invest is ON</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:4px">$500 invested automatically on the 1st of every month.</div>
+  <div class="modal"><div class="mh"></div><div class="mt">Invest Now</div><div class="ms">Funds allocated based on your risk profile via Alpaca.</div>
+    <div class="field"><label>Amount to invest</label><input type="number" id="invAmount" placeholder="500" value="500" style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;width:100%;color:var(--text)"></div>
+    <div id="invPreview" style="background:var(--surface);border-radius:var(--rs);padding:14px;margin-bottom:16px"></div>
+    <div id="invResult" style="display:none;background:var(--green-light);border-radius:var(--rs);padding:14px;margin-bottom:16px;text-align:center">
+      <div style="font-size:18px;margin-bottom:4px">✅</div>
+      <div style="font-size:14px;font-weight:700;color:var(--green)" id="invResultMsg">Orders submitted!</div>
     </div>
-    <button class="btn btn-p" onclick="closeModal('invMod')">Invest Now →</button>
+    <button class="btn btn-p" id="invBtn" onclick="executeInvest()">Invest Now →</button>
+    <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:8px">Trades executed by Alpaca Securities LLC, member FINRA/SIPC.</div>
   </div>
 </div>
 
@@ -894,7 +903,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
         <div style="font-size:12px;color:var(--muted);line-height:1.6">Everything in Pro + Tax filing via CPA (Taxfyle) · Priority support · Custom portfolio strategies · Expense tracking · Deduction finder</div>
       </div>
     </div>
-    <button class="btn btn-p" onclick="closeModal('priceMod')">Start Free Trial →</button>
+    <button class="btn btn-p" id="priceBtn" onclick="subscribePlan()">Start Free Trial →</button>
     <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:10px">Cancel anytime. No credit card required for free plan.</div>
   </div>
 </div>
@@ -1220,6 +1229,67 @@ function updPlaidProfile(connected){
   if(!el)return;
   if(connected){el.className='svst svst-c';el.textContent='● Live';el.style.cursor='default';el.onclick=null}
   else{el.className='svst svst-p';el.textContent='Connect';el.style.cursor='pointer';el.onclick=()=>openPlaidLink()}
+}
+
+// INVEST VIA ALPACA
+async function executeInvest(){
+  const amt=parseFloat(document.getElementById('invAmount').value)||500;
+  const btn=document.getElementById('invBtn');
+  btn.textContent='Investing...';btn.disabled=true;
+  try{
+    const r=await fetch(API+'/api/alpaca/rebalance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({risk_score:5,total_amount:amt})});
+    const d=await r.json();
+    document.getElementById('invResult').style.display='block';
+    document.getElementById('invResultMsg').textContent=d.orders.map(o=>o.ticker+' $'+o.amount).join(' · ');
+    btn.textContent='✓ Invested';btn.style.background='var(--green)';
+  }catch(e){btn.textContent='Invest Now →';btn.disabled=false}
+}
+function openInvModal(){
+  document.getElementById('invResult').style.display='none';
+  document.getElementById('invBtn').textContent='Invest Now →';document.getElementById('invBtn').disabled=false;
+  document.getElementById('invBtn').style.background='var(--accent)';
+  // Show preview
+  fetch(API+'/api/alpaca/model-portfolio?risk_score=5').then(r=>r.json()).then(d=>{
+    document.getElementById('invPreview').innerHTML='<div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">'+d.name.toUpperCase()+' PORTFOLIO</div>'+
+      d.allocations.map(a=>'<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:13px"><span>'+a.ticker+'</span><span style="font-weight:700">'+a.pct+'%</span></div>').join('');
+  }).catch(()=>{});
+  openModal('invMod');
+}
+
+// STRIPE SUBSCRIPTIONS
+let selectedPlan='pro';
+function subscribePlan(){
+  const btn=document.getElementById('priceBtn');
+  btn.textContent='Redirecting...';btn.disabled=true;
+  fetch(API+'/api/stripe/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan:selectedPlan})})
+    .then(r=>r.json()).then(d=>{
+      if(d.url&&d.url!=='#'){window.open(d.url,'_blank')}
+      else{alert(d.message||'Stripe not configured yet. Coming soon!')}
+      btn.textContent='Start Free Trial →';btn.disabled=false;
+    }).catch(()=>{btn.textContent='Start Free Trial →';btn.disabled=false});
+}
+
+// DEDUCTION FINDER
+async function loadDeductions(){
+  const el=document.getElementById('deductionsList');
+  el.innerHTML='<div style="text-align:center;padding:20px"><div style="font-size:24px;animation:pulse 1.5s infinite">🔍</div><div style="font-size:13px;font-weight:700;margin-top:8px">Scanning transactions...</div></div>';
+  try{
+    const r=await fetch(API+'/api/plaid/deduction-summary');
+    const d=await r.json();
+    if(d.categories.length===0){el.innerHTML='<div style="text-align:center;padding:20px;font-size:13px;color:var(--muted)">No deductions found. Link your bank to scan real transactions.</div>';return}
+    el.innerHTML=
+      '<div style="background:var(--green-light);border:1.5px solid rgba(0,200,83,.2);border-radius:var(--rs);padding:16px;margin-bottom:12px">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:700">Found deductions</span><span style="font-size:20px;font-weight:800;color:var(--green)">'+fmt(d.total_deductible)+'</span></div>'+
+        '<div style="font-size:12px;color:var(--muted);margin-top:4px">Estimated tax savings: <strong style="color:var(--green)">'+fmt(d.estimated_tax_savings)+'</strong></div>'+
+      '</div>'+
+      d.categories.map(c=>
+        '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">'+
+          '<div><div style="font-size:13px;font-weight:700">'+c.category+'</div><div style="font-size:11px;color:var(--muted)">'+c.count+' transaction'+(c.count>1?'s':'')+'</div></div>'+
+          '<span style="font-size:14px;font-weight:800">'+fmt(c.total)+'</span>'+
+        '</div>'
+      ).join('')+
+      '<div style="font-size:10px;color:var(--muted);margin-top:10px;text-align:center">'+d.disclaimer+'</div>';
+  }catch(e){el.innerHTML='<div style="padding:20px;text-align:center;font-size:13px;color:var(--muted)">Could not load deductions.</div>'}
 }
 
 // PWA
