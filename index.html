@@ -605,25 +605,26 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
     </div>
   </div>
   <div class="bh">
-    <div class="bl">Money in your account</div>
+    <div class="bl">Total Net Worth</div>
     <div class="ba" id="hBal">$24,830</div>
     <span class="pill pill-g" id="hChg">↑ +$8,340 this month</span>
   </div>
   <div class="acts">
     <div class="ab" onclick="openModal('sendMod')"><div class="abic">↗️</div><div class="abl">Send</div></div>
     <div class="ab" onclick="openModal('recvMod')"><div class="abic">↙️</div><div class="abl">Receive</div></div>
-    <div class="ab" onclick="openModal('taxMod')"><div class="abic">🧮</div><div class="abl">Tax Calc</div></div>
-    <div class="ab" onclick="showScreen('invest')"><div class="abic">📈</div><div class="abl">Invest</div></div>
+    <div class="ab" onclick="openModal('splitMod')"><div class="abic">⚡</div><div class="abl">Split</div></div>
+    <div class="ab" onclick="openInvModal()"><div class="abic">📈</div><div class="abl">Invest</div></div>
   </div>
+  <!-- Income Split Bar -->
   <div style="margin:0 16px 16px;background:var(--surface);border-radius:var(--r);padding:16px;cursor:pointer" onclick="openModal('splitMod')">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <span style="font-size:13px;font-weight:700">Income Split</span>
-      <span style="font-size:12px;color:var(--accent);font-weight:600">Adjust →</span>
+      <span style="font-size:12px;color:var(--accent);font-weight:600">Simulate →</span>
     </div>
     <div style="display:flex;height:10px;border-radius:99px;overflow:hidden;margin-bottom:10px">
-      <div style="background:var(--tax);width:28%" id="hSplitTax"></div>
-      <div style="background:var(--accent);width:10%" id="hSplitInv"></div>
-      <div style="background:var(--green);width:62%" id="hSplitSpend"></div>
+      <div style="background:var(--tax);width:28%;transition:width .3s" id="hSplitTax"></div>
+      <div style="background:var(--accent);width:10%;transition:width .3s" id="hSplitInv"></div>
+      <div style="background:var(--green);width:62%;transition:width .3s" id="hSplitSpend"></div>
     </div>
     <div style="display:flex;justify-content:space-between;font-size:11px">
       <span style="color:var(--tax);font-weight:700">🔒 Tax <span id="hSplitTaxPct">28</span>%</span>
@@ -631,13 +632,16 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
       <span style="color:var(--green);font-weight:700">💰 Spend <span id="hSplitSpendPct">62</span>%</span>
     </div>
   </div>
+  <!-- Tax Alert -->
   <div class="alert alert-y" id="taxAlert">
     <div class="adot"></div>
     <div class="atxt">Q1 taxes due Apr 15<span class="asub" id="taxSF">$1,380 short in your vault</span></div>
     <button class="acta" onclick="showScreen('taxes')">Fix it</button>
   </div>
+  <!-- Account Cards -->
+  <div class="sh" style="padding-top:4px"><div class="st">Your Accounts</div></div>
   <div class="mc mc-p" onclick="showScreen('banking')">
-    <div class="cl"><div class="ci ci-p">💳</div><div><div class="ct">Balance</div><div class="cs">Stripe Treasury</div></div></div>
+    <div class="cl"><div class="ci ci-p">💳</div><div><div class="ct">Spending</div><div class="cs">via Stripe Treasury</div></div></div>
     <div class="ca"><div class="cv cv-p" id="cBal">$24,830</div><div class="carrow">›</div></div>
   </div>
   <div class="mc mc-y" onclick="showScreen('taxes')">
@@ -645,7 +649,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
     <div class="ca"><div class="cv cv-y" id="cTax">$4,820</div><div class="carrow">›</div></div>
   </div>
   <div class="mc mc-g" onclick="showScreen('invest')">
-    <div class="cl"><div class="ci ci-g">📈</div><div><div class="ct">Investments</div><div class="cs">Alpaca · +3.2% this week</div></div></div>
+    <div class="cl"><div class="ci ci-g">📈</div><div><div class="ct">Investments</div><div class="cs">Managed Portfolio · +3.2%</div></div></div>
     <div class="ca"><div class="cv cv-g" id="cInv">$11,240</div><div class="carrow">›</div></div>
   </div>
   <div id="homePlaid" style="display:none;margin:0 16px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:18px 20px;cursor:pointer" onclick="showScreen('banking')">
@@ -663,10 +667,22 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
     <div style="font-size:13px;font-weight:700;color:var(--accent)">🏦 Link your bank account</div>
     <div style="font-size:11px;color:var(--muted);margin-top:4px">See all your money in one place</div>
   </div>
-  <div style="height:16px"></div>
+  <!-- Upgrade CTA -->
+  <div style="margin:12px 16px 16px;background:linear-gradient(135deg,#1e1040,#2d1b69);border-radius:var(--r);padding:18px;cursor:pointer;position:relative;overflow:hidden" onclick="openModal('priceMod')" id="upgradeCard">
+    <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(124,58,237,.2)"></div>
+    <div style="display:flex;align-items:center;gap:12px;position:relative;z-index:1">
+      <div style="font-size:28px">⭐</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:2px">Unlock Apexa Pro</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5)">Auto-invest, tax vault alerts, bank linking — $9.99/mo</div>
+      </div>
+      <div style="background:var(--accent);color:#fff;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:700">Upgrade</div>
+    </div>
+  </div>
+  <div style="height:8px"></div>
   <div class="sh"><div class="st">Recent Activity</div><div class="sa" onclick="showScreen('banking')">See all →</div></div>
   <div class="al" id="hAct"></div>
-  <div class="discl">Banking by Stripe Treasury. Investments by Alpaca Securities LLC, member FINRA/SIPC. Tax estimates are not tax advice.</div>
+  <div class="discl">Banking by Stripe Treasury. Investments managed by your chosen robo-advisor. Tax estimates are not tax advice.</div>
 </div>
 
 <!-- BANKING -->
