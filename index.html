@@ -330,17 +330,87 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
 
   <div class="obs" id="ob3">
     <div class="obtag">Step 03 / 08</div>
-    <div class="obtit">Your income & tax setup</div>
-    <div class="obsub">We'll auto-save the right % from every payment so you're never surprised at tax time.</div>
-    <div class="slv" id="slDisp">$8,000 / mo</div>
-    <input type="range" min="1000" max="100000" step="1000" value="8000" oninput="updSlider(this.value)">
-    <div class="sll"><span>$1k</span><span>Average monthly income</span><span>$100k+</span></div>
-    <div class="tos">
-      <div class="to" onclick="selTax(this,'22%',.22)"><div class="tor">22%</div><div class="tod">Under $89k/yr</div></div>
-      <div class="to sel" onclick="selTax(this,'28%',.28)"><div class="tor">28%</div><div class="tod">$89k–$190k</div></div>
-      <div class="to" onclick="selTax(this,'35%',.35)"><div class="tor">35%</div><div class="tod">$190k+/yr</div></div>
+    <div class="obtit">Your tax profile</div>
+    <div class="obsub">We'll estimate your taxes so you never get surprised.</div>
+
+    <div class="field"><label>Monthly creator income</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="slv" id="slDisp" style="font-size:28px;margin:0;flex-shrink:0">$8,000</div>
+        <span style="font-size:13px;color:var(--muted)">/mo</span>
+      </div>
+      <input type="range" min="1000" max="100000" step="1000" value="8000" oninput="updSlider(this.value);calcObTax()" style="margin-top:8px">
     </div>
-    <div class="vp"><div class="vpt">🔒 Auto-saving <span id="vaultPrev" style="color:var(--accent)">$2,240</span> / month to your Tax Vault</div><div class="vps">Every payment is split automatically. You'll never owe a surprise tax bill again.</div></div>
+
+    <div class="field"><label>Filing status</label>
+      <div class="tos" style="grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <div class="to sel" onclick="selFiling(this,'single')"><div class="tor" style="font-size:13px">👤</div><div class="tod">Single</div></div>
+        <div class="to" onclick="selFiling(this,'married')"><div class="tor" style="font-size:13px">👫</div><div class="tod">Married</div></div>
+        <div class="to" onclick="selFiling(this,'head')"><div class="tor" style="font-size:13px">🏠</div><div class="tod">Head of household</div></div>
+      </div>
+    </div>
+
+    <div class="field"><label>State</label>
+      <select id="obState" onchange="calcObTax()" style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;width:100%;color:var(--text);appearance:none">
+        <option value="AL">Alabama</option><option value="AK">Alaska (no state tax)</option><option value="AZ">Arizona</option><option value="AR">Arkansas</option>
+        <option value="CA">California</option><option value="CO">Colorado</option><option value="CT">Connecticut</option><option value="DE">Delaware</option>
+        <option value="FL">Florida (no state tax)</option><option value="GA">Georgia</option><option value="HI">Hawaii</option><option value="ID">Idaho</option>
+        <option value="IL">Illinois</option><option value="IN">Indiana</option><option value="IA">Iowa</option><option value="KS">Kansas</option>
+        <option value="KY">Kentucky</option><option value="LA">Louisiana</option><option value="ME">Maine</option><option value="MD">Maryland</option>
+        <option value="MA">Massachusetts</option><option value="MI">Michigan</option><option value="MN">Minnesota</option><option value="MS">Mississippi</option>
+        <option value="MO">Missouri</option><option value="MT">Montana</option><option value="NE">Nebraska</option><option value="NV">Nevada (no state tax)</option>
+        <option value="NH">New Hampshire (no state tax)</option><option value="NJ">New Jersey</option><option value="NM">New Mexico</option><option value="NY">New York</option>
+        <option value="NC">North Carolina</option><option value="ND">North Dakota</option><option value="OH">Ohio</option><option value="OK">Oklahoma</option>
+        <option value="OR">Oregon</option><option value="PA">Pennsylvania</option><option value="PR" selected>Puerto Rico (no state tax)</option>
+        <option value="RI">Rhode Island</option><option value="SC">South Carolina</option><option value="SD">South Dakota (no state tax)</option>
+        <option value="TN">Tennessee (no state tax)</option><option value="TX">Texas (no state tax)</option><option value="UT">Utah</option>
+        <option value="VT">Vermont</option><option value="VA">Virginia</option><option value="WA">Washington (no state tax)</option>
+        <option value="WV">West Virginia</option><option value="WI">Wisconsin</option><option value="WY">Wyoming (no state tax)</option><option value="DC">Washington DC</option>
+      </select>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div class="field" style="margin:0"><label>W-2 job too?</label>
+        <div class="tos" style="grid-template-columns:1fr 1fr;gap:6px">
+          <div class="to sel" onclick="selW2(this,false)"><div class="tod">No</div></div>
+          <div class="to" onclick="selW2(this,true)"><div class="tod">Yes</div></div>
+        </div>
+      </div>
+      <div class="field" style="margin:0"><label>Home office?</label>
+        <div class="tos" style="grid-template-columns:1fr 1fr;gap:6px">
+          <div class="to sel" onclick="selHomeOffice(this,false)"><div class="tod">No</div></div>
+          <div class="to" onclick="selHomeOffice(this,true)"><div class="tod">Yes</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field"><label>Monthly business expenses (equipment, software, etc.)</label>
+      <input type="number" id="obExpenses" placeholder="$0" value="0" oninput="calcObTax()" style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;width:100%;color:var(--text)">
+    </div>
+
+    <div id="obTaxResult" style="background:linear-gradient(135deg,#1a0f00,#1a1400);border-radius:16px;padding:20px;margin-bottom:16px">
+      <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:6px">YOUR ESTIMATED TAX RATE</div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px">
+        <span style="font-size:36px;font-weight:800;color:var(--tax)" id="obEffRate">26.1%</span>
+        <span style="font-size:13px;color:rgba(255,255,255,.5)">effective rate</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid rgba(255,255,255,.1)">
+        <span style="font-size:12px;color:rgba(255,255,255,.4)">Self-employment tax</span>
+        <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7)" id="obSETax">$13,564</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid rgba(255,255,255,.1)">
+        <span style="font-size:12px;color:rgba(255,255,255,.4)">Federal income tax</span>
+        <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7)" id="obFedTax">$11,469</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid rgba(255,255,255,.1)">
+        <span style="font-size:12px;color:rgba(255,255,255,.4)" id="obStateLbl">State tax (PR)</span>
+        <span style="font-size:13px;font-weight:700;color:var(--green)" id="obStateTax">$0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid rgba(245,158,11,.3);margin-top:4px">
+        <span style="font-size:13px;font-weight:700;color:var(--tax)">Save per quarter</span>
+        <span style="font-size:18px;font-weight:800;color:var(--tax)" id="obQuarterly">$6,258</span>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--muted);text-align:center;margin-bottom:16px">This is an estimate, not tax advice. Consult a licensed CPA.</div>
     <button class="obbtn" onclick="obNext(4)">Continue →</button>
     <button class="obbtnb" onclick="obNext(2)">← Back</button>
   </div>
@@ -434,33 +504,25 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   <!-- Step 6: Terms & Legal -->
   <div class="obs" id="ob6">
     <div class="obtag">Step 06 / 08</div>
-    <div class="obtit">How Apexa works</div>
-    <div class="obsub">We connect you with licensed providers. Here's who does what.</div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
-      <div style="display:flex;align-items:flex-start;gap:14px;background:var(--surface);border-radius:14px;padding:14px">
-        <div style="font-size:22px;flex-shrink:0;margin-top:2px">🔌</div>
-        <div><div style="font-size:13px;font-weight:700;margin-bottom:3px">Apexa is the interface</div><div style="font-size:12px;color:var(--muted);line-height:1.5">We don't hold your money, manage investments, or give tax advice. We connect the tools.</div></div>
+    <div class="obtit">Quick legal stuff</div>
+    <div class="obsub">The important bits, in plain English.</div>
+    <div style="background:var(--surface);border-radius:16px;padding:20px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:18px">🔌</span>
+        <div style="flex:1;font-size:13px"><strong>Apexa is the dashboard</strong> — we don't hold money, manage investments, or give tax advice</div>
       </div>
-      <div style="display:flex;align-items:flex-start;gap:14px;background:var(--surface);border-radius:14px;padding:14px">
-        <div style="font-size:22px;flex-shrink:0;margin-top:2px">💳</div>
-        <div><div style="font-size:13px;font-weight:700;margin-bottom:3px">Banking → Stripe Treasury</div><div style="font-size:12px;color:var(--muted);line-height:1.5">Your funds are held by Stripe's FDIC-insured partner banks.</div></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:18px">💳</span>
+        <div style="flex:1;font-size:13px"><strong>Funds held by</strong> Stripe Treasury (FDIC insured) · Trades by Alpaca (FINRA/SIPC)</div>
       </div>
-      <div style="display:flex;align-items:flex-start;gap:14px;background:var(--surface);border-radius:14px;padding:14px">
-        <div style="font-size:22px;flex-shrink:0;margin-top:2px">📈</div>
-        <div><div style="font-size:13px;font-weight:700;margin-bottom:3px">Investing → Alpaca Securities</div><div style="font-size:12px;color:var(--muted);line-height:1.5">Trades executed by Alpaca Securities LLC, member FINRA/SIPC.</div></div>
-      </div>
-      <div style="display:flex;align-items:flex-start;gap:14px;background:var(--surface);border-radius:14px;padding:14px">
-        <div style="font-size:22px;flex-shrink:0;margin-top:2px">🧮</div>
-        <div><div style="font-size:13px;font-weight:700;margin-bottom:3px">Taxes → Estimates only</div><div style="font-size:12px;color:var(--muted);line-height:1.5">Our calculations are not tax advice. Always consult a licensed CPA.</div></div>
-      </div>
-      <div style="display:flex;align-items:flex-start;gap:14px;background:var(--surface);border-radius:14px;padding:14px">
-        <div style="font-size:22px;flex-shrink:0;margin-top:2px">🏦</div>
-        <div><div style="font-size:13px;font-weight:700;margin-bottom:3px">Bank linking → Plaid</div><div style="font-size:12px;color:var(--muted);line-height:1.5">256-bit encrypted. We never see your bank login credentials.</div></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0">
+        <span style="font-size:18px">🧮</span>
+        <div style="flex:1;font-size:13px"><strong>Tax estimates ≠ tax advice</strong> — always consult a licensed CPA for filing</div>
       </div>
     </div>
     <label style="display:flex;align-items:center;gap:12px;background:var(--accent-light);border-radius:14px;padding:16px;margin-bottom:20px;cursor:pointer">
       <input type="checkbox" id="tosCheck" onchange="document.getElementById('tosBtn').disabled=!this.checked;document.getElementById('tosBtn').style.opacity=this.checked?'1':'0.4'" style="width:22px;height:22px;accent-color:var(--accent);flex-shrink:0">
-      <span style="font-size:13px;font-weight:600;line-height:1.4">I understand and agree to the <span style="color:var(--accent)">Terms of Service</span> and <span style="color:var(--accent)">Privacy Policy</span></span>
+      <span style="font-size:13px;font-weight:600;line-height:1.4">I agree to the <span style="color:var(--accent)">Terms of Service</span> and <span style="color:var(--accent)">Privacy Policy</span></span>
     </label>
     <button class="obbtn" id="tosBtn" onclick="obNext(7)" disabled style="opacity:0.4">Continue →</button>
     <button class="obbtnb" onclick="obNext(5)">← Back</button>
@@ -723,6 +785,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
     <div class="svi"><div class="svic">👨‍💼</div><div class="svin"><div class="svit">Taxfyle CPA</div><div class="svid">File taxes with a real CPA</div></div><div class="svst svst-p" style="cursor:pointer" onclick="showScreen('expert')">Connect</div></div>
   </div>
   <div style="padding:0 16px 20px;display:flex;flex-direction:column;gap:10px">
+    <button class="btn btn-l" onclick="openModal('priceMod')">⭐ Upgrade Plan</button>
     <button class="btn btn-l">⚙️ Account Settings</button>
     <button class="btn btn-l" style="color:var(--red)" onclick="showScreen('onboard')">Sign Out</button>
   </div>
@@ -786,6 +849,28 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   </div>
 </div>
 
+<div class="mo" id="priceMod" onclick="closeBg(event,'priceMod')">
+  <div class="modal"><div class="mh"></div><div class="mt">Choose your plan</div><div class="ms">All plans include a 7-day free trial.</div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:18px;cursor:pointer" onclick="this.parentElement.querySelectorAll(':scope > div').forEach(d=>{d.style.borderColor='var(--border)'});this.style.borderColor='var(--accent)'">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:15px;font-weight:800">Free</span><span style="font-size:18px;font-weight:800">$0</span></div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">Dashboard · Tax estimates · Manual tracking · AI chat</div>
+      </div>
+      <div style="background:var(--accent-light);border:1.5px solid var(--accent);border-radius:16px;padding:18px;position:relative;cursor:pointer" onclick="this.parentElement.querySelectorAll(':scope > div').forEach(d=>{d.style.borderColor='var(--border)'});this.style.borderColor='var(--accent)'">
+        <div style="position:absolute;top:-8px;right:16px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px">POPULAR</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:15px;font-weight:800;color:var(--accent)">Pro</span><span style="font-size:18px;font-weight:800"><span style="font-size:12px;color:var(--muted);font-weight:500">$</span>9.99<span style="font-size:12px;color:var(--muted);font-weight:500">/mo</span></span></div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">Everything in Free + Auto income allocation · Bank linking (Plaid) · Auto-invest (Alpaca) · Tax Vault with alerts · Quarterly reminders</div>
+      </div>
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:18px;cursor:pointer" onclick="this.parentElement.querySelectorAll(':scope > div').forEach(d=>{d.style.borderColor='var(--border)'});this.style.borderColor='var(--accent)'">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:15px;font-weight:800">Premium</span><span style="font-size:18px;font-weight:800"><span style="font-size:12px;color:var(--muted);font-weight:500">$</span>24.99<span style="font-size:12px;color:var(--muted);font-weight:500">/mo</span></span></div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">Everything in Pro + Tax filing via CPA (Taxfyle) · Priority support · Custom portfolio strategies · Expense tracking · Deduction finder</div>
+      </div>
+    </div>
+    <button class="btn btn-p" onclick="closeModal('priceMod')">Start Free Trial →</button>
+    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:10px">Cancel anytime. No credit card required for free plan.</div>
+  </div>
+</div>
+
 <div id="installBanner">
   <div style="font-size:24px">⚡</div>
   <div style="flex:1"><div style="font-size:14px;font-weight:700">Add Apexa to Home Screen</div><div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:2px">Works like a native app</div></div>
@@ -806,13 +891,32 @@ function obNext(s){
   document.querySelectorAll('.obs').forEach(x=>x.classList.remove('active'));
   document.getElementById('ob'+s).classList.add('active');
   for(let i=1;i<=8;i++) document.getElementById('od'+i).className='obdot'+(i<=s?' done':'');
-  if(s===4) updAlloc();
+  if(s===4){document.getElementById('obTaxSlider').value=obTaxPct;updAlloc()}
   if(s===5){rqStep=1;document.querySelectorAll('.rq-q').forEach(q=>q.classList.remove('active'));document.getElementById('rq1').classList.add('active');document.getElementById('rqBtn').textContent='Next Question →';document.getElementById('rqBtn').onclick=rqNext}
   if(s===8) updSum();
 }
-function updSlider(v){obInc=parseInt(v);const d=obInc>=1000?'$'+(obInc/1000).toFixed(obInc%1000===0?0:1)+'k':'$'+obInc;document.getElementById('slDisp').textContent=d+' / mo';updVault()}
-function selTax(el,lbl,r){el.closest('.tos').querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');obRateLbl=lbl;obRate=r;obTaxPct=Math.round(r*100);updVault()}
-function updVault(){document.getElementById('vaultPrev').textContent=fmt(Math.round(obInc*obRate))}
+let obFiling='single',obState='PR',obW2=false,obW2Inc=0,obHomeOffice=false,obExpenses=0;
+function updSlider(v){obInc=parseInt(v);const d=obInc>=1000?'$'+(obInc/1000).toFixed(obInc%1000===0?0:1)+'k':'$'+obInc;document.getElementById('slDisp').textContent=d}
+function selFiling(el,val){el.closest('.tos').querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');obFiling=val;calcObTax()}
+function selW2(el,val){el.closest('.tos').querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');obW2=val;calcObTax()}
+function selHomeOffice(el,val){el.closest('.tos').querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');obHomeOffice=val;calcObTax()}
+async function calcObTax(){
+  obState=document.getElementById('obState').value;
+  obExpenses=parseInt(document.getElementById('obExpenses').value)||0;
+  const annual=obInc*12,annualExp=obExpenses*12;
+  try{
+    const r=await fetch(API+'/api/tax/calculate-detailed?annual_income='+annual+'&filing_status='+obFiling+'&state='+obState+'&annual_expenses='+annualExp+'&home_office='+obHomeOffice+'&w2_income='+(obW2?30000:0));
+    const d=await r.json();
+    obRate=d.effective_rate/100;obRateLbl=d.effective_rate+'%';obTaxPct=Math.round(d.effective_rate);
+    document.getElementById('obEffRate').textContent=d.effective_rate+'%';
+    document.getElementById('obSETax').textContent=fmt(d.self_employment_tax);
+    document.getElementById('obFedTax').textContent=fmt(d.federal_income_tax);
+    document.getElementById('obStateLbl').textContent='State tax ('+d.state+')';
+    document.getElementById('obStateTax').textContent=d.no_state_tax?'$0 ✓':fmt(d.state_tax);
+    document.getElementById('obStateTax').style.color=d.no_state_tax?'var(--green)':'rgba(255,255,255,.7)';
+    document.getElementById('obQuarterly').textContent=fmt(d.quarterly_payment);
+  }catch(e){}
+}
 // ALLOCATION
 let obTaxPct=28,obInvPct=10,obSpendPct=62;
 function updAlloc(){
@@ -934,7 +1038,7 @@ function getBR(msg){const l=msg.toLowerCase();if(l.includes('onlyfan')||l.includ
 function getTime(){return new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
 function addMsg(text,isBot,delay=0){setTimeout(()=>{const msgs=document.getElementById('chatMsgs');const ty=document.getElementById('tyInd');if(ty)ty.remove();const m=document.createElement('div');m.className='msg '+(isBot?'mb':'mu');const html=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');m.innerHTML=`${isBot?'<div class="bav">⚡</div>':''}<div class="mbu">${html}</div><div class="mti">${getTime()}</div>`;msgs.appendChild(m);msgs.scrollTop=msgs.scrollHeight},delay)}
 function showTyping(){const msgs=document.getElementById('chatMsgs');const t=document.createElement('div');t.id='tyInd';t.className='msg mb';t.innerHTML='<div class="bav">⚡</div><div class="ti"><div class="td"></div><div class="td"></div><div class="td"></div></div>';msgs.appendChild(t);msgs.scrollTop=msgs.scrollHeight}
-async function sendMsg(){const inp=document.getElementById('chatIn');const text=inp.value.trim();if(!text||isTyping)return;inp.value='';inp.style.height='auto';document.getElementById('quickR').style.display='none';addMsg(text,false);chatHist.push({role:'user',content:text});isTyping=true;showTyping();try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:`You are Apexa AI, a friendly financial assistant for OnlyFans and content creators. Help with taxes, investing, banking, and financial planning. Be concise, warm, practical. Use emojis occasionally. User has: Balance $24,830 · Tax Vault $4,820 (target $6,200 Q1) · Portfolio $11,240 (+18.3%) · Monthly income ~$8,340 · Tax rate 28% · No state income tax. Never give specific investment advice. Recommend CPAs for complex tax questions. Keep responses under 3 sentences. Never judge income sources.`,messages:chatHist})});if(r.ok){const d=await r.json();const bt=d.content[0].text;isTyping=false;addMsg(bt,true,300);chatHist.push({role:'assistant',content:bt})}else throw new Error()}catch(e){const rs=getBR(text);const bt=rs[Math.floor(Math.random()*rs.length)];isTyping=false;addMsg(bt,true,800);chatHist.push({role:'assistant',content:bt})}}
+async function sendMsg(){const inp=document.getElementById('chatIn');const text=inp.value.trim();if(!text||isTyping)return;inp.value='';inp.style.height='auto';document.getElementById('quickR').style.display='none';addMsg(text,false);chatHist.push({role:'user',content:text});isTyping=true;showTyping();const rs=getBR(text);const bt=rs[Math.floor(Math.random()*rs.length)];isTyping=false;addMsg(bt,true,800);chatHist.push({role:'assistant',content:bt})}
 function sendQ(t){document.getElementById('chatIn').value=t;sendMsg()}
 function ckKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg()}}
 function autoR(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px'}

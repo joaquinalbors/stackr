@@ -235,20 +235,49 @@ def calc_federal_tax(taxable_income: float) -> float:
         prev = bracket
     return round(tax, 2)
 
+STATE_TAX_RATES = {
+    "AL":0.05,"AK":0,"AZ":0.025,"AR":0.047,"CA":0.093,"CO":0.044,"CT":0.0699,"DE":0.066,
+    "FL":0,"GA":0.0549,"HI":0.0825,"ID":0.058,"IL":0.0495,"IN":0.0315,"IA":0.06,"KS":0.057,
+    "KY":0.04,"LA":0.0425,"ME":0.0715,"MD":0.0575,"MA":0.05,"MI":0.0425,"MN":0.0985,
+    "MS":0.05,"MO":0.048,"MT":0.059,"NE":0.0664,"NV":0,"NH":0,"NJ":0.0897,"NM":0.059,
+    "NY":0.0685,"NC":0.0475,"ND":0.0195,"OH":0.04,"OK":0.0475,"OR":0.099,"PA":0.0307,
+    "PR":0,"RI":0.0599,"SC":0.064,"SD":0,"TN":0,"TX":0,"UT":0.0485,"VT":0.0875,
+    "VA":0.0575,"WA":0,"WV":0.052,"WI":0.0765,"WY":0,"DC":0.0895
+}
+
 @app.get("/api/tax/calculate-detailed")
-def calculate_tax_detailed(annual_income: float, filing_status: str = "single", state: str = "PR"):
-    se_taxable = annual_income * 0.9235
+def calculate_tax_detailed(
+    annual_income: float, filing_status: str = "single", state: str = "PR",
+    annual_expenses: float = 0, home_office: bool = False, w2_income: float = 0
+):
+    # Business deductions
+    home_office_deduction = 1500 if home_office else 0
+    total_deductions = annual_expenses + home_office_deduction
+    net_se_income = max(annual_income - total_deductions, 0)
+
+    # Self-employment tax (only on creator income, not W-2)
+    se_taxable = net_se_income * 0.9235
     se_tax = round(se_taxable * 0.153, 2)
     se_deduction = round(se_tax / 2, 2)
-    agi = annual_income - se_deduction
-    standard_deduction = 14600 if filing_status == "single" else 29200
+
+    # AGI includes both SE and W-2
+    total_income = net_se_income + w2_income
+    agi = total_income - se_deduction
+
+    # Standard deduction based on filing status
+    std_ded = {"single": 14600, "married": 29200, "head": 21900}
+    standard_deduction = std_ded.get(filing_status, 14600)
     taxable_income = max(agi - standard_deduction, 0)
+
     federal_tax = calc_federal_tax(taxable_income)
-    state_rates = {"PR": 0, "CA": 0.093, "NY": 0.0685, "TX": 0, "FL": 0, "WA": 0, "NV": 0}
-    state_rate = state_rates.get(state.upper(), 0.05)
+
+    # State tax (all 50 states + DC + PR)
+    state_rate = STATE_TAX_RATES.get(state.upper(), 0.05)
     state_tax = round(taxable_income * state_rate, 2)
+    no_state_tax = state_rate == 0
+
     total_tax = round(se_tax + federal_tax + state_tax, 2)
-    effective_rate = round((total_tax / annual_income) * 100, 1) if annual_income > 0 else 0
+    effective_rate = round((total_tax / (annual_income + w2_income)) * 100, 1) if (annual_income + w2_income) > 0 else 0
     quarterly = round(total_tax / 4, 2)
     return {
         "annual_income": annual_income,
@@ -267,11 +296,18 @@ def calculate_tax_detailed(annual_income: float, filing_status: str = "single", 
         ],
         "breakdown": {
             "gross_income": annual_income,
+            "w2_income": w2_income,
+            "business_expenses": annual_expenses,
+            "home_office_deduction": home_office_deduction,
+            "net_se_income": round(net_se_income, 2),
             "se_tax_deduction": se_deduction,
             "agi": round(agi, 2),
             "standard_deduction": standard_deduction,
             "taxable_income": round(taxable_income, 2)
         },
+        "no_state_tax": no_state_tax,
+        "state_rate_pct": round(state_rate * 100, 1),
+        "filing_status": filing_status,
         "disclaimer": "This is an estimate only, not tax advice. Consult a licensed CPA for tax filing."
     }
 
