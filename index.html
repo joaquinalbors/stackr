@@ -278,6 +278,9 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
 .smi{background:var(--surface);border-radius:10px;padding:16px}
 .smil{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
 .smiv{font-size:18px;font-weight:800}.smiv-p{color:var(--accent)}
+.rq-q{display:none}.rq-q.active{display:block;animation:fu .3s ease forwards}
+.obbtn:disabled{opacity:0.4;cursor:not-allowed}
+.discl{font-size:10px;color:var(--muted);line-height:1.5;padding:12px 16px;text-align:center;margin-top:8px}
 #installBanner{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:388px;background:var(--text);color:#fff;border-radius:16px;padding:16px;z-index:150;display:none;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.2)}
 @media(prefers-color-scheme:dark){
   :root{--bg:#0a0a0a;--surface:#1a1a1a;--border:#2a2a2a;--text:#f0f0f0;--muted:#666;--muted2:#444;
@@ -292,10 +295,10 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
 <div class="screen active" id="screen-onboard">
 <div class="ow">
   <div class="olog">apexa<span>.</span></div>
-  <div class="obprog"><div class="obdot done" id="od1"></div><div class="obdot" id="od2"></div><div class="obdot" id="od3"></div><div class="obdot" id="od4"></div><div class="obdot" id="od5"></div></div>
+  <div class="obprog"><div class="obdot done" id="od1"></div><div class="obdot" id="od2"></div><div class="obdot" id="od3"></div><div class="obdot" id="od4"></div><div class="obdot" id="od5"></div><div class="obdot" id="od6"></div><div class="obdot" id="od7"></div><div class="obdot" id="od8"></div></div>
 
   <div class="obs active" id="ob1">
-    <div class="obtag">Step 01 / 05</div>
+    <div class="obtag">Step 01 / 08</div>
     <div class="obtit">Your money,<br>finally under control.</div>
     <div class="obsub">Apexa handles taxes, banking, and investing automatically — so you can focus on creating.</div>
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px">
@@ -307,7 +310,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   </div>
 
   <div class="obs" id="ob2">
-    <div class="obtag">Step 02 / 05</div>
+    <div class="obtag">Step 02 / 08</div>
     <div class="obtit">Where do you earn?</div>
     <div class="obsub">Select all platforms you get paid from. We'll track income from each automatically.</div>
     <div class="pg">
@@ -326,7 +329,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   </div>
 
   <div class="obs" id="ob3">
-    <div class="obtag">Step 03 / 05</div>
+    <div class="obtag">Step 03 / 08</div>
     <div class="obtit">Your income & tax setup</div>
     <div class="obsub">We'll auto-save the right % from every payment so you're never surprised at tax time.</div>
     <div class="slv" id="slDisp">$8,000 / mo</div>
@@ -342,8 +345,118 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
     <button class="obbtnb" onclick="obNext(2)">← Back</button>
   </div>
 
+  <!-- Step 4: Income Allocation -->
   <div class="obs" id="ob4">
-    <div class="obtag">Step 04 / 05</div>
+    <div class="obtag">Step 04 / 08</div>
+    <div class="obtit">Split your income automatically</div>
+    <div class="obsub">Every payment gets divided instantly. Adjust to your comfort level.</div>
+    <div style="margin-bottom:20px">
+      <div style="display:flex;height:12px;border-radius:99px;overflow:hidden;margin-bottom:16px" id="obSplitBar">
+        <div style="background:var(--tax);transition:width .2s" id="obSplitTax"></div>
+        <div style="background:var(--accent);transition:width .2s" id="obSplitInv"></div>
+        <div style="background:var(--green);transition:width .2s" id="obSplitSpend"></div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;font-weight:700;color:var(--tax)">🔒 Tax Vault</span><span style="font-size:15px;font-weight:800;color:var(--tax)" id="obTaxLbl">28%</span></div>
+        <input type="range" min="15" max="50" value="28" oninput="updAlloc()" id="obTaxSlider" style="accent-color:var(--tax)">
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;font-weight:700;color:var(--accent)">📈 Investments</span><span style="font-size:15px;font-weight:800;color:var(--accent)" id="obInvLbl">10%</span></div>
+        <input type="range" min="0" max="40" value="10" oninput="updAlloc()" id="obInvSlider" style="accent-color:var(--accent)">
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:20px"><span style="font-size:13px;font-weight:700;color:var(--green)">💰 Yours to Spend</span><span style="font-size:15px;font-weight:800;color:var(--green)" id="obSpendLbl">62%</span></div>
+    </div>
+    <div style="background:var(--surface);border-radius:var(--rs);padding:16px;margin-bottom:16px" id="obAllocPreview">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">ON <span id="obAllocInc">$8,000</span>/MO INCOME</div>
+      <div style="display:flex;justify-content:space-between;padding:4px 0"><span style="font-size:13px">Tax Vault</span><span style="font-size:14px;font-weight:800;color:var(--tax)" id="obAllocTaxAmt">$2,240</span></div>
+      <div style="display:flex;justify-content:space-between;padding:4px 0"><span style="font-size:13px">Investments</span><span style="font-size:14px;font-weight:800;color:var(--accent)" id="obAllocInvAmt">$800</span></div>
+      <div style="display:flex;justify-content:space-between;padding:4px 0"><span style="font-size:13px">Spending</span><span style="font-size:14px;font-weight:800;color:var(--green)" id="obAllocSpendAmt">$4,960</span></div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:24px;text-align:center">Tax vault held by Stripe Treasury. Investments managed by Alpaca Securities LLC.</div>
+    <button class="obbtn" onclick="obNext(5)">Continue →</button>
+    <button class="obbtnb" onclick="obNext(3)">← Back</button>
+  </div>
+
+  <!-- Step 5: Risk Questionnaire -->
+  <div class="obs" id="ob5">
+    <div class="obtag">Step 05 / 08</div>
+    <div class="obtit">Find your investment style</div>
+    <div class="obsub">4 quick questions to build the right portfolio for you.</div>
+    <div id="riskQuiz">
+      <div class="rq-q active" id="rq1">
+        <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:12px">QUESTION 1 OF 4</div>
+        <div style="font-size:16px;font-weight:800;margin-bottom:16px">How long do you plan to invest?</div>
+        <div class="tos" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="to" onclick="rqPick(this,1,2)"><div class="tor">1-3</div><div class="tod">Years · Short</div></div>
+          <div class="to sel" onclick="rqPick(this,1,5)"><div class="tor">3-7</div><div class="tod">Years · Medium</div></div>
+          <div class="to" onclick="rqPick(this,1,8)"><div class="tor">7+</div><div class="tod">Years · Long</div></div>
+        </div>
+      </div>
+      <div class="rq-q" id="rq2">
+        <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:12px">QUESTION 2 OF 4</div>
+        <div style="font-size:16px;font-weight:800;margin-bottom:16px">How do you feel about risk?</div>
+        <div class="tos" style="grid-template-columns:1fr">
+          <div class="to" onclick="rqPick(this,2,2)" style="text-align:left;padding:14px 16px"><div class="tor" style="font-size:14px;font-weight:700">🛡️ Protect what I have</div><div class="tod">I prefer stability over big gains</div></div>
+          <div class="to sel" onclick="rqPick(this,2,5)" style="text-align:left;padding:14px 16px"><div class="tor" style="font-size:14px;font-weight:700">⚖️ Okay with ups and downs</div><div class="tod">Balanced risk for balanced reward</div></div>
+          <div class="to" onclick="rqPick(this,2,9)" style="text-align:left;padding:14px 16px"><div class="tor" style="font-size:14px;font-weight:700">🚀 Maximum growth</div><div class="tod">I can handle big drops for big gains</div></div>
+        </div>
+      </div>
+      <div class="rq-q" id="rq3">
+        <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:12px">QUESTION 3 OF 4</div>
+        <div style="font-size:16px;font-weight:800;margin-bottom:16px">How stable is your income?</div>
+        <div class="tos" style="grid-template-columns:1fr">
+          <div class="to" onclick="rqPick(this,3,3)" style="text-align:left;padding:14px 16px"><div class="tor" style="font-size:14px;font-weight:700">📉 Varies a lot</div><div class="tod">Some months high, some months low</div></div>
+          <div class="to sel" onclick="rqPick(this,3,6)" style="text-align:left;padding:14px 16px"><div class="tor" style="font-size:14px;font-weight:700">📊 Somewhat predictable</div><div class="tod">Usually consistent with some variation</div></div>
+          <div class="to" onclick="rqPick(this,3,8)" style="text-align:left;padding:14px 16px"><div class="tor" style="font-size:14px;font-weight:700">📈 Very stable</div><div class="tod">Steady and growing consistently</div></div>
+        </div>
+      </div>
+      <div class="rq-q" id="rq4">
+        <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:12px">QUESTION 4 OF 4</div>
+        <div style="font-size:16px;font-weight:800;margin-bottom:16px">What's your main goal?</div>
+        <div class="tos" style="grid-template-columns:1fr">
+          <div class="to" onclick="rqPick(this,4,2)" style="text-align:left;padding:14px 16px"><div class="tor" style="font-size:14px;font-weight:700">🛟 Safety net</div><div class="tod">Build an emergency fund first</div></div>
+          <div class="to sel" onclick="rqPick(this,4,6)" style="text-align:left;padding:14px 16px"><div class="tor" style="font-size:14px;font-weight:700">💰 Grow wealth</div><div class="tod">Compound my money over time</div></div>
+          <div class="to" onclick="rqPick(this,4,8)" style="text-align:left;padding:14px 16px"><div class="tor" style="font-size:14px;font-weight:700">🏝️ Financial freedom</div><div class="tod">Retire early, live on investments</div></div>
+        </div>
+      </div>
+      <div class="rq-q" id="rqResult" style="text-align:center">
+        <div style="font-size:48px;margin-bottom:12px" id="rqEmoji">⚖️</div>
+        <div style="font-size:22px;font-weight:800;margin-bottom:4px" id="rqProfile">Moderate</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:20px" id="rqDesc">Balanced growth and income.</div>
+        <div style="background:var(--surface);border-radius:var(--rs);padding:16px;text-align:left;margin-bottom:16px" id="rqPortfolio"></div>
+        <div style="font-size:10px;color:var(--muted);line-height:1.5">Portfolio recommendations powered by Alpaca Securities LLC, member FINRA/SIPC. This is not investment advice. Past performance does not guarantee future results.</div>
+      </div>
+    </div>
+    <button class="obbtn" id="rqBtn" onclick="rqNext()">Next Question →</button>
+    <button class="obbtnb" onclick="obNext(4)">← Back</button>
+  </div>
+
+  <!-- Step 6: Terms & Legal -->
+  <div class="obs" id="ob6">
+    <div class="obtag">Step 06 / 08</div>
+    <div class="obtit">Before we start</div>
+    <div class="obsub">Please review and accept to continue.</div>
+    <div style="background:var(--surface);border-radius:var(--rs);padding:20px;margin-bottom:20px;max-height:280px;overflow-y:auto;border:1.5px solid var(--border)">
+      <div style="font-size:13px;line-height:1.8;color:var(--muted)">
+        <p style="margin-bottom:12px"><strong style="color:var(--text)">Apexa is an interface layer.</strong> We do not hold funds, provide investment advice, or offer tax advice. We connect you with licensed financial service providers.</p>
+        <p style="margin-bottom:12px"><strong style="color:var(--text)">Banking services</strong> are provided by Stripe Treasury. Funds are held by Stripe's partner banks, not by Apexa. FDIC insurance is provided through Stripe's banking partners.</p>
+        <p style="margin-bottom:12px"><strong style="color:var(--text)">Securities brokerage</strong> is provided by Alpaca Securities LLC, member FINRA/SIPC. Apexa does not execute trades or manage investments. Portfolio allocations are suggestions, not advice.</p>
+        <p style="margin-bottom:12px"><strong style="color:var(--text)">Tax calculations</strong> are estimates based on the information you provide and current federal tax brackets. These do not constitute tax advice. Always consult a licensed CPA for tax filing and planning.</p>
+        <p style="margin-bottom:12px"><strong style="color:var(--text)">Income allocation</strong> splits are executed through Stripe Treasury and Alpaca based on your configured preferences. You can modify or stop these at any time.</p>
+        <p><strong style="color:var(--text)">Bank account linking</strong> is powered by Plaid Inc. Apexa never receives or stores your bank login credentials.</p>
+      </div>
+    </div>
+    <label style="display:flex;align-items:flex-start;gap:12px;margin-bottom:24px;cursor:pointer">
+      <input type="checkbox" id="tosCheck" onchange="document.getElementById('tosBtn').disabled=!this.checked" style="width:20px;height:20px;margin-top:2px;accent-color:var(--accent);flex-shrink:0">
+      <span style="font-size:13px;font-weight:600;line-height:1.5">I understand that Apexa is an interface to third-party financial services and I agree to the Terms of Service and Privacy Policy.</span>
+    </label>
+    <button class="obbtn" id="tosBtn" onclick="obNext(7)" disabled style="opacity:0.5">Accept & Continue →</button>
+    <button class="obbtnb" onclick="obNext(5)">← Back</button>
+  </div>
+
+  <!-- Step 7: Link Bank (Plaid) -->
+  <div class="obs" id="ob7">
+    <div class="obtag">Step 07 / 08</div>
     <div class="obtit">Link your bank</div>
     <div class="obsub">Connect an existing bank account so you can see all your money in one place. Powered by Plaid — secure and encrypted.</div>
     <div style="background:var(--surface);border-radius:16px;padding:24px;text-align:center;margin-bottom:24px">
@@ -356,21 +469,24 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
       <span style="font-size:18px">🔒</span>
       <div style="font-size:12px;color:var(--muted);line-height:1.5"><strong style="color:var(--text)">Bank-level security.</strong> Plaid uses 256-bit encryption. Apexa never sees your login credentials.</div>
     </div>
-    <button class="obbtn" onclick="obNext(5)">Continue →</button>
-    <button class="obbtnb" onclick="obNext(3)">← Back</button>
+    <button class="obbtn" onclick="obNext(8)">Continue →</button>
+    <button class="obbtnb" onclick="obNext(6)">← Back</button>
   </div>
 
-  <div class="obs" id="ob5">
+  <!-- Step 8: Success -->
+  <div class="obs" id="ob8">
     <div class="suci">⚡</div>
     <div style="text-align:center;margin-bottom:28px">
       <div style="font-size:26px;font-weight:800;letter-spacing:-1px;margin-bottom:8px">You're all set!</div>
-      <div style="font-size:14px;color:var(--muted);line-height:1.5">Your Apexa account is ready. Taxes on autopilot, investing set up, banking live.</div>
+      <div style="font-size:14px;color:var(--muted);line-height:1.5">Your Apexa account is ready. Income auto-split, investing on autopilot.</div>
     </div>
     <div class="smg">
       <div class="smi"><div class="smil">Monthly Income</div><div class="smiv smiv-p" id="sumInc">$8,000</div></div>
       <div class="smi"><div class="smil">Tax Rate</div><div class="smiv smiv-p" id="sumRate">28%</div></div>
-      <div class="smi"><div class="smil">Auto-saved / mo</div><div class="smiv" id="sumVault">$2,240</div></div>
-      <div class="smi"><div class="smil">Yours to spend</div><div class="smiv" id="sumSpend">$5,760</div></div>
+      <div class="smi"><div class="smil">Tax Vault / mo</div><div class="smiv" id="sumVault">$2,240</div></div>
+      <div class="smi"><div class="smil">Investing / mo</div><div class="smiv" style="color:var(--accent)" id="sumInvest">$800</div></div>
+      <div class="smi"><div class="smil">Yours to Spend</div><div class="smiv" style="color:var(--green)" id="sumSpend">$4,160</div></div>
+      <div class="smi"><div class="smil">Risk Profile</div><div class="smiv smiv-p" id="sumRisk">Moderate</div></div>
     </div>
     <button class="obbtn" onclick="enterApp()">Go to My Dashboard →</button>
   </div>
@@ -432,6 +548,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   <div style="height:16px"></div>
   <div class="sh"><div class="st">Recent Activity</div><div class="sa" onclick="showScreen('banking')">See all →</div></div>
   <div class="al" id="hAct"></div>
+  <div class="discl">Banking by Stripe Treasury. Investments by Alpaca Securities LLC, member FINRA/SIPC. Tax estimates are not tax advice.</div>
 </div>
 
 <!-- BANKING -->
@@ -465,6 +582,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   </div>
   <div class="sh"><div class="st">Transactions</div><div class="sa">Filter ↓</div></div>
   <div class="al" id="bnkAct"></div>
+  <div class="discl">Funds held by Stripe Treasury and its partner banks, not by Apexa. Bank linking powered by Plaid Inc.</div>
 </div>
 
 <!-- INVESTING -->
@@ -489,6 +607,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   </div>
   <div class="sh"><div class="st">Holdings</div><div class="sa">Edit →</div></div>
   <div class="al" id="holdList"></div>
+  <div class="discl">Brokerage services provided by Alpaca Securities LLC, member FINRA/SIPC. Portfolio allocations are not investment advice. Past performance does not guarantee future results.</div>
 </div>
 
 <!-- TAXES -->
@@ -519,6 +638,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
     <button class="btn btn-p" onclick="showScreen('expert')">👨‍💼 File with a CPA →</button>
     <button class="btn btn-l" onclick="openModal('taxMod')">🧮 Tax Calculator</button>
   </div>
+  <div class="discl">Tax calculations are estimates based on 2026 federal brackets and are not tax advice. Self-employment tax included. Always consult a licensed CPA for tax filing and planning.</div>
 </div>
 
 <!-- CHAT -->
@@ -673,13 +793,69 @@ const ICONS={'OnlyFans':'🔞','YouTube':'▶️','Substack':'📧','Patreon':'�
 function obNext(s){
   document.querySelectorAll('.obs').forEach(x=>x.classList.remove('active'));
   document.getElementById('ob'+s).classList.add('active');
-  for(let i=1;i<=5;i++) document.getElementById('od'+i).className='obdot'+(i<=s?' done':'');
-  if(s===5) updSum();
+  for(let i=1;i<=8;i++) document.getElementById('od'+i).className='obdot'+(i<=s?' done':'');
+  if(s===4) updAlloc();
+  if(s===5){rqStep=1;document.querySelectorAll('.rq-q').forEach(q=>q.classList.remove('active'));document.getElementById('rq1').classList.add('active');document.getElementById('rqBtn').textContent='Next Question →';document.getElementById('rqBtn').onclick=rqNext}
+  if(s===8) updSum();
 }
 function updSlider(v){obInc=parseInt(v);const d=obInc>=1000?'$'+(obInc/1000).toFixed(obInc%1000===0?0:1)+'k':'$'+obInc;document.getElementById('slDisp').textContent=d+' / mo';updVault()}
-function selTax(el,lbl,r){document.querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');obRateLbl=lbl;obRate=r;updVault()}
+function selTax(el,lbl,r){el.closest('.tos').querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');obRateLbl=lbl;obRate=r;obTaxPct=Math.round(r*100);updVault()}
 function updVault(){document.getElementById('vaultPrev').textContent=fmt(Math.round(obInc*obRate))}
-function updSum(){const v=Math.round(obInc*obRate),sp=obInc-v;document.getElementById('sumInc').textContent=fmt(obInc);document.getElementById('sumRate').textContent=obRateLbl;document.getElementById('sumVault').textContent=fmt(v);document.getElementById('sumSpend').textContent=fmt(sp)}
+// ALLOCATION
+let obTaxPct=28,obInvPct=10,obSpendPct=62;
+function updAlloc(){
+  obTaxPct=parseInt(document.getElementById('obTaxSlider').value);
+  obInvPct=parseInt(document.getElementById('obInvSlider').value);
+  if(obTaxPct+obInvPct>95){obInvPct=95-obTaxPct;document.getElementById('obInvSlider').value=obInvPct}
+  obSpendPct=100-obTaxPct-obInvPct;
+  document.getElementById('obTaxLbl').textContent=obTaxPct+'%';
+  document.getElementById('obInvLbl').textContent=obInvPct+'%';
+  document.getElementById('obSpendLbl').textContent=obSpendPct+'%';
+  document.getElementById('obSplitTax').style.width=obTaxPct+'%';
+  document.getElementById('obSplitInv').style.width=obInvPct+'%';
+  document.getElementById('obSplitSpend').style.width=obSpendPct+'%';
+  document.getElementById('obAllocInc').textContent=fmt(obInc);
+  document.getElementById('obAllocTaxAmt').textContent=fmt(Math.round(obInc*obTaxPct/100));
+  document.getElementById('obAllocInvAmt').textContent=fmt(Math.round(obInc*obInvPct/100));
+  document.getElementById('obAllocSpendAmt').textContent=fmt(Math.round(obInc*obSpendPct/100));
+}
+// RISK QUIZ
+let rqStep=1,rqScores={1:5,2:5,3:6,4:6},rqProfileName='Moderate';
+function rqPick(el,q,score){
+  el.parentElement.querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));
+  el.classList.add('sel');rqScores[q]=score;
+}
+async function rqNext(){
+  if(rqStep<4){rqStep++;document.querySelectorAll('.rq-q').forEach(q=>q.classList.remove('active'));document.getElementById('rq'+rqStep).classList.add('active');
+    if(rqStep===4)document.getElementById('rqBtn').textContent='See My Profile →';return}
+  if(rqStep===4){
+    const avg=Math.round((rqScores[1]+rqScores[2]+rqScores[3]+rqScores[4])/4);
+    document.querySelectorAll('.rq-q').forEach(q=>q.classList.remove('active'));
+    document.getElementById('rqResult').classList.add('active');
+    document.getElementById('rqBtn').textContent='Continue →';
+    document.getElementById('rqBtn').onclick=()=>obNext(6);
+    rqStep=5;
+    const emojis={conservative:'🛡️',moderate:'⚖️',growth:'🚀',aggressive:'🔥'};
+    try{
+      const r=await fetch(API+'/api/alpaca/model-portfolio?risk_score='+avg);
+      const d=await r.json();rqProfileName=d.name;
+      document.getElementById('rqEmoji').textContent=emojis[d.profile_key]||'⚖️';
+      document.getElementById('rqProfile').textContent=d.name;
+      document.getElementById('rqDesc').textContent=d.description;
+      document.getElementById('rqPortfolio').innerHTML='<div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px">RECOMMENDED PORTFOLIO</div>'+
+        d.allocations.map(a=>'<div style="display:flex;justify-content:space-between;padding:4px 0"><span style="font-size:13px">'+a.ticker+' · '+a.name+'</span><span style="font-size:13px;font-weight:800">'+a.pct+'%</span></div>').join('')+
+        '<div style="margin-top:10px;display:flex;gap:12px"><span class="pill pill-p">'+d.expected_return+' expected</span><span class="pill pill-y">'+d.risk_level+' risk</span></div>';
+    }catch(e){document.getElementById('rqProfile').textContent='Moderate';document.getElementById('rqDesc').textContent='Balanced growth and income.'}
+    return;
+  }
+  obNext(6);
+}
+function updSum(){
+  const taxAmt=Math.round(obInc*obTaxPct/100),invAmt=Math.round(obInc*obInvPct/100),spAmt=obInc-taxAmt-invAmt;
+  document.getElementById('sumInc').textContent=fmt(obInc);document.getElementById('sumRate').textContent=obRateLbl;
+  document.getElementById('sumVault').textContent=fmt(taxAmt);document.getElementById('sumInvest').textContent=fmt(invAmt);
+  document.getElementById('sumSpend').textContent=fmt(spAmt);document.getElementById('sumRisk').textContent=rqProfileName;
+}
 function enterApp(){document.getElementById('bnav').style.display='flex';showScreen('home');loadAll();loadLinkedAccounts()}
 
 // NAV

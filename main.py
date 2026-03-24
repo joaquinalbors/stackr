@@ -38,6 +38,19 @@ class PublicTokenRequest(BaseModel):
     public_token: str
     user_id: str = "default"
 
+class UserPreferences(BaseModel):
+    user_id: str = "default"
+    tax_pct: float = 28.0
+    invest_pct: float = 10.0
+    spend_pct: float = 62.0
+    risk_score: int = 5
+    risk_profile: str = "moderate"
+    time_horizon: str = "5-10"
+    income_stability: str = "variable"
+    investment_goal: str = "growth"
+    tos_accepted: bool = False
+    tos_accepted_at: str = ""
+
 app = FastAPI(title="Apexa API", version="2.0.0")
 
 app.add_middleware(
@@ -182,6 +195,184 @@ def get_profile():
         "platforms": ["OnlyFans", "YouTube", "Patreon", "Brand Deals", "Merch"],
         "services_connected": ["Stripe Treasury", "Plaid"],
         "services_pending": ["Taxfyle", "OnlyFans"]
+    }
+
+# --- User Preferences ---
+user_preferences_store = {}
+
+@app.post("/api/user/preferences")
+def save_preferences(prefs: UserPreferences):
+    total = prefs.tax_pct + prefs.invest_pct + prefs.spend_pct
+    if abs(total - 100.0) > 0.5:
+        raise HTTPException(status_code=400, detail=f"Percentages must sum to 100 (got {total})")
+    user_preferences_store[prefs.user_id] = prefs.dict()
+    return {"status": "saved", "preferences": prefs.dict()}
+
+@app.get("/api/user/preferences")
+def get_preferences(user_id: str = "default"):
+    return user_preferences_store.get(user_id, {
+        "user_id": user_id, "tax_pct": 28.0, "invest_pct": 10.0, "spend_pct": 62.0,
+        "risk_score": 5, "risk_profile": "moderate", "time_horizon": "5-10",
+        "income_stability": "variable", "investment_goal": "growth",
+        "tos_accepted": False, "tos_accepted_at": ""
+    })
+
+# --- Detailed Tax Calculation ---
+
+FEDERAL_BRACKETS_2026 = [
+    (11600, 0.10), (47150, 0.12), (100525, 0.22),
+    (191950, 0.24), (243725, 0.32), (609350, 0.35), (float('inf'), 0.37)
+]
+
+def calc_federal_tax(taxable_income: float) -> float:
+    tax = 0.0
+    prev = 0
+    for bracket, rate in FEDERAL_BRACKETS_2026:
+        if taxable_income <= prev:
+            break
+        taxed = min(taxable_income, bracket) - prev
+        tax += taxed * rate
+        prev = bracket
+    return round(tax, 2)
+
+@app.get("/api/tax/calculate-detailed")
+def calculate_tax_detailed(annual_income: float, filing_status: str = "single", state: str = "PR"):
+    se_taxable = annual_income * 0.9235
+    se_tax = round(se_taxable * 0.153, 2)
+    se_deduction = round(se_tax / 2, 2)
+    agi = annual_income - se_deduction
+    standard_deduction = 14600 if filing_status == "single" else 29200
+    taxable_income = max(agi - standard_deduction, 0)
+    federal_tax = calc_federal_tax(taxable_income)
+    state_rates = {"PR": 0, "CA": 0.093, "NY": 0.0685, "TX": 0, "FL": 0, "WA": 0, "NV": 0}
+    state_rate = state_rates.get(state.upper(), 0.05)
+    state_tax = round(taxable_income * state_rate, 2)
+    total_tax = round(se_tax + federal_tax + state_tax, 2)
+    effective_rate = round((total_tax / annual_income) * 100, 1) if annual_income > 0 else 0
+    quarterly = round(total_tax / 4, 2)
+    return {
+        "annual_income": annual_income,
+        "self_employment_tax": se_tax,
+        "federal_income_tax": federal_tax,
+        "state_tax": state_tax,
+        "state": state.upper(),
+        "total_estimated_tax": total_tax,
+        "effective_rate": effective_rate,
+        "quarterly_payment": quarterly,
+        "quarterly_schedule": [
+            {"quarter": "Q1", "due": "April 15, 2026", "amount": quarterly},
+            {"quarter": "Q2", "due": "June 16, 2026", "amount": quarterly},
+            {"quarter": "Q3", "due": "September 15, 2026", "amount": quarterly},
+            {"quarter": "Q4", "due": "January 15, 2027", "amount": quarterly},
+        ],
+        "breakdown": {
+            "gross_income": annual_income,
+            "se_tax_deduction": se_deduction,
+            "agi": round(agi, 2),
+            "standard_deduction": standard_deduction,
+            "taxable_income": round(taxable_income, 2)
+        },
+        "disclaimer": "This is an estimate only, not tax advice. Consult a licensed CPA for tax filing."
+    }
+
+# --- Model Portfolio ---
+
+MODEL_PORTFOLIOS = {
+    "conservative": {
+        "name": "Conservative", "description": "Capital preservation with modest growth. Lower volatility, steadier returns.",
+        "allocations": [
+            {"ticker": "BND", "name": "Vanguard Total Bond ETF", "pct": 60},
+            {"ticker": "SPY", "name": "S&P 500 ETF", "pct": 20},
+            {"ticker": "JEPI", "name": "JPM Equity Premium Income", "pct": 10},
+            {"ticker": "SGOV", "name": "iShares 0-3 Month Treasury", "pct": 10},
+        ],
+        "expected_return": "4-6%", "risk_level": "Low"
+    },
+    "moderate": {
+        "name": "Moderate", "description": "Balanced growth and income. Mix of stocks and bonds for steady compounding.",
+        "allocations": [
+            {"ticker": "SPY", "name": "S&P 500 ETF", "pct": 50},
+            {"ticker": "QQQ", "name": "Nasdaq 100 ETF", "pct": 25},
+            {"ticker": "JEPI", "name": "JPM Equity Premium Income", "pct": 15},
+            {"ticker": "BND", "name": "Vanguard Total Bond ETF", "pct": 10},
+        ],
+        "expected_return": "7-10%", "risk_level": "Medium"
+    },
+    "growth": {
+        "name": "Growth", "description": "Aggressive growth focus. Higher potential returns with more volatility.",
+        "allocations": [
+            {"ticker": "SPY", "name": "S&P 500 ETF", "pct": 45},
+            {"ticker": "QQQ", "name": "Nasdaq 100 ETF", "pct": 35},
+            {"ticker": "IWM", "name": "Russell 2000 ETF", "pct": 15},
+            {"ticker": "BND", "name": "Vanguard Total Bond ETF", "pct": 5},
+        ],
+        "expected_return": "10-14%", "risk_level": "High"
+    },
+    "aggressive": {
+        "name": "Aggressive", "description": "Maximum growth potential. High volatility, suited for long time horizons.",
+        "allocations": [
+            {"ticker": "QQQ", "name": "Nasdaq 100 ETF", "pct": 40},
+            {"ticker": "SPY", "name": "S&P 500 ETF", "pct": 35},
+            {"ticker": "IWM", "name": "Russell 2000 ETF", "pct": 20},
+            {"ticker": "ARKK", "name": "ARK Innovation ETF", "pct": 5},
+        ],
+        "expected_return": "12-18%", "risk_level": "Very High"
+    }
+}
+
+@app.get("/api/alpaca/model-portfolio")
+def get_model_portfolio(risk_score: int = 5):
+    if risk_score <= 3:
+        profile = "conservative"
+    elif risk_score <= 6:
+        profile = "moderate"
+    elif risk_score <= 8:
+        profile = "growth"
+    else:
+        profile = "aggressive"
+    portfolio = MODEL_PORTFOLIOS[profile]
+    return {
+        **portfolio,
+        "risk_score": risk_score,
+        "profile_key": profile,
+        "disclaimer": "Portfolio recommendations powered by Alpaca Securities LLC, member FINRA/SIPC. This is not investment advice. Past performance does not guarantee future results."
+    }
+
+# --- Allocation Simulation ---
+
+@app.get("/api/income/simulate-allocation")
+def simulate_allocation(monthly_income: float = 8000, tax_pct: float = 28, invest_pct: float = 10, spend_pct: float = 62):
+    months = []
+    tax_vault = 0
+    invest_total = 0
+    spend_total = 0
+    tax_monthly = round(monthly_income * tax_pct / 100, 2)
+    invest_monthly = round(monthly_income * invest_pct / 100, 2)
+    spend_monthly = round(monthly_income * spend_pct / 100, 2)
+    quarterly_due = {4: "Q1 Apr 15", 6: "Q2 Jun 16", 9: "Q3 Sep 15", 12: "Q4 Jan 15"}
+    for m in range(1, 13):
+        tax_vault += tax_monthly
+        invest_total += invest_monthly
+        spend_total += spend_monthly
+        payment = 0
+        if m in quarterly_due:
+            payment = round(tax_vault * 0.9, 2)
+            tax_vault = round(tax_vault - payment, 2)
+        months.append({
+            "month": m, "tax_vault": round(tax_vault, 2),
+            "invest_total": round(invest_total, 2), "spend_total": round(spend_total, 2),
+            "quarterly_payment": payment, "quarterly_label": quarterly_due.get(m, "")
+        })
+    return {
+        "monthly_income": monthly_income,
+        "allocation": {"tax_pct": tax_pct, "invest_pct": invest_pct, "spend_pct": spend_pct},
+        "monthly_amounts": {"tax": tax_monthly, "invest": invest_monthly, "spend": spend_monthly},
+        "projection": months,
+        "annual_summary": {
+            "total_income": round(monthly_income * 12, 2),
+            "total_invested": round(invest_monthly * 12, 2),
+            "total_tax_payments": sum(m["quarterly_payment"] for m in months)
+        }
     }
 
 # --- Plaid Endpoints ---
