@@ -351,7 +351,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
 
     <div class="field"><label>State</label>
       <select id="obState" onchange="calcObTax()" style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;width:100%;color:var(--text);appearance:none">
-        <option value="AL">Alabama</option><option value="AK">Alaska (no state tax)</option><option value="AZ">Arizona</option><option value="AR">Arkansas</option>
+        <option value="" disabled selected>Select your state</option><option value="AL">Alabama</option><option value="AK">Alaska (no state tax)</option><option value="AZ">Arizona</option><option value="AR">Arkansas</option>
         <option value="CA">California</option><option value="CO">Colorado</option><option value="CT">Connecticut</option><option value="DE">Delaware</option>
         <option value="FL">Florida (no state tax)</option><option value="GA">Georgia</option><option value="HI">Hawaii</option><option value="ID">Idaho</option>
         <option value="IL">Illinois</option><option value="IN">Indiana</option><option value="IA">Iowa</option><option value="KS">Kansas</option>
@@ -360,8 +360,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
         <option value="MO">Missouri</option><option value="MT">Montana</option><option value="NE">Nebraska</option><option value="NV">Nevada (no state tax)</option>
         <option value="NH">New Hampshire (no state tax)</option><option value="NJ">New Jersey</option><option value="NM">New Mexico</option><option value="NY">New York</option>
         <option value="NC">North Carolina</option><option value="ND">North Dakota</option><option value="OH">Ohio</option><option value="OK">Oklahoma</option>
-        <option value="OR">Oregon</option><option value="PA">Pennsylvania</option><option value="PR" selected>Puerto Rico (no state tax)</option>
-        <option value="RI">Rhode Island</option><option value="SC">South Carolina</option><option value="SD">South Dakota (no state tax)</option>
+        <option value="OR">Oregon</option><option value="PA">Pennsylvania</option>        <option value="RI">Rhode Island</option><option value="SC">South Carolina</option><option value="SD">South Dakota (no state tax)</option>
         <option value="TN">Tennessee (no state tax)</option><option value="TX">Texas (no state tax)</option><option value="UT">Utah</option>
         <option value="VT">Vermont</option><option value="VA">Virginia</option><option value="WA">Washington (no state tax)</option>
         <option value="WV">West Virginia</option><option value="WI">Wisconsin</option><option value="WY">Wyoming (no state tax)</option><option value="DC">Washington DC</option>
@@ -895,7 +894,7 @@ function obNext(s){
   if(s===5){rqStep=1;document.querySelectorAll('.rq-q').forEach(q=>q.classList.remove('active'));document.getElementById('rq1').classList.add('active');document.getElementById('rqBtn').textContent='Next Question →';document.getElementById('rqBtn').onclick=rqNext}
   if(s===8) updSum();
 }
-let obFiling='single',obState='PR',obW2=false,obW2Inc=0,obHomeOffice=false,obExpenses=0;
+let obFiling='single',obState='',obW2=false,obW2Inc=0,obHomeOffice=false,obExpenses=0;
 function updSlider(v){obInc=parseInt(v);const d=obInc>=1000?'$'+(obInc/1000).toFixed(obInc%1000===0?0:1)+'k':'$'+obInc;document.getElementById('slDisp').textContent=d}
 function selFiling(el,val){el.closest('.tos').querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');obFiling=val;calcObTax()}
 function selW2(el,val){el.closest('.tos').querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');obW2=val;calcObTax()}
