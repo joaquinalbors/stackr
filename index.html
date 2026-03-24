@@ -292,10 +292,10 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
 <div class="screen active" id="screen-onboard">
 <div class="ow">
   <div class="olog">apexa<span>.</span></div>
-  <div class="obprog"><div class="obdot done" id="od1"></div><div class="obdot" id="od2"></div><div class="obdot" id="od3"></div><div class="obdot" id="od4"></div></div>
+  <div class="obprog"><div class="obdot done" id="od1"></div><div class="obdot" id="od2"></div><div class="obdot" id="od3"></div><div class="obdot" id="od4"></div><div class="obdot" id="od5"></div></div>
 
   <div class="obs active" id="ob1">
-    <div class="obtag">Step 01 / 04</div>
+    <div class="obtag">Step 01 / 05</div>
     <div class="obtit">Your money,<br>finally under control.</div>
     <div class="obsub">Apexa handles taxes, banking, and investing automatically — so you can focus on creating.</div>
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px">
@@ -307,7 +307,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   </div>
 
   <div class="obs" id="ob2">
-    <div class="obtag">Step 02 / 04</div>
+    <div class="obtag">Step 02 / 05</div>
     <div class="obtit">Where do you earn?</div>
     <div class="obsub">Select all platforms you get paid from. We'll track income from each automatically.</div>
     <div class="pg">
@@ -326,7 +326,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   </div>
 
   <div class="obs" id="ob3">
-    <div class="obtag">Step 03 / 04</div>
+    <div class="obtag">Step 03 / 05</div>
     <div class="obtit">Your income & tax setup</div>
     <div class="obsub">We'll auto-save the right % from every payment so you're never surprised at tax time.</div>
     <div class="slv" id="slDisp">$8,000 / mo</div>
@@ -343,6 +343,24 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   </div>
 
   <div class="obs" id="ob4">
+    <div class="obtag">Step 04 / 05</div>
+    <div class="obtit">Link your bank</div>
+    <div class="obsub">Connect an existing bank account so you can see all your money in one place. Powered by Plaid — secure and encrypted.</div>
+    <div style="background:var(--surface);border-radius:16px;padding:24px;text-align:center;margin-bottom:24px">
+      <div style="font-size:48px;margin-bottom:12px">🏦</div>
+      <div id="obPlaidStatus" style="font-size:14px;font-weight:700;margin-bottom:4px">No bank connected yet</div>
+      <div id="obPlaidSub" style="font-size:12px;color:var(--muted)">Tap below to securely link via Plaid</div>
+      <button class="btn btn-p" style="margin-top:16px" id="obPlaidBtn" onclick="obPlaidLink()">Connect Bank Account</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;background:var(--accent-light);border-radius:var(--rs);padding:14px;margin-bottom:24px">
+      <span style="font-size:18px">🔒</span>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5"><strong style="color:var(--text)">Bank-level security.</strong> Plaid uses 256-bit encryption. Apexa never sees your login credentials.</div>
+    </div>
+    <button class="obbtn" onclick="obNext(5)">Continue →</button>
+    <button class="obbtnb" onclick="obNext(3)">← Back</button>
+  </div>
+
+  <div class="obs" id="ob5">
     <div class="suci">⚡</div>
     <div style="text-align:center;margin-bottom:28px">
       <div style="font-size:26px;font-weight:800;letter-spacing:-1px;margin-bottom:8px">You're all set!</div>
@@ -395,6 +413,21 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   <div class="mc mc-g" onclick="showScreen('invest')">
     <div class="cl"><div class="ci ci-g">📈</div><div><div class="ct">Investments</div><div class="cs">Alpaca · +3.2% this week</div></div></div>
     <div class="ca"><div class="cv cv-g" id="cInv">$11,240</div><div class="carrow">›</div></div>
+  </div>
+  <div id="homePlaid" style="display:none;margin:0 16px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:18px 20px;cursor:pointer" onclick="showScreen('banking')">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">🏦</span><span style="font-size:14px;font-weight:700">Linked Banks</span><span class="pill pill-p" style="font-size:10px">via Plaid</span></div>
+      <div class="carrow">›</div>
+    </div>
+    <div id="homePlaidAccts" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <span style="font-size:12px;font-weight:700;color:var(--muted)">Total Linked</span>
+      <span style="font-size:18px;font-weight:800" id="homePlaidTotal">$0</span>
+    </div>
+  </div>
+  <div id="homePlaidCta" style="margin:0 16px 12px;background:var(--accent-light);border:1.5px dashed rgba(124,58,237,.3);border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;display:none" onclick="openPlaidLink()">
+    <div style="font-size:13px;font-weight:700;color:var(--accent)">🏦 Link your bank account</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:4px">See all your money in one place</div>
   </div>
   <div style="height:16px"></div>
   <div class="sh"><div class="st">Recent Activity</div><div class="sa" onclick="showScreen('banking')">See all →</div></div>
@@ -552,6 +585,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   <div class="svl">
     <div class="svi con"><div class="svic">💳</div><div class="svin"><div class="svit">Stripe Treasury</div><div class="svid">Banking & payments</div></div><div class="svst svst-c">● Live</div></div>
     <div class="svi con"><div class="svic">🦙</div><div class="svin"><div class="svit">Alpaca</div><div class="svid">Investing & auto-invest</div></div><div class="svst svst-c">● Live</div></div>
+    <div class="svi" id="plaidSvc"><div class="svic">🏦</div><div class="svin"><div class="svit">Plaid</div><div class="svid">Bank account linking</div></div><div class="svst svst-p" id="plaidSvcStatus" style="cursor:pointer" onclick="openPlaidLink()">Connect</div></div>
     <div class="svi"><div class="svic">🔞</div><div class="svin"><div class="svit">OnlyFans</div><div class="svid">Income sync</div></div><div class="svst svst-p" style="cursor:pointer" onclick="alert('OnlyFans connection coming soon!')">Connect</div></div>
     <div class="svi"><div class="svic">🔄</div><div class="svin"><div class="svit">Dwolla</div><div class="svid">Fast ACH transfers</div></div><div class="svst svst-p">Connect</div></div>
     <div class="svi"><div class="svic">👨‍💼</div><div class="svin"><div class="svit">Taxfyle CPA</div><div class="svid">File taxes with a real CPA</div></div><div class="svst svst-p" style="cursor:pointer" onclick="showScreen('expert')">Connect</div></div>
@@ -639,8 +673,8 @@ const ICONS={'OnlyFans':'🔞','YouTube':'▶️','Substack':'📧','Patreon':'�
 function obNext(s){
   document.querySelectorAll('.obs').forEach(x=>x.classList.remove('active'));
   document.getElementById('ob'+s).classList.add('active');
-  for(let i=1;i<=4;i++) document.getElementById('od'+i).className='obdot'+(i<=s?' done':'');
-  if(s===4) updSum();
+  for(let i=1;i<=5;i++) document.getElementById('od'+i).className='obdot'+(i<=s?' done':'');
+  if(s===5) updSum();
 }
 function updSlider(v){obInc=parseInt(v);const d=obInc>=1000?'$'+(obInc/1000).toFixed(obInc%1000===0?0:1)+'k':'$'+obInc;document.getElementById('slDisp').textContent=d+' / mo';updVault()}
 function selTax(el,lbl,r){document.querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');obRateLbl=lbl;obRate=r;updVault()}
@@ -720,7 +754,18 @@ function initChat(){setTimeout(()=>addMsg("Hey! I'm Apexa AI 👋 I help creator
 function cExp(t){const m={cpa:"Connecting you with a licensed CPA via Taxfyle. They'll review your Apexa data and have your taxes filed within 48 hours. Check your email shortly.",consult:"Booking your 30-minute tax consultation. A CPA will reach out within 2 hours to confirm your appointment.",plan:"Connecting you with a financial advisor who specializes in creator wealth building.",books:"Starting your bookkeeping setup. Our team will connect all your income sources within 3 business days."};alert(m[t]||"Connecting you with an expert now...")}
 
 // PLAID LINK
-let plaidHandler=null;
+let plaidHandler=null,plaidConnected=false;
+function showPlaidLoading(show){
+  const nl=document.getElementById('noLinked');
+  if(!nl)return;
+  if(show){nl.innerHTML='<div style="padding:20px;text-align:center"><div style="font-size:28px;margin-bottom:8px;animation:pulse 1.5s infinite">🔗</div><div style="font-size:14px;font-weight:700">Connecting your bank...</div><div style="font-size:12px;color:var(--muted);margin-top:4px">This only takes a moment</div></div>';nl.style.display='block';nl.style.borderStyle='solid';nl.style.borderColor='rgba(124,58,237,.3)'}
+}
+function showPlaidSuccess(){
+  const nl=document.getElementById('noLinked');
+  if(!nl)return;
+  nl.innerHTML='<div style="padding:20px;text-align:center"><div style="font-size:28px;margin-bottom:8px">✅</div><div style="font-size:14px;font-weight:700;color:var(--green)">Bank connected!</div><div style="font-size:12px;color:var(--muted);margin-top:4px">Loading your accounts...</div></div>';
+  nl.style.borderColor='rgba(0,200,83,.3)';
+}
 async function openPlaidLink(){
   try{
     const res=await fetch(API+'/api/plaid/create-link-token?user_id=default',{method:'POST'});
@@ -729,13 +774,19 @@ async function openPlaidLink(){
     plaidHandler=Plaid.create({
       token:data.link_token,
       onSuccess:async(publicToken,metadata)=>{
+        showPlaidLoading(true);
         try{
           const ex=await fetch(API+'/api/plaid/exchange-token',{
             method:'POST',headers:{'Content-Type':'application/json'},
             body:JSON.stringify({public_token:publicToken,user_id:'default'})
           });
           const exData=await ex.json();
-          if(exData.status==='connected'){loadLinkedAccounts()}
+          if(exData.status==='connected'){
+            showPlaidSuccess();
+            plaidConnected=true;
+            updPlaidProfile(true);
+            setTimeout(()=>loadLinkedAccounts(),1200);
+          }
         }catch(e){alert('Error linking account: '+e.message)}
       },
       onExit:(err)=>{if(err)console.log('Plaid Link exit:',err)},
@@ -748,27 +799,97 @@ async function loadLinkedAccounts(){
     const res=await fetch(API+'/api/plaid/accounts?user_id=default');
     const data=await res.json();
     if(data.accounts&&data.accounts.length>0){
+      const isLive=data.source==='live';
+      plaidConnected=isLive;
+      // Banking screen
       document.getElementById('noLinked').style.display='none';
       const list=document.getElementById('linkedList');
       list.style.display='flex';
       const icons={depository:'🏦',credit:'💳',loan:'📋',investment:'📈'};
+      const total=data.accounts.reduce((s,a)=>s+(a.balance||0),0);
       list.innerHTML=data.accounts.map(a=>`
-        <div style="background:var(--surface);border:1.5px solid ${data.source==='live'?'rgba(0,200,83,.3)':'var(--border)'};border-radius:var(--rs);padding:16px;display:flex;align-items:center;gap:14px">
-          <div style="font-size:24px;width:44px;height:44px;border-radius:13px;background:${data.source==='live'?'var(--green-light)':'var(--accent-light)'};display:flex;align-items:center;justify-content:center">${icons[a.type]||'🏦'}</div>
+        <div style="background:var(--surface);border:1.5px solid ${isLive?'rgba(0,200,83,.3)':'var(--border)'};border-radius:var(--rs);padding:16px;display:flex;align-items:center;gap:14px">
+          <div style="font-size:24px;width:44px;height:44px;border-radius:13px;background:${isLive?'var(--green-light)':'var(--accent-light)'};display:flex;align-items:center;justify-content:center">${icons[a.type]||'🏦'}</div>
           <div style="flex:1">
             <div style="font-size:14px;font-weight:700;margin-bottom:2px">${a.name}</div>
             <div style="font-size:11px;color:var(--muted)">${a.subtype?a.subtype.charAt(0).toUpperCase()+a.subtype.slice(1):a.type} ••${a.mask||'••'}</div>
           </div>
           <div style="text-align:right">
             <div style="font-size:16px;font-weight:800">${fmt(a.balance)}</div>
-            <span class="pill ${data.source==='live'?'pill-g':'pill-p'}" style="font-size:10px">${data.source==='live'?'● Live':'Demo'}</span>
+            <span class="pill ${isLive?'pill-g':'pill-p'}" style="font-size:10px">${isLive?'● Live':'Demo'}</span>
           </div>
         </div>`).join('')+`
-        <div style="text-align:center;padding:8px 0">
-          <span style="font-size:12px;color:var(--accent);font-weight:600;cursor:pointer" onclick="openPlaidLink()">+ Link another account</span>
+        <div style="display:flex;justify-content:center;gap:16px;padding:10px 0">
+          <span style="font-size:12px;color:var(--accent);font-weight:600;cursor:pointer" onclick="openPlaidLink()">+ Link another</span>
+          <span style="font-size:12px;color:var(--red);font-weight:600;cursor:pointer" onclick="unlinkAccounts()">Disconnect</span>
         </div>`;
+      // Home screen — linked banks card
+      const hp=document.getElementById('homePlaid');
+      const hpCta=document.getElementById('homePlaidCta');
+      if(hp){
+        hp.style.display='block';
+        if(hpCta)hpCta.style.display='none';
+        document.getElementById('homePlaidAccts').innerHTML=data.accounts.map(a=>`
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px">${icons[a.type]||'🏦'}</span><span style="font-size:13px;font-weight:600">${a.name}</span></div>
+            <span style="font-size:13px;font-weight:700">${fmt(a.balance)}</span>
+          </div>`).join('');
+        document.getElementById('homePlaidTotal').textContent=fmt(total);
+      }
+      updPlaidProfile(isLive);
+    }else{
+      // No accounts — show CTA on home
+      const hpCta=document.getElementById('homePlaidCta');
+      if(hpCta)hpCta.style.display='block';
     }
-  }catch(e){console.log('Error loading accounts:',e)}
+  }catch(e){
+    console.log('Error loading accounts:',e);
+    const hpCta=document.getElementById('homePlaidCta');
+    if(hpCta)hpCta.style.display='block';
+  }
+}
+function unlinkAccounts(){
+  if(!confirm('Disconnect linked bank accounts?'))return;
+  plaidConnected=false;
+  // Reset banking screen
+  const nl=document.getElementById('noLinked');
+  nl.style.display='block';nl.style.borderStyle='dashed';nl.style.borderColor='var(--border)';
+  nl.innerHTML='<div style="font-size:28px;margin-bottom:8px">🏦</div><div style="font-size:14px;font-weight:700;margin-bottom:4px">Connect Your Bank</div><div style="font-size:12px;color:var(--muted);line-height:1.5">Link an external bank account via Plaid to see balances and move money faster.</div><div style="margin-top:12px"><span class="pill pill-p">Powered by Plaid</span></div>';
+  nl.onclick=()=>openPlaidLink();
+  document.getElementById('linkedList').style.display='none';
+  document.getElementById('linkedList').innerHTML='';
+  // Reset home
+  document.getElementById('homePlaid').style.display='none';
+  document.getElementById('homePlaidCta').style.display='block';
+  updPlaidProfile(false);
+}
+async function obPlaidLink(){
+  try{
+    document.getElementById('obPlaidBtn').textContent='Connecting...';
+    document.getElementById('obPlaidBtn').disabled=true;
+    const res=await fetch(API+'/api/plaid/create-link-token?user_id=default',{method:'POST'});
+    const data=await res.json();
+    if(!data.link_token){document.getElementById('obPlaidBtn').textContent='Connect Bank Account';document.getElementById('obPlaidBtn').disabled=false;return}
+    Plaid.create({
+      token:data.link_token,
+      onSuccess:async(publicToken)=>{
+        document.getElementById('obPlaidStatus').textContent='🎉 Bank connected!';
+        document.getElementById('obPlaidStatus').style.color='var(--green)';
+        document.getElementById('obPlaidSub').textContent='Your accounts will appear on the dashboard';
+        document.getElementById('obPlaidBtn').textContent='✓ Connected';
+        document.getElementById('obPlaidBtn').style.background='var(--green)';
+        try{await fetch(API+'/api/plaid/exchange-token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({public_token:publicToken,user_id:'default'})})}catch(e){}
+        plaidConnected=true;
+      },
+      onExit:()=>{document.getElementById('obPlaidBtn').textContent='Connect Bank Account';document.getElementById('obPlaidBtn').disabled=false},
+    }).open();
+  }catch(e){document.getElementById('obPlaidBtn').textContent='Connect Bank Account';document.getElementById('obPlaidBtn').disabled=false}
+}
+function updPlaidProfile(connected){
+  const el=document.getElementById('plaidSvcStatus');
+  if(!el)return;
+  if(connected){el.className='svst svst-c';el.textContent='● Live';el.style.cursor='default';el.onclick=null}
+  else{el.className='svst svst-p';el.textContent='Connect';el.style.cursor='pointer';el.onclick=()=>openPlaidLink()}
 }
 
 // PWA
