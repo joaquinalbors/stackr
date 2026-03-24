@@ -1,3 +1,11 @@
+<!--
+  Apexa — Creator Finance Platform
+  Copyright © 2026 Albors Advisory LLC. All Rights Reserved.
+  Developed under Albors Advisory LLC, a Puerto Rico LLC.
+  Young Entrepreneurs Act Decree Holder.
+  Unauthorized use, reproduction, or distribution is strictly prohibited.
+  Contact: alborsadvisory@gmail.com
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,6 +18,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Apexa">
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -411,6 +420,16 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
     <div class="qab" onclick="showScreen('taxes')"><div class="qaico">🔒</div><div><div class="qal">Tax Vault</div><div class="qas">Set aside funds</div></div></div>
     <div class="qab" onclick="showScreen('invest')"><div class="qaico">📈</div><div><div class="qal">Auto-Invest</div><div class="qas">Alpaca portfolio</div></div></div>
   </div>
+  <div class="sh"><div class="st">Linked Accounts</div><div class="sa" onclick="openPlaidLink()">+ Link Bank →</div></div>
+  <div id="linkedAccounts" style="padding:0 16px 16px">
+    <div id="noLinked" style="background:var(--surface);border:1.5px dashed var(--border);border-radius:var(--rs);padding:24px;text-align:center;cursor:pointer" onclick="openPlaidLink()">
+      <div style="font-size:28px;margin-bottom:8px">🏦</div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:4px">Connect Your Bank</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5">Link an external bank account via Plaid to see balances and move money faster.</div>
+      <div style="margin-top:12px"><span class="pill pill-p">Powered by Plaid</span></div>
+    </div>
+    <div id="linkedList" style="display:none;display:flex;flex-direction:column;gap:10px"></div>
+  </div>
   <div class="sh"><div class="st">Transactions</div><div class="sa">Filter ↓</div></div>
   <div class="al" id="bnkAct"></div>
 </div>
@@ -609,7 +628,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
 </div>
 
 <script>
-const API='http://localhost:8000';
+const API="https://apexa.up.railway.app";
 let obInc=8000,obRate=.28,obRateLbl='28%',chatHist=[],isTyping=false;
 
 // FORMAT
@@ -627,7 +646,7 @@ function updSlider(v){obInc=parseInt(v);const d=obInc>=1000?'$'+(obInc/1000).toF
 function selTax(el,lbl,r){document.querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');obRateLbl=lbl;obRate=r;updVault()}
 function updVault(){document.getElementById('vaultPrev').textContent=fmt(Math.round(obInc*obRate))}
 function updSum(){const v=Math.round(obInc*obRate),sp=obInc-v;document.getElementById('sumInc').textContent=fmt(obInc);document.getElementById('sumRate').textContent=obRateLbl;document.getElementById('sumVault').textContent=fmt(v);document.getElementById('sumSpend').textContent=fmt(sp)}
-function enterApp(){document.getElementById('bnav').style.display='flex';showScreen('home');loadAll()}
+function enterApp(){document.getElementById('bnav').style.display='flex';showScreen('home');loadAll();loadLinkedAccounts()}
 
 // NAV
 function showScreen(n){
@@ -700,6 +719,58 @@ function autoR(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeig
 function initChat(){setTimeout(()=>addMsg("Hey! I'm Apexa AI 👋 I help creators manage money, taxes, and investments. What can I help you with today?",true),400)}
 function cExp(t){const m={cpa:"Connecting you with a licensed CPA via Taxfyle. They'll review your Apexa data and have your taxes filed within 48 hours. Check your email shortly.",consult:"Booking your 30-minute tax consultation. A CPA will reach out within 2 hours to confirm your appointment.",plan:"Connecting you with a financial advisor who specializes in creator wealth building.",books:"Starting your bookkeeping setup. Our team will connect all your income sources within 3 business days."};alert(m[t]||"Connecting you with an expert now...")}
 
+// PLAID LINK
+let plaidHandler=null;
+async function openPlaidLink(){
+  try{
+    const res=await fetch(API+'/api/plaid/create-link-token?user_id=default',{method:'POST'});
+    const data=await res.json();
+    if(!data.link_token){alert('Could not create link token');return}
+    plaidHandler=Plaid.create({
+      token:data.link_token,
+      onSuccess:async(publicToken,metadata)=>{
+        try{
+          const ex=await fetch(API+'/api/plaid/exchange-token',{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({public_token:publicToken,user_id:'default'})
+          });
+          const exData=await ex.json();
+          if(exData.status==='connected'){loadLinkedAccounts()}
+        }catch(e){alert('Error linking account: '+e.message)}
+      },
+      onExit:(err)=>{if(err)console.log('Plaid Link exit:',err)},
+    });
+    plaidHandler.open();
+  }catch(e){alert('Error connecting to Plaid: '+e.message)}
+}
+async function loadLinkedAccounts(){
+  try{
+    const res=await fetch(API+'/api/plaid/accounts?user_id=default');
+    const data=await res.json();
+    if(data.accounts&&data.accounts.length>0){
+      document.getElementById('noLinked').style.display='none';
+      const list=document.getElementById('linkedList');
+      list.style.display='flex';
+      const icons={depository:'🏦',credit:'💳',loan:'📋',investment:'📈'};
+      list.innerHTML=data.accounts.map(a=>`
+        <div style="background:var(--surface);border:1.5px solid ${data.source==='live'?'rgba(0,200,83,.3)':'var(--border)'};border-radius:var(--rs);padding:16px;display:flex;align-items:center;gap:14px">
+          <div style="font-size:24px;width:44px;height:44px;border-radius:13px;background:${data.source==='live'?'var(--green-light)':'var(--accent-light)'};display:flex;align-items:center;justify-content:center">${icons[a.type]||'🏦'}</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700;margin-bottom:2px">${a.name}</div>
+            <div style="font-size:11px;color:var(--muted)">${a.subtype?a.subtype.charAt(0).toUpperCase()+a.subtype.slice(1):a.type} ••${a.mask||'••'}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:16px;font-weight:800">${fmt(a.balance)}</div>
+            <span class="pill ${data.source==='live'?'pill-g':'pill-p'}" style="font-size:10px">${data.source==='live'?'● Live':'Demo'}</span>
+          </div>
+        </div>`).join('')+`
+        <div style="text-align:center;padding:8px 0">
+          <span style="font-size:12px;color:var(--accent);font-weight:600;cursor:pointer" onclick="openPlaidLink()">+ Link another account</span>
+        </div>`;
+    }
+  }catch(e){console.log('Error loading accounts:',e)}
+}
+
 // PWA
 let dp;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;document.getElementById('installBanner').style.display='flex'});
@@ -708,4 +779,3 @@ if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serv
 </script>
 </body>
 </html>
-
