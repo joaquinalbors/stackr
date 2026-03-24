@@ -674,7 +674,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
       <div style="font-size:28px">⭐</div>
       <div style="flex:1">
         <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:2px">Unlock Apexa Pro</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.5)">Auto-invest, tax vault alerts, bank linking — $9.99/mo</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5)">Auto-invest, tax vault, bank linking, deductions</div>
       </div>
       <div style="background:var(--accent);color:#fff;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:700">Upgrade</div>
     </div>
@@ -931,24 +931,42 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
 </div>
 
 <div class="mo" id="priceMod" onclick="closeBg(event,'priceMod')">
-  <div class="modal"><div class="mh"></div><div class="mt">Choose your plan</div><div class="ms">All plans include a 7-day free trial.</div>
+  <div class="modal"><div class="mh"></div><div class="mt">Choose your plan</div><div class="ms">Automate your creator finances. Cancel anytime.</div>
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
-      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:18px;cursor:pointer" onclick="this.parentElement.querySelectorAll(':scope > div').forEach(d=>{d.style.borderColor='var(--border)'});this.style.borderColor='var(--accent)'">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:15px;font-weight:800">Free</span><span style="font-size:18px;font-weight:800">$0</span></div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.6">Dashboard · Tax estimates · Manual tracking · AI chat</div>
+      <div style="background:var(--accent-light);border:1.5px solid var(--accent);border-radius:16px;padding:20px;position:relative;cursor:pointer" onclick="selectedPlan='pro';this.parentElement.querySelectorAll(':scope > div').forEach(d=>{d.style.borderColor='var(--border)'});this.style.borderColor='var(--accent)'">
+        <div style="position:absolute;top:-8px;right:16px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px">MOST POPULAR</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <span style="font-size:17px;font-weight:800;color:var(--accent)">Apexa Pro</span>
+          <span style="font-size:22px;font-weight:800"><span style="font-size:12px;color:var(--muted);font-weight:500">$</span>299<span style="font-size:12px;color:var(--muted);font-weight:500">/mo</span></span>
+        </div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.8">
+          ✓ Auto income splitting (tax / invest / spend)<br>
+          ✓ Tax estimation — all 50 states + quarterly alerts<br>
+          ✓ Bank account linking via Plaid<br>
+          ✓ Managed investing via robo-advisor<br>
+          ✓ Tax Vault with shortfall alerts<br>
+          ✓ Deduction finder — scan for write-offs<br>
+          ✓ AI financial assistant
+        </div>
       </div>
-      <div style="background:var(--accent-light);border:1.5px solid var(--accent);border-radius:16px;padding:18px;position:relative;cursor:pointer" onclick="this.parentElement.querySelectorAll(':scope > div').forEach(d=>{d.style.borderColor='var(--border)'});this.style.borderColor='var(--accent)'">
-        <div style="position:absolute;top:-8px;right:16px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px">POPULAR</div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:15px;font-weight:800;color:var(--accent)">Pro</span><span style="font-size:18px;font-weight:800"><span style="font-size:12px;color:var(--muted);font-weight:500">$</span>9.99<span style="font-size:12px;color:var(--muted);font-weight:500">/mo</span></span></div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.6">Everything in Free + Auto income allocation · Bank linking (Plaid) · Auto-invest (Alpaca) · Tax Vault with alerts · Quarterly reminders</div>
-      </div>
-      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:18px;cursor:pointer" onclick="this.parentElement.querySelectorAll(':scope > div').forEach(d=>{d.style.borderColor='var(--border)'});this.style.borderColor='var(--accent)'">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:15px;font-weight:800">Premium</span><span style="font-size:18px;font-weight:800"><span style="font-size:12px;color:var(--muted);font-weight:500">$</span>24.99<span style="font-size:12px;color:var(--muted);font-weight:500">/mo</span></span></div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.6">Everything in Pro + Tax filing via CPA (Taxfyle) · Priority support · Custom portfolio strategies · Expense tracking · Deduction finder</div>
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:20px;cursor:pointer" onclick="selectedPlan='premium';this.parentElement.querySelectorAll(':scope > div').forEach(d=>{d.style.borderColor='var(--border)'});this.style.borderColor='var(--accent)'">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <span style="font-size:17px;font-weight:800">Apexa Premium</span>
+          <span style="font-size:22px;font-weight:800"><span style="font-size:12px;color:var(--muted);font-weight:500">$</span>599<span style="font-size:12px;color:var(--muted);font-weight:500">/mo</span></span>
+        </div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.8">
+          ✓ Everything in Pro<br>
+          ✓ Tax filing via licensed CPA<br>
+          ✓ Custom portfolio strategies<br>
+          ✓ Expense tracking + receipt capture<br>
+          ✓ Priority support — dedicated account manager<br>
+          ✓ Quarterly tax review with CPA<br>
+          ✓ Business entity tax optimization
+        </div>
       </div>
     </div>
-    <button class="btn btn-p" id="priceBtn" onclick="subscribePlan()">Start Free Trial →</button>
-    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:10px">Cancel anytime. No credit card required for free plan.</div>
+    <button class="btn btn-p" id="priceBtn" onclick="subscribePlan()">Start 7-Day Free Trial →</button>
+    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:10px">Cancel anytime. You won't be charged during the trial.</div>
   </div>
 </div>
 
