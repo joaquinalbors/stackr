@@ -1,14 +1,19 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import Optional, List
 import os
 import stripe
+import httpx
+from datetime import datetime
 import plaid
 from plaid.api import plaid_api
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
 from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
 from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
 from plaid.model.accounts_get_request import AccountsGetRequest
+from plaid.model.transactions_get_request import TransactionsGetRequest
+from plaid.model.transactions_get_request_options import TransactionsGetRequestOptions
 from plaid.model.products import Products
 from plaid.model.country_code import CountryCode
 
@@ -30,6 +35,16 @@ plaid_config = plaid.Configuration(
     api_key={"clientId": PLAID_CLIENT_ID, "secret": PLAID_SECRET}
 )
 plaid_client = plaid_api.PlaidApi(plaid.ApiClient(plaid_config))
+
+# Alpaca setup
+ALPACA_API_KEY = os.getenv("ALPACA_API_KEY", "")
+ALPACA_SECRET_KEY = os.getenv("ALPACA_SECRET_KEY", "")
+ALPACA_BASE_URL = os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets")
+
+# Stripe subscription products
+STRIPE_PRICE_PRO = os.getenv("STRIPE_PRICE_PRO", "")
+STRIPE_PRICE_PREMIUM = os.getenv("STRIPE_PRICE_PREMIUM", "")
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 
 # In-memory store for demo (replace with DB in production)
 user_access_tokens = {}
@@ -503,3 +518,290 @@ def plaid_status():
         "environment": PLAID_ENV,
         "connected_users": len(user_access_tokens)
     }
+
+# --- Plaid Transactions & Expense Categorization ---
+
+DEDUCTION_CATEGORIES = {
+    "Software": ["adobe", "canva", "notion", "figma", "dropbox", "google workspace", "microsoft", "zoom", "slack", "chatgpt", "openai", "midjourney"],
+    "Equipment": ["apple", "best buy", "b&h photo", "amazon", "newegg", "adorama"],
+    "Internet & Phone": ["verizon", "at&t", "t-mobile", "comcast", "xfinity", "spectrum", "cox"],
+    "Advertising": ["facebook ads", "meta ads", "google ads", "tiktok ads", "instagram", "twitter ads", "pinterest"],
+    "Travel": ["uber", "lyft", "airbnb", "hotel", "airlines", "southwest", "delta", "united", "american airlines", "jetblue"],
+    "Meals (50%)": ["doordash", "grubhub", "uber eats", "restaurant"],
+    "Education": ["udemy", "skillshare", "masterclass", "coursera", "linkedin learning"],
+    "Professional Services": ["legal", "attorney", "accountant", "cpa", "bookkeeper"],
+    "Office Supplies": ["staples", "office depot", "target", "walmart"],
+    "Subscriptions": ["patreon", "substack", "mailchimp", "convertkit", "beehiiv"],
+}
+
+def categorize_expense(description: str) -> dict:
+    desc_lower = description.lower()
+    for category, keywords in DEDUCTION_CATEGORIES.items():
+        for kw in keywords:
+            if kw in desc_lower:
+                return {"category": category, "deductible": True, "match": kw}
+    return {"category": None, "deductible": False, "match": None}
+
+@app.get("/api/plaid/transactions")
+def get_plaid_transactions(user_id: str = "default", days: int = 90):
+    access_token = user_access_tokens.get(user_id)
+    if not access_token:
+        # Demo data
+        demo_txns = [
+            {"date": "2026-03-15", "description": "Adobe Creative Cloud", "amount": -54.99, "category": "Software", "deductible": True},
+            {"date": "2026-03-12", "description": "Amazon - Ring Light", "amount": -89.99, "category": "Equipment", "deductible": True},
+            {"date": "2026-03-10", "description": "Starbucks", "amount": -6.50, "category": None, "deductible": False},
+            {"date": "2026-03-08", "description": "Verizon Wireless", "amount": -85.00, "category": "Internet & Phone", "deductible": True},
+            {"date": "2026-03-05", "description": "TikTok Ads", "amount": -200.00, "category": "Advertising", "deductible": True},
+            {"date": "2026-03-03", "description": "Uber Eats", "amount": -32.00, "category": "Meals (50%)", "deductible": True},
+            {"date": "2026-03-01", "description": "Canva Pro", "amount": -12.99, "category": "Software", "deductible": True},
+            {"date": "2026-02-28", "description": "Netflix", "amount": -15.99, "category": None, "deductible": False},
+            {"date": "2026-02-25", "description": "Google Ads", "amount": -150.00, "category": "Advertising", "deductible": True},
+            {"date": "2026-02-20", "description": "Zoom Pro", "amount": -13.33, "category": "Software", "deductible": True},
+        ]
+        total_deductible = sum(abs(t["amount"]) for t in demo_txns if t["deductible"])
+        return {"transactions": demo_txns, "total_deductible": round(total_deductible, 2), "period_days": days, "source": "demo"}
+    try:
+        from datetime import date, timedelta
+        end = date.today()
+        start = end - timedelta(days=days)
+        request = TransactionsGetRequest(
+            access_token=access_token,
+            start_date=start,
+            end_date=end,
+            options=TransactionsGetRequestOptions(count=100)
+        )
+        response = plaid_client.transactions_get(request)
+        txns = []
+        for t in response.transactions:
+            cat_info = categorize_expense(t.name or "")
+            txns.append({
+                "date": str(t.date),
+                "description": t.name,
+                "amount": -t.amount,
+                "category": cat_info["category"],
+                "deductible": cat_info["deductible"],
+                "plaid_category": t.category,
+            })
+        total_deductible = sum(abs(t["amount"]) for t in txns if t["deductible"])
+        return {"transactions": txns, "total_deductible": round(total_deductible, 2), "period_days": days, "source": "live"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/plaid/deduction-summary")
+def get_deduction_summary(user_id: str = "default"):
+    txns_response = get_plaid_transactions(user_id, 365)
+    txns = txns_response["transactions"]
+    by_category = {}
+    for t in txns:
+        if t["deductible"] and t["category"]:
+            cat = t["category"]
+            if cat not in by_category:
+                by_category[cat] = {"category": cat, "total": 0, "count": 0}
+            by_category[cat]["total"] = round(by_category[cat]["total"] + abs(t["amount"]), 2)
+            by_category[cat]["count"] += 1
+    categories = sorted(by_category.values(), key=lambda x: x["total"], reverse=True)
+    total = sum(c["total"] for c in categories)
+    estimated_savings = round(total * 0.28, 2)
+    return {
+        "categories": categories,
+        "total_deductible": round(total, 2),
+        "estimated_tax_savings": estimated_savings,
+        "period": "Last 12 months",
+        "source": txns_response["source"],
+        "disclaimer": "Deduction categories are estimates. Consult a CPA to confirm eligibility."
+    }
+
+# --- Alpaca Trading & Rebalancing ---
+
+async def alpaca_request(method: str, path: str, data: dict = None) -> dict:
+    if not ALPACA_API_KEY:
+        return None
+    headers = {
+        "APCA-API-KEY-ID": ALPACA_API_KEY,
+        "APCA-API-SECRET-KEY": ALPACA_SECRET_KEY,
+    }
+    async with httpx.AsyncClient() as client:
+        url = f"{ALPACA_BASE_URL}{path}"
+        if method == "GET":
+            r = await client.get(url, headers=headers)
+        elif method == "POST":
+            r = await client.post(url, headers=headers, json=data)
+        elif method == "DELETE":
+            r = await client.delete(url, headers=headers)
+        else:
+            return None
+        if r.status_code >= 400:
+            return {"error": r.text, "status": r.status_code}
+        return r.json() if r.text else {}
+
+@app.get("/api/alpaca/account")
+async def get_alpaca_account():
+    result = await alpaca_request("GET", "/v2/account")
+    if not result:
+        return {
+            "cash": 24830.00, "portfolio_value": 11240.00,
+            "buying_power": 24830.00, "equity": 36070.00,
+            "status": "ACTIVE", "source": "demo",
+            "configured": False
+        }
+    if "error" in result:
+        raise HTTPException(status_code=result["status"], detail=result["error"])
+    return {
+        "cash": float(result.get("cash", 0)),
+        "portfolio_value": float(result.get("portfolio_value", 0)),
+        "buying_power": float(result.get("buying_power", 0)),
+        "equity": float(result.get("equity", 0)),
+        "status": result.get("status", "UNKNOWN"),
+        "source": "live",
+        "configured": True
+    }
+
+@app.get("/api/alpaca/positions")
+async def get_alpaca_positions():
+    result = await alpaca_request("GET", "/v2/positions")
+    if not result or isinstance(result, dict):
+        return {"positions": MODEL_PORTFOLIOS["moderate"]["allocations"], "source": "demo"}
+    positions = []
+    for p in result:
+        positions.append({
+            "ticker": p["symbol"],
+            "name": p.get("name", p["symbol"]),
+            "shares": float(p["qty"]),
+            "value": float(p["market_value"]),
+            "cost_basis": float(p["cost_basis"]),
+            "unrealized_pl": float(p["unrealized_pl"]),
+            "unrealized_pl_pct": float(p["unrealized_plpc"]) * 100,
+            "current_price": float(p["current_price"]),
+        })
+    return {"positions": positions, "source": "live"}
+
+class OrderRequest(BaseModel):
+    symbol: str
+    amount: float
+    side: str = "buy"
+
+@app.post("/api/alpaca/order")
+async def place_alpaca_order(order: OrderRequest):
+    if not ALPACA_API_KEY:
+        return {
+            "status": "demo", "message": f"Demo: Would {order.side} ${order.amount} of {order.symbol}",
+            "order_id": "demo-" + order.symbol.lower(),
+            "configured": False
+        }
+    result = await alpaca_request("POST", "/v2/orders", {
+        "symbol": order.symbol,
+        "notional": str(order.amount),
+        "side": order.side,
+        "type": "market",
+        "time_in_force": "day",
+    })
+    if not result or "error" in result:
+        raise HTTPException(status_code=400, detail=result.get("error", "Order failed"))
+    return {
+        "status": "filled" if result.get("status") == "filled" else result.get("status", "submitted"),
+        "order_id": result.get("id"),
+        "symbol": order.symbol,
+        "amount": order.amount,
+        "side": order.side,
+        "source": "live"
+    }
+
+class RebalanceRequest(BaseModel):
+    risk_score: int = 5
+    total_amount: float = 500.0
+
+@app.post("/api/alpaca/rebalance")
+async def rebalance_portfolio(req: RebalanceRequest):
+    portfolio = get_model_portfolio(req.risk_score)
+    orders = []
+    for alloc in portfolio["allocations"]:
+        amount = round(req.total_amount * alloc["pct"] / 100, 2)
+        if amount < 1:
+            continue
+        if ALPACA_API_KEY:
+            result = await alpaca_request("POST", "/v2/orders", {
+                "symbol": alloc["ticker"],
+                "notional": str(amount),
+                "side": "buy",
+                "type": "market",
+                "time_in_force": "day",
+            })
+            orders.append({
+                "ticker": alloc["ticker"], "amount": amount, "pct": alloc["pct"],
+                "status": result.get("status", "submitted") if result and "error" not in result else "failed",
+                "source": "live"
+            })
+        else:
+            orders.append({
+                "ticker": alloc["ticker"], "amount": amount, "pct": alloc["pct"],
+                "status": "demo", "source": "demo"
+            })
+    return {
+        "profile": portfolio["name"],
+        "risk_score": req.risk_score,
+        "total_invested": req.total_amount,
+        "orders": orders,
+        "disclaimer": "Trades executed by Alpaca Securities LLC, member FINRA/SIPC. This is not investment advice."
+    }
+
+@app.get("/api/alpaca/trading-status")
+async def alpaca_trading_status():
+    return {
+        "configured": bool(ALPACA_API_KEY),
+        "environment": "paper" if "paper" in ALPACA_BASE_URL else "live",
+        "base_url": ALPACA_BASE_URL
+    }
+
+# --- Stripe Subscriptions ---
+
+class CheckoutRequest(BaseModel):
+    plan: str  # "pro" or "premium"
+    success_url: str = "https://joaquinalbors.github.io/stackr/"
+    cancel_url: str = "https://joaquinalbors.github.io/stackr/"
+
+@app.post("/api/stripe/create-checkout")
+def create_checkout(req: CheckoutRequest):
+    if not stripe.api_key:
+        return {"url": "#", "status": "demo", "message": "Stripe not configured. Demo mode."}
+    price_id = STRIPE_PRICE_PRO if req.plan == "pro" else STRIPE_PRICE_PREMIUM
+    if not price_id:
+        return {"url": "#", "status": "demo", "message": f"No price ID set for {req.plan} plan."}
+    try:
+        session = stripe.checkout.Session.create(
+            mode="subscription",
+            line_items=[{"price": price_id, "quantity": 1}],
+            success_url=req.success_url + "?session_id={CHECKOUT_SESSION_ID}",
+            cancel_url=req.cancel_url,
+        )
+        return {"url": session.url, "session_id": session.id, "status": "live"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/stripe/create-portal")
+def create_billing_portal(customer_id: str = ""):
+    if not stripe.api_key or not customer_id:
+        return {"url": "#", "status": "demo", "message": "Billing portal demo mode."}
+    try:
+        session = stripe.billing_portal.Session.create(
+            customer=customer_id,
+            return_url="https://joaquinalbors.github.io/stackr/",
+        )
+        return {"url": session.url, "status": "live"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/stripe/subscription-status")
+def get_subscription_status(customer_id: str = ""):
+    if not stripe.api_key or not customer_id:
+        return {"plan": "free", "status": "active", "source": "demo"}
+    try:
+        subs = stripe.Subscription.list(customer=customer_id, limit=1)
+        if subs.data:
+            sub = subs.data[0]
+            price_id = sub["items"]["data"][0]["price"]["id"]
+            plan = "premium" if price_id == STRIPE_PRICE_PREMIUM else "pro"
+            return {"plan": plan, "status": sub["status"], "current_period_end": sub["current_period_end"], "source": "live"}
+        return {"plan": "free", "status": "active", "source": "live"}
+    except Exception as e:
+        return {"plan": "free", "status": "active", "source": "demo", "error": str(e)}
