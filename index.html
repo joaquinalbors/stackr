@@ -434,23 +434,35 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   <!-- Step 6: Terms & Legal -->
   <div class="obs" id="ob6">
     <div class="obtag">Step 06 / 08</div>
-    <div class="obtit">Before we start</div>
-    <div class="obsub">Please review and accept to continue.</div>
-    <div style="background:var(--surface);border-radius:var(--rs);padding:20px;margin-bottom:20px;max-height:280px;overflow-y:auto;border:1.5px solid var(--border)">
-      <div style="font-size:13px;line-height:1.8;color:var(--muted)">
-        <p style="margin-bottom:12px"><strong style="color:var(--text)">Apexa is an interface layer.</strong> We do not hold funds, provide investment advice, or offer tax advice. We connect you with licensed financial service providers.</p>
-        <p style="margin-bottom:12px"><strong style="color:var(--text)">Banking services</strong> are provided by Stripe Treasury. Funds are held by Stripe's partner banks, not by Apexa. FDIC insurance is provided through Stripe's banking partners.</p>
-        <p style="margin-bottom:12px"><strong style="color:var(--text)">Securities brokerage</strong> is provided by Alpaca Securities LLC, member FINRA/SIPC. Apexa does not execute trades or manage investments. Portfolio allocations are suggestions, not advice.</p>
-        <p style="margin-bottom:12px"><strong style="color:var(--text)">Tax calculations</strong> are estimates based on the information you provide and current federal tax brackets. These do not constitute tax advice. Always consult a licensed CPA for tax filing and planning.</p>
-        <p style="margin-bottom:12px"><strong style="color:var(--text)">Income allocation</strong> splits are executed through Stripe Treasury and Alpaca based on your configured preferences. You can modify or stop these at any time.</p>
-        <p><strong style="color:var(--text)">Bank account linking</strong> is powered by Plaid Inc. Apexa never receives or stores your bank login credentials.</p>
+    <div class="obtit">How Apexa works</div>
+    <div class="obsub">We connect you with licensed providers. Here's who does what.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+      <div style="display:flex;align-items:flex-start;gap:14px;background:var(--surface);border-radius:14px;padding:14px">
+        <div style="font-size:22px;flex-shrink:0;margin-top:2px">🔌</div>
+        <div><div style="font-size:13px;font-weight:700;margin-bottom:3px">Apexa is the interface</div><div style="font-size:12px;color:var(--muted);line-height:1.5">We don't hold your money, manage investments, or give tax advice. We connect the tools.</div></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;background:var(--surface);border-radius:14px;padding:14px">
+        <div style="font-size:22px;flex-shrink:0;margin-top:2px">💳</div>
+        <div><div style="font-size:13px;font-weight:700;margin-bottom:3px">Banking → Stripe Treasury</div><div style="font-size:12px;color:var(--muted);line-height:1.5">Your funds are held by Stripe's FDIC-insured partner banks.</div></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;background:var(--surface);border-radius:14px;padding:14px">
+        <div style="font-size:22px;flex-shrink:0;margin-top:2px">📈</div>
+        <div><div style="font-size:13px;font-weight:700;margin-bottom:3px">Investing → Alpaca Securities</div><div style="font-size:12px;color:var(--muted);line-height:1.5">Trades executed by Alpaca Securities LLC, member FINRA/SIPC.</div></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;background:var(--surface);border-radius:14px;padding:14px">
+        <div style="font-size:22px;flex-shrink:0;margin-top:2px">🧮</div>
+        <div><div style="font-size:13px;font-weight:700;margin-bottom:3px">Taxes → Estimates only</div><div style="font-size:12px;color:var(--muted);line-height:1.5">Our calculations are not tax advice. Always consult a licensed CPA.</div></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;background:var(--surface);border-radius:14px;padding:14px">
+        <div style="font-size:22px;flex-shrink:0;margin-top:2px">🏦</div>
+        <div><div style="font-size:13px;font-weight:700;margin-bottom:3px">Bank linking → Plaid</div><div style="font-size:12px;color:var(--muted);line-height:1.5">256-bit encrypted. We never see your bank login credentials.</div></div>
       </div>
     </div>
-    <label style="display:flex;align-items:flex-start;gap:12px;margin-bottom:24px;cursor:pointer">
-      <input type="checkbox" id="tosCheck" onchange="document.getElementById('tosBtn').disabled=!this.checked" style="width:20px;height:20px;margin-top:2px;accent-color:var(--accent);flex-shrink:0">
-      <span style="font-size:13px;font-weight:600;line-height:1.5">I understand that Apexa is an interface to third-party financial services and I agree to the Terms of Service and Privacy Policy.</span>
+    <label style="display:flex;align-items:center;gap:12px;background:var(--accent-light);border-radius:14px;padding:16px;margin-bottom:20px;cursor:pointer">
+      <input type="checkbox" id="tosCheck" onchange="document.getElementById('tosBtn').disabled=!this.checked;document.getElementById('tosBtn').style.opacity=this.checked?'1':'0.4'" style="width:22px;height:22px;accent-color:var(--accent);flex-shrink:0">
+      <span style="font-size:13px;font-weight:600;line-height:1.4">I understand and agree to the <span style="color:var(--accent)">Terms of Service</span> and <span style="color:var(--accent)">Privacy Policy</span></span>
     </label>
-    <button class="obbtn" id="tosBtn" onclick="obNext(7)" disabled style="opacity:0.5">Accept & Continue →</button>
+    <button class="obbtn" id="tosBtn" onclick="obNext(7)" disabled style="opacity:0.4">Continue →</button>
     <button class="obbtnb" onclick="obNext(5)">← Back</button>
   </div>
 
