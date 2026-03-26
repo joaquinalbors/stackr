@@ -1,6 +1,8 @@
-const CACHE_NAME = 'apexa-v1';
+const CACHE_NAME = 'apexa-v2';
 const ASSETS = [
   '/index.html',
+  '/landing.html',
+  '/404.html',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
@@ -11,10 +13,7 @@ const ASSETS = [
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS).catch(() => {
-        // If some assets fail, still install
-        return Promise.resolve();
-      });
+      return cache.addAll(ASSETS).catch(() => Promise.resolve());
     })
   );
   self.skipWaiting();
@@ -30,40 +29,22 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Fetch — serve from cache, fall back to network
+// Fetch — network first, fallback to cache
 self.addEventListener('fetch', e => {
-  // Skip API calls — always go to network for live data
-  if (e.request.url.includes('localhost:8000') ||
-      e.request.url.includes('/api/')) {
-    return;
-  }
+  // Skip API calls — always go to network
+  if (e.request.url.includes('/api/') || e.request.url.includes('railway.app')) return;
 
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(response => {
-        // Cache successful responses
-        if (response && response.status === 200) {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(e.request, copy));
-        }
-        return response;
-      }).catch(() => {
-        // Offline fallback — return cached demo
-        return caches.match('/index.html');
+    fetch(e.request).then(response => {
+      if (response && response.status === 200) {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(e.request, copy));
+      }
+      return response;
+    }).catch(() => {
+      return caches.match(e.request).then(cached => {
+        return cached || caches.match('/index.html');
       });
     })
   );
 });
-
-// Background sync for when connection returns
-self.addEventListener('sync', e => {
-  if (e.tag === 'sync-transactions') {
-    e.waitUntil(syncTransactions());
-  }
-});
-
-async function syncTransactions() {
-  // Will sync pending transactions when back online
-  console.log('Apexa: syncing transactions...');
-}

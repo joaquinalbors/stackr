@@ -1228,6 +1228,18 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
     <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)" onclick="showToast('Coming soon','Notification preferences coming at launch.')">
       <span style="font-size:13px;font-weight:600">Notifications</span><span style="font-size:13px;color:var(--muted)">→</span>
     </div>
+    <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)" onclick="toggleTheme()">
+      <span style="font-size:13px;font-weight:600">Appearance</span><span style="font-size:13px" id="themeIcon">☀️</span>
+    </div>
+    <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)" onclick="exportCSV('transactions')">
+      <span style="font-size:13px;font-weight:600">Export Transactions</span><span style="font-size:13px;color:var(--accent)">CSV ↓</span>
+    </div>
+    <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)" onclick="exportCSV('income')">
+      <span style="font-size:13px;font-weight:600">Export Income Report</span><span style="font-size:13px;color:var(--accent)">CSV ↓</span>
+    </div>
+    <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)" onclick="exportCSV('tax')">
+      <span style="font-size:13px;font-weight:600">Export Deductions</span><span style="font-size:13px;color:var(--accent)">CSV ↓</span>
+    </div>
     <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)" onclick="setTier('free');showToast('Reset','Plan reset to Free.')">
       <span style="font-size:13px;font-weight:600;color:var(--muted)">Reset Plan (Demo)</span><span style="font-size:13px;color:var(--muted)">→</span>
     </div>
@@ -2892,6 +2904,63 @@ let dp;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;document.getElementById('installBanner').style.display='flex'});
 function instApp(){if(dp){dp.prompt();dp.userChoice.then(()=>{document.getElementById('installBanner').style.display='none';dp=null})}}
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+
+// CSV EXPORT
+function exportCSV(type){
+  let csv='',filename='';
+  if(type==='transactions'){
+    csv='Date,Platform,Amount,Type\n';
+    const txns=[
+      ['2026-03-10','YouTube',12400,'credit'],['2026-03-08','TikTok',8200,'credit'],
+      ['2026-03-05','Brand Deal',4500,'credit'],['2026-03-03','Patreon',1240,'credit'],
+      ['2026-03-01','Auto-invest',-500,'debit'],['2026-02-28','Instagram',980,'credit'],
+      ['2026-02-22','OnlyFans',3600,'credit']
+    ];
+    txns.forEach(t=>csv+=t.join(',')+'\n');
+    filename='apexa-transactions-'+new Date().toISOString().split('T')[0]+'.csv';
+  }else if(type==='income'){
+    csv='Month,YouTube,TikTok,Brand Deals,Patreon,Instagram,OnlyFans,Total\n';
+    csv+='2026-03,12400,8200,4500,1240,980,3600,30920\n';
+    csv+='2026-02,10800,7100,3200,1100,850,3200,26250\n';
+    csv+='2026-01,9600,6400,5000,1050,720,2800,25570\n';
+    filename='apexa-income-report-'+new Date().toISOString().split('T')[0]+'.csv';
+  }else if(type==='tax'){
+    csv='Category,Annual Amount,Deductible\n';
+    csv+='Equipment,14880,Yes\nSoftware,8160,Yes\nHome Office,5400,Yes\nTravel,11040,Yes\n';
+    csv+='Total Deductions,39480,\nEstimated Tax Savings,11055,\n';
+    filename='apexa-deductions-'+new Date().toISOString().split('T')[0]+'.csv';
+  }
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;a.click();
+  URL.revokeObjectURL(url);
+  showToast('Exported','File downloaded: '+filename);
+}
+
+// DARK/LIGHT MODE
+let darkMode=true;
+function toggleTheme(){
+  darkMode=!darkMode;
+  if(darkMode){
+    document.documentElement.style.setProperty('--bg','#0a0a0a');
+    document.documentElement.style.setProperty('--surface','#1a1a1a');
+    document.documentElement.style.setProperty('--border','#2a2a2a');
+    document.documentElement.style.setProperty('--text','#f0f0f0');
+    document.documentElement.style.setProperty('--muted','#666');
+    document.documentElement.style.setProperty('--muted2','#444');
+  }else{
+    document.documentElement.style.setProperty('--bg','#ffffff');
+    document.documentElement.style.setProperty('--surface','#f7f7f5');
+    document.documentElement.style.setProperty('--border','#ebebeb');
+    document.documentElement.style.setProperty('--text','#0a0a0a');
+    document.documentElement.style.setProperty('--muted','#999');
+    document.documentElement.style.setProperty('--muted2','#bbb');
+  }
+  localStorage.setItem('apexa_theme',darkMode?'dark':'light');
+  const icon=document.getElementById('themeIcon');
+  if(icon)icon.textContent=darkMode?'☀️':'🌙';
+}
+(function(){const t=localStorage.getItem('apexa_theme');if(t==='light'){darkMode=true;toggleTheme()}})();
 
 // INTERACTIVE INVESTMENT CHART
 const invData={
