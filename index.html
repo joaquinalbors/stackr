@@ -386,11 +386,11 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
       </div>
       <div class="field"><label>Which platforms do your creators use?</label>
         <div class="pg" style="margin-bottom:0">
-          <div class="pc sel" onclick="this.classList.toggle('sel')"><div class="pce">💎</div><div class="pcn">OnlyFans</div></div>
+          <div class="pc sel" onclick="this.classList.toggle('sel')"><div class="pce">▶️</div><div class="pcn">YouTube</div></div>
           <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🎵</div><div class="pcn">TikTok</div></div>
-          <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">▶️</div><div class="pcn">YouTube</div></div>
           <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">📸</div><div class="pcn">Instagram</div></div>
           <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🎮</div><div class="pcn">Twitch</div></div>
+          <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">💎</div><div class="pcn">OnlyFans</div></div>
           <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🤝</div><div class="pcn">Other</div></div>
         </div>
       </div>
@@ -2221,7 +2221,11 @@ function enterApp(){
   document.getElementById('bnav').style.display='flex';
   document.getElementById('fabHelp').style.display='flex';
   applyAcctType();applyTier();
-  if(acctType==='agency'){showScreen('agency')}else{showScreen('home')}
+  if(acctType==='agency'){
+    showScreen('agency');
+    if(!currentAgencyId)agencyOnboard();
+    else{loadAgencyRoster();loadAgencyStats()}
+  }else{showScreen('home')}
   loadAll();loadLinkedAccounts();updHomeSplit();updTaxCountdown();
   // Animate main balance
   setTimeout(()=>animateNum('hBal',0,24830,1200),300);
@@ -2647,28 +2651,82 @@ function applyAcctType(){
     nav.onclick=()=>showScreen('agency');
   }
 }
-function addCreator(){
+let currentAgencyId=localStorage.getItem('apexa_agency_id')||'';
+async function agencyOnboard(){
+  try{
+    const name=document.getElementById('agencyName')?.value||'Demo Agency';
+    const r=await fetch(API+'/api/agency/onboard',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name:name,ein:'00-0000000',contact_email:'demo@agency.com',platforms:['YouTube','TikTok'],estimated_monthly_volume:500000})});
+    const d=await r.json();
+    if(d.agency_id){currentAgencyId=d.agency_id;localStorage.setItem('apexa_agency_id',d.agency_id);showToast('Agency created','ID: '+d.agency_id)}
+  }catch(e){console.log('Agency onboard error:',e)}
+}
+async function addCreator(){
   const name=document.getElementById('newCreatorName').value.trim();
   const email=document.getElementById('newCreatorEmail').value.trim();
   if(!name||!email){showToast('Missing info','Enter creator name and email.');return}
-  const split=document.getElementById('newCreatorSplit').value;
+  const split=parseInt(document.getElementById('newCreatorSplit').value);
   const platform=document.getElementById('newCreatorPlatform').value;
-  // Add to roster (demo)
-  const initials=name.split(' ').map(n=>n[0]).join('').toUpperCase();
-  const colors=['#ff6b9d,#c44dff','#4deeea,#7b2ff7','#f7971e,#ffd200','#00c9ff,#92fe9d','#6a11cb,#2575fc','#fc5c7d,#6a82fb'];
-  const color=colors[Math.floor(Math.random()*colors.length)];
-  const roster=document.getElementById('agencyRoster');
-  const item=document.createElement('div');item.className='ai';item.style.animationDelay='.05s';
-  item.innerHTML=`
-    <div class="aic" style="background:linear-gradient(135deg,${color});color:#fff;font-size:12px;font-weight:800;border:none">${initials}</div>
-    <div class="aii"><div class="ain">${name}</div><div class="aid">${platform} · Pending · ${split}% split</div></div>
-    <div class="air"><span class="pill pill-y" style="font-size:10px">Invited</span></div>`;
-  roster.insertBefore(item,roster.firstChild);
+  // Call backend API
+  if(!currentAgencyId)await agencyOnboard();
+  try{
+    const r=await fetch(API+'/api/agency/invite-creator',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({agency_id:currentAgencyId,creator_name:name,creator_email:email,platform:platform,split_percentage:split})});
+    const d=await r.json();
+    if(d.status==='invited'){
+      showToast('Invite sent!',`${name} will receive an onboarding email at ${email}.`);
+      loadAgencyRoster();
+    }else{showToast('Error',d.detail||'Could not invite creator.')}
+  }catch(e){
+    // Fallback to local demo
+    const initials=name.split(' ').map(n=>n[0]).join('').toUpperCase();
+    const colors=['#ff6b9d,#c44dff','#4deeea,#7b2ff7','#f7971e,#ffd200','#00c9ff,#92fe9d','#6a11cb,#2575fc','#fc5c7d,#6a82fb'];
+    const color=colors[Math.floor(Math.random()*colors.length)];
+    const roster=document.getElementById('agencyRoster');
+    const item=document.createElement('div');item.className='ai';item.style.animationDelay='.05s';
+    item.innerHTML=`
+      <div class="aic" style="background:linear-gradient(135deg,${color});color:#fff;font-size:12px;font-weight:800;border:none">${initials}</div>
+      <div class="aii"><div class="ain">${name}</div><div class="aid">${platform} · Pending · ${split}% split</div></div>
+      <div class="air"><span class="pill pill-y" style="font-size:10px">Invited</span></div>`;
+    roster.insertBefore(item,roster.firstChild);
+    showToast('Invite sent (demo)',`${name} added to roster.`);
+  }
   closeModal('addCreatorMod');
-  showToast('Invite sent!',`${name} will receive an onboarding email at ${email}.`);
-  // Clear form
   document.getElementById('newCreatorName').value='';
   document.getElementById('newCreatorEmail').value='';
+}
+async function loadAgencyRoster(){
+  if(!currentAgencyId)return;
+  try{
+    const r=await fetch(API+'/api/agency/roster?agency_id='+currentAgencyId);
+    const d=await r.json();
+    if(d.creators&&d.creators.length>0){
+      const roster=document.getElementById('agencyRoster');
+      const colors=['#ff6b9d,#c44dff','#4deeea,#7b2ff7','#f7971e,#ffd200','#00c9ff,#92fe9d','#6a11cb,#2575fc','#fc5c7d,#6a82fb'];
+      roster.innerHTML=d.creators.map((c,i)=>{
+        const initials=c.creator_name.split(' ').map(n=>n[0]).join('').toUpperCase();
+        const color=colors[i%colors.length];
+        return `<div class="ai" style="animation-delay:${.05+i*.05}s">
+          <div class="aic" style="background:linear-gradient(135deg,${color});color:#fff;font-size:12px;font-weight:800;border:none">${initials}</div>
+          <div class="aii"><div class="ain">${c.creator_name}</div><div class="aid">${c.platform} · ${fmt(c.total_volume||0)} vol · ${c.split_percentage}% split</div></div>
+          <div class="air"><span class="pill ${c.status==='active'?'pill-g':'pill-y'}" style="font-size:10px">${c.status==='active'?'Active':'Invited'}</span></div>
+        </div>`;
+      }).join('');
+      // Update creator count
+      const countEl=document.getElementById('agCreatorCount');
+      if(countEl)countEl.textContent=d.creators.length;
+    }
+  }catch(e){console.log('Roster load error:',e)}
+}
+async function loadAgencyStats(){
+  if(!currentAgencyId)return;
+  try{
+    const r=await fetch(API+'/api/agency/stats?agency_id='+currentAgencyId);
+    const d=await r.json();
+    const vol=document.getElementById('agTotalVolume');if(vol)vol.textContent=fmt(d.total_volume||0);
+    const rev=document.getElementById('agTotalRevenue');if(rev)rev.textContent=fmt(d.total_revenue||0);
+    const cnt=document.getElementById('agCreatorCount');if(cnt)cnt.textContent=d.creator_count||0;
+  }catch(e){console.log('Stats load error:',e)}
 }
 function updDefaultSplit(val){
   const v=parseInt(val),cv=100-v;
@@ -2724,20 +2782,47 @@ function recalcPayouts(){
   document.getElementById('feeProcAmt').textContent='-'+fmt(procFee)+(extraLabel?` (${extraLabel})`:'');
   document.getElementById('feeNetCreators').textContent=fmt(totalCreator-procFee+totalAgency);
 }
-function processPayouts(){
+async function processPayouts(){
   const btn=document.getElementById('payoutBtn');
   btn.textContent='Processing...';btn.disabled=true;btn.style.opacity='.6';
   document.getElementById('payoutBatchStatus').textContent='Processing';
   document.getElementById('payoutBatchStatus').style.background='rgba(124,58,237,.15)';
   document.getElementById('payoutBatchStatus').style.color='var(--accent)';
+  // Build payout items from checked creators
+  const items=document.querySelectorAll('.payout-item');
+  const grossAmts=[42000,38500,28000,35200,22400];
+  const creatorIds=['creator_jm','creator_ak','creator_sr','creator_mt','creator_lc'];
+  const payouts=[];
+  items.forEach((item,i)=>{
+    const cb=item.querySelector('input[type=checkbox]');
+    if(cb&&cb.checked)payouts.push({creator_id:creatorIds[i]||'creator_'+i,amount:grossAmts[i]||0});
+  });
+  // Call backend API
+  if(currentAgencyId&&payouts.length>0){
+    try{
+      const r=await fetch(API+'/api/agency/process-payout',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({agency_id:currentAgencyId,payouts:payouts})});
+      const d=await r.json();
+      if(d.status==='processed'){
+        document.getElementById('payoutResult').style.display='block';
+        document.getElementById('payoutBatchStatus').textContent='Sent';
+        document.getElementById('payoutBatchStatus').style.background='rgba(0,200,83,.15)';
+        document.getElementById('payoutBatchStatus').style.color='var(--green)';
+        btn.textContent='✅ Payouts Sent';btn.style.background='var(--green)';
+        showToast('Payouts processed!',`${d.creators_paid} creators paid. Fee: ${fmt(d.processing_fee)}`);
+        loadAgencyStats();
+        return;
+      }
+    }catch(e){console.log('Payout API error, falling back to demo:',e)}
+  }
+  // Fallback — demo mode
   setTimeout(()=>{
     document.getElementById('payoutResult').style.display='block';
     document.getElementById('payoutBatchStatus').textContent='Sent';
     document.getElementById('payoutBatchStatus').style.background='rgba(0,200,83,.15)';
     document.getElementById('payoutBatchStatus').style.color='var(--green)';
     btn.textContent='✅ Payouts Sent';btn.style.background='var(--green)';
-    // Update agency dashboard numbers
-    showToast('Payouts sent!','5 creators will receive funds within 1-2 business days.');
+    showToast('Payouts sent (demo)','Creators will receive funds within 1-2 business days.');
   },2000);
 }
 
