@@ -1092,9 +1092,10 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   <div class="cms" id="chatMsgs"></div>
   <div class="qr" id="quickR">
     <button class="qrb" onclick="sendQ('How much should I save for taxes?')">💰 Tax savings</button>
-    <button class="qrb" onclick="sendQ('How does the tax vault work?')">🔒 Tax vault</button>
-    <button class="qrb" onclick="sendQ('How do I start investing?')">📈 Investing</button>
-    <button class="qrb" onclick="sendQ('What is my tax rate?')">🧾 My rate</button>
+    <button class="qrb" onclick="sendQ('What can I deduct?')">🔍 Deductions</button>
+    <button class="qrb" onclick="sendQ('How is my portfolio doing?')">📈 Portfolio</button>
+    <button class="qrb" onclick="sendQ('When are quarterly taxes due?')">📅 Deadlines</button>
+    <button class="qrb" onclick="sendQ('What expenses can I write off?')">🧾 Write-offs</button>
     <button class="qrb" onclick="sendQ('I need a CPA')">👨‍💼 Find CPA</button>
   </div>
   <div class="ciw">
@@ -1104,32 +1105,64 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
 </div>
 
 <!-- EXPERT -->
+<!-- EXPERT — Robinhood style -->
 <div class="screen" id="screen-expert">
-  <div class="topbar"><div class="page-title">Talk to Expert</div></div>
-  <div class="eh">
-    <div class="eico">👨‍💼</div>
-    <div class="etit">Real experts, real answers</div>
-    <div class="esub">Licensed CPAs who understand creator finances. No judgment, total privacy.</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px">
+    <div style="font-size:18px;font-weight:800">Expert Help</div>
   </div>
-  <div class="estat">
-    <div class="esi"><div class="esv">500+</div><div class="esl">CPAs Available</div></div>
-    <div class="esi"><div class="esv">48hr</div><div class="esl">Avg Response</div></div>
-    <div class="esi"><div class="esv">4.9★</div><div class="esl">Avg Rating</div></div>
+  <div style="padding:16px 24px 24px;text-align:center">
+    <div style="font-size:36px;margin-bottom:12px">👨‍💼</div>
+    <div style="font-size:22px;font-weight:800;margin-bottom:6px">Talk to a real CPA</div>
+    <div style="font-size:14px;color:var(--muted);line-height:1.6">Licensed professionals who understand creator finances.</div>
   </div>
-  <div class="eopts">
-    <div class="ec feat" onclick="cExp('cpa')"><div class="eci">🧾</div><div class="ecin"><div class="ecit">File with a CPA</div><div class="ecis">Licensed CPA reviews your Apexa data and files your taxes. Included in Premium.</div></div><div class="ecb ecb-p">Popular</div></div>
-    <div class="ec" onclick="cExp('consult')"><div class="eci">💬</div><div class="ecin"><div class="ecit">Tax Consultation</div><div class="ecis">30-min video call with a CPA. Get answers fast. $75.</div></div><div class="ecb ecb-g">30 min</div></div>
-    <div class="ec" onclick="cExp('plan')"><div class="eci">📊</div><div class="ecin"><div class="ecit">Financial Planning</div><div class="ecis">Build a wealth plan for your creator income. $150.</div></div><div class="ecb ecb-g">1 hour</div></div>
-    <div class="ec" onclick="cExp('books')"><div class="eci">📚</div><div class="ecin"><div class="ecit">Bookkeeping Setup</div><div class="ecis">Get your books clean and organized. $199 one-time.</div></div><div class="ecb ecb-g">One-time</div></div>
+  <!-- Options as clean rows -->
+  <div style="padding:0 24px">
+    <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-top:1px solid var(--border)" onclick="cExp('cpa')">
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="font-size:20px">🧾</span>
+        <div><div style="font-size:14px;font-weight:700">File with a CPA</div><div style="font-size:11px;color:var(--muted)">CPA reviews your data and files your taxes</div></div>
+      </div>
+      <div style="text-align:right"><span style="font-size:12px;font-weight:700;color:var(--accent)">Included in Premium</span></div>
+    </div>
+    <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-top:1px solid var(--border)" onclick="cExp('consult')">
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="font-size:20px">💬</span>
+        <div><div style="font-size:14px;font-weight:700">Tax Consultation</div><div style="font-size:11px;color:var(--muted)">30-min video call with a CPA</div></div>
+      </div>
+      <span style="font-size:14px;font-weight:800">$75</span>
+    </div>
+    <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-top:1px solid var(--border)" onclick="cExp('plan')">
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="font-size:20px">📊</span>
+        <div><div style="font-size:14px;font-weight:700">Financial Planning</div><div style="font-size:11px;color:var(--muted)">Build a wealth plan for creator income</div></div>
+      </div>
+      <span style="font-size:14px;font-weight:800">$150</span>
+    </div>
+    <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-top:1px solid var(--border)" onclick="cExp('books')">
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="font-size:20px">📚</span>
+        <div><div style="font-size:14px;font-weight:700">Bookkeeping Setup</div><div style="font-size:11px;color:var(--muted)">Get your books clean and organized</div></div>
+      </div>
+      <span style="font-size:14px;font-weight:800">$199</span>
+    </div>
   </div>
-  <div class="etm">
-    <div class="etmt">"I had no idea how much I owed until Apexa. The CPA they connected me with saved me over $8,000 in deductions I didn't know about."</div>
-    <div class="etma">— Creator · 180k followers · $22k/mo</div>
+  <!-- Stats -->
+  <div style="padding:24px 24px 0;display:flex;justify-content:space-around;text-align:center">
+    <div><div style="font-size:20px;font-weight:800;color:var(--accent)">500+</div><div style="font-size:10px;color:var(--muted)">CPAs</div></div>
+    <div><div style="font-size:20px;font-weight:800;color:var(--accent)">48hr</div><div style="font-size:10px;color:var(--muted)">Avg Response</div></div>
+    <div><div style="font-size:20px;font-weight:800;color:var(--accent)">4.9</div><div style="font-size:10px;color:var(--muted)">Avg Rating</div></div>
   </div>
-  <div style="padding:0 16px 20px"><button class="btn btn-p" onclick="cExp('cpa')">Connect with a CPA Now →</button></div>
+  <!-- Testimonial -->
+  <div style="padding:24px;margin:20px 24px;background:var(--surface);border-radius:12px;border-left:3px solid var(--accent)">
+    <div style="font-size:13px;line-height:1.6;font-style:italic;margin-bottom:8px">"The CPA Apexa connected me with found deductions I had no idea about. Saved me thousands."</div>
+    <div style="font-size:11px;font-weight:700;color:var(--muted)">Creator · 180k followers · $22k/mo</div>
+  </div>
+  <div style="padding:0 24px 20px">
+    <button style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer" onclick="cExp('cpa')">Connect with a CPA</button>
+  </div>
+  <div style="padding:0 24px 20px;font-size:10px;color:var(--muted);text-align:center">CPA services provided by licensed tax professionals. Apexa does not provide tax advice.</div>
 </div>
 
-<!-- PROFILE -->
 <!-- PROFILE — Robinhood style -->
 <div class="screen" id="screen-profile">
   <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px">
