@@ -1286,7 +1286,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
     <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)" onclick="setTier('free');showToast('Reset','Plan reset to Free.')">
       <span style="font-size:13px;font-weight:600;color:var(--muted)">Reset Plan (Demo)</span><span style="font-size:13px;color:var(--muted)">→</span>
     </div>
-    <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 0" onclick="localStorage.clear();showScreen('onboard');document.getElementById('bnav').style.display='none';document.getElementById('fabHelp').style.display='none'">
+    <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 0" onclick="localStorage.clear();showScreen('onboard');document.getElementById('bnav').style.display='none';document.getElementById('fabHelp').style.display='none';document.getElementById('desktopSidebar').style.display='none';document.getElementById('rightPanel').style.display='none'">
       <span style="font-size:13px;font-weight:600;color:var(--red)">Sign Out</span><span style="font-size:13px;color:var(--red)">→</span>
     </div>
   </div>
@@ -1298,7 +1298,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   <div class="topbar"><div class="page-title">Agency</div><div style="display:flex;gap:8px"><button class="btn btn-l" style="width:auto;padding:8px 14px;font-size:12px" onclick="openModal('addCreatorMod')">+ Creator</button><button class="btn btn-g" style="width:auto;padding:8px 14px;font-size:12px" onclick="openModal('payoutMod')">💸 Payouts</button></div></div>
   <!-- Agency Stats -->
   <div style="background:linear-gradient(160deg,#0a0a1a 0%,#1a0a2e 100%);border-radius:20px;margin:0 16px 20px;padding:24px;position:relative;overflow:hidden">
-    <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(251,191,36,.1)"></div>
+    <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(124,58,237,.1)"></div>
     <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:6px">TOTAL PROCESSING VOLUME</div>
     <div style="font-size:42px;font-weight:800;color:var(--accent2);letter-spacing:-2px;margin-bottom:8px;position:relative;z-index:1" id="agencyVol">$284,600</div>
     <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:16px" id="agencyVolSub">This month · 12 creators</div>
@@ -1323,7 +1323,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
         <div><div style="font-size:13px;font-weight:700">Starter</div><div style="font-size:11px;color:var(--muted)">Under $100K/mo</div></div>
         <div style="text-align:right"><div style="font-size:16px;font-weight:800;color:var(--accent)">2.5%</div></div>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:var(--rs);border:1.5px solid rgba(251,191,36,.3);background:rgba(251,191,36,.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:var(--rs);border:1.5px solid rgba(124,58,237,.3);background:rgba(124,58,237,.08)">
         <div><div style="font-size:13px;font-weight:700;color:var(--accent2)">⭐ Growth</div><div style="font-size:11px;color:var(--muted)">$100K - $500K/mo</div></div>
         <div style="text-align:right"><div style="font-size:16px;font-weight:800;color:var(--accent2)">2.0%</div><div style="font-size:10px;color:var(--green)">Current tier</div></div>
       </div>
@@ -1839,7 +1839,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
           <div style="margin-top:8px;font-size:11px;font-weight:700;color:var(--accent)">+ 2.5% processing fee</div>
         </div>
         <!-- Agency Growth -->
-        <div id="planAgGrowth" style="background:rgba(251,191,36,.08);border:1.5px solid rgba(251,191,36,.3);border-radius:14px;padding:16px;position:relative;cursor:pointer" onclick="selectPlanCard('ag_growth')">
+        <div id="planAgGrowth" style="background:rgba(124,58,237,.08);border:1.5px solid rgba(124,58,237,.3);border-radius:14px;padding:16px;position:relative;cursor:pointer" onclick="selectPlanCard('ag_growth')">
           <div style="position:absolute;top:-8px;right:14px;background:var(--accent);color:#000;font-size:9px;font-weight:700;padding:3px 8px;border-radius:99px">MOST POPULAR</div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <span style="font-size:15px;font-weight:800;color:var(--accent2)">Growth</span>
@@ -1939,11 +1939,11 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
       <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="font-size:13px">▶️ YouTube</span><span style="font-size:13px;font-weight:700">$12,400</span></div>
       <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="font-size:13px">🎵 TikTok</span><span style="font-size:13px;font-weight:700">$8,200</span></div>
       <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="font-size:13px">🤝 Brand Deals</span><span style="font-size:13px;font-weight:700">$4,500</span></div>
-      <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="font-size:13px">📱 OnlyFans</span><span style="font-size:13px;font-weight:700">$3,600</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="font-size:13px">💎 OnlyFans</span><span style="font-size:13px;font-weight:700">$3,600</span></div>
       <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="font-size:13px">🎁 Patreon</span><span style="font-size:13px;font-weight:700">$1,240</span></div>
       <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="font-size:13px">📸 Instagram</span><span style="font-size:13px;font-weight:700">$980</span></div>
     </div>
-    <button class="btn btn-l" onclick="showToast('Coming soon','CSV and PDF export will be available at launch.')">📥 Export as CSV</button>
+    <button class="btn btn-l" onclick="exportCSV('income')">📥 Export as CSV</button>
     <div style="height:8px"></div>
     <button class="btn btn-p" onclick="closeModal('reportMod')">Done</button>
   </div>
