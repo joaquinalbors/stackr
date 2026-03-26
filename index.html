@@ -45,11 +45,16 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .screen.active{display:block;animation:fu .3s ease forwards}
 @media(min-width:768px){
   .sidebar{display:flex}
-  .main-content{margin-left:240px;max-width:600px;padding:0 24px}
+  .main-content{margin-left:240px;max-width:700px;padding:0 32px}
   .bnav{display:none!important}
   .screen{padding-bottom:20px}
   #screen-onboard .ow{max-width:480px;margin:0 auto}
-  .fabHelp{display:none!important}
+  #fabHelp{display:none!important}
+}
+@media(min-width:1200px){
+  .main-content{max-width:1000px;display:flex;gap:32px}
+  .screen{flex:1;min-width:0}
+  .right-panel{display:block!important;width:300px;flex-shrink:0;padding-top:80px;position:sticky;top:0;height:fit-content}
 }
 @keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 16px;position:sticky;top:0;background:var(--bg);z-index:50}
@@ -2078,6 +2083,85 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   <button onclick="document.getElementById('installBanner').style.display='none'" style="background:transparent;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer">✕</button>
 </div>
 
+<!-- RIGHT PANEL (desktop 1200px+) -->
+<div class="right-panel" id="rightPanel" style="display:none">
+  <!-- Quick Summary -->
+  <div style="background:var(--surface);border-radius:16px;padding:20px;margin-bottom:16px">
+    <div style="font-size:14px;font-weight:800;margin-bottom:14px">Quick Summary</div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:12px;color:var(--muted)">Net Worth</span>
+      <span style="font-size:13px;font-weight:800">$40,890</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:12px;color:var(--muted)">This Month</span>
+      <span style="font-size:13px;font-weight:700;color:var(--green)">+$8,340</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:12px;color:var(--muted)">Tax Vault</span>
+      <span style="font-size:13px;font-weight:700;color:var(--tax)">$4,820</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:8px 0">
+      <span style="font-size:12px;color:var(--muted)">Portfolio</span>
+      <span style="font-size:13px;font-weight:700;color:var(--accent)">$11,240</span>
+    </div>
+  </div>
+  <!-- Tax Countdown -->
+  <div style="background:var(--tax-light);border-radius:16px;padding:20px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--tax);animation:pulse 2s infinite"></div>
+      <span style="font-size:13px;font-weight:700;color:var(--tax)">Q1 Taxes Due</span>
+    </div>
+    <div style="font-size:28px;font-weight:800;color:var(--tax);margin-bottom:4px" id="rpTaxDays">20 days</div>
+    <div style="font-size:12px;color:var(--muted)">April 15, 2026</div>
+    <div style="height:4px;background:var(--border);border-radius:99px;margin-top:12px;overflow:hidden">
+      <div style="height:100%;width:78%;background:var(--tax);border-radius:99px"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px">
+      <span>$4,820 saved</span><span>$6,200 target</span>
+    </div>
+  </div>
+  <!-- Quick Actions -->
+  <div style="background:var(--surface);border-radius:16px;padding:20px;margin-bottom:16px">
+    <div style="font-size:14px;font-weight:800;margin-bottom:14px">Quick Actions</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button onclick="openModal('sendMod')" style="display:flex;align-items:center;gap:10px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;text-align:left">
+        <span style="font-size:16px">↗️</span>Send Money
+      </button>
+      <button onclick="openModal('splitMod')" style="display:flex;align-items:center;gap:10px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;text-align:left">
+        <span style="font-size:16px">⚡</span>Simulate Split
+      </button>
+      <button onclick="openInvModal()" style="display:flex;align-items:center;gap:10px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;text-align:left">
+        <span style="font-size:16px">📈</span>Invest Now
+      </button>
+      <button onclick="openPlaidLink()" style="display:flex;align-items:center;gap:10px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;text-align:left">
+        <span style="font-size:16px">🏦</span>Link Bank
+      </button>
+    </div>
+  </div>
+  <!-- Platforms -->
+  <div style="background:var(--surface);border-radius:16px;padding:20px">
+    <div style="font-size:14px;font-weight:800;margin-bottom:14px">Income Sources</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0">
+        <div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px">▶️</span><span style="font-size:12px;font-weight:600">YouTube</span></div>
+        <span style="font-size:12px;font-weight:700;color:var(--green)">$12,400</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0">
+        <div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px">🎵</span><span style="font-size:12px;font-weight:600">TikTok</span></div>
+        <span style="font-size:12px;font-weight:700;color:var(--green)">$8,200</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0">
+        <div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px">🤝</span><span style="font-size:12px;font-weight:600">Brand Deals</span></div>
+        <span style="font-size:12px;font-weight:700;color:var(--green)">$4,500</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0">
+        <div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px">📸</span><span style="font-size:12px;font-weight:600">Instagram</span></div>
+        <span style="font-size:12px;font-weight:700;color:var(--green)">$980</span>
+      </div>
+    </div>
+  </div>
+</div>
+
 </div><!-- /main-content -->
 </div><!-- /app-shell -->
 
@@ -2298,8 +2382,9 @@ function updSum(){
 function enterApp(){
   document.getElementById('bnav').style.display='flex';
   document.getElementById('fabHelp').style.display='flex';
-  // Show sidebar on desktop
+  // Show sidebar on desktop, right panel on wide
   if(window.innerWidth>=768){document.getElementById('desktopSidebar').style.display='flex'}
+  if(window.innerWidth>=1200){const rp=document.getElementById('rightPanel');if(rp)rp.style.display='block'}
   applyAcctType();applyTier();
   if(acctType==='agency'){
     showScreen('agency');
