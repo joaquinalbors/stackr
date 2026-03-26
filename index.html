@@ -197,6 +197,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 @keyframes td{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+@keyframes fadeOut{to{opacity:0;transform:translateY(4px)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 .qr{display:flex;flex-wrap:wrap;gap:8px;padding:8px 16px 12px}
 .qrb{background:var(--surface);border:1.5px solid var(--border);border-radius:99px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;transition:all .15s;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap}
 .qrb:active{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
@@ -706,387 +708,318 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
 </div>
 </div>
 
-<!-- HOME -->
+<!-- HOME — Robinhood-style minimal -->
 <div class="screen" id="screen-home">
-  <div class="topbar">
-    <div style="font-size:16px;font-weight:700" id="hgreet">Hey, Creator 👋</div>
-    <div style="display:flex;align-items:center;gap:10px">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px 0">
+    <div style="font-size:18px;font-weight:800;letter-spacing:-.5px">apexa<span style="color:var(--accent)">.</span></div>
+    <div style="display:flex;align-items:center;gap:12px">
       <div class="badge demo" id="apiBadge"><div class="bdot"></div><span id="apiTxt">Demo</span></div>
       <div style="position:relative;cursor:pointer" onclick="openModal('notifMod')">
-        <div style="font-size:20px">🔔</div>
-        <div style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff" id="notifCount">3</div>
+        <div style="font-size:18px">🔔</div>
+        <div style="position:absolute;top:-4px;right:-4px;width:14px;height:14px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#fff" id="notifCount">3</div>
       </div>
-      <div class="avatar" onclick="showScreen('profile')">⚡</div>
+      <div class="avatar" onclick="showScreen('profile')" style="width:32px;height:32px;font-size:12px">⚡</div>
     </div>
   </div>
-  <div class="bh">
-    <div class="bl">Total Net Worth</div>
-    <div class="ba" id="hBal">$24,830</div>
-    <span class="pill pill-g" id="hChg">↑ +$8,340 this month</span>
-  </div>
-  <div class="acts">
-    <div class="ab" onclick="openModal('sendMod')"><div class="abic">↗️</div><div class="abl">Send</div></div>
-    <div class="ab" onclick="openModal('recvMod')"><div class="abic">↙️</div><div class="abl">Receive</div></div>
-    <div class="ab" onclick="openModal('splitMod')"><div class="abic">⚡</div><div class="abl">Split</div></div>
-    <div class="ab" onclick="openInvModal()"><div class="abic">📈</div><div class="abl">Invest</div></div>
-  </div>
-  <!-- Income Split Bar -->
-  <div style="margin:0 16px 16px;background:var(--surface);border-radius:var(--r);padding:16px;cursor:pointer" onclick="openModal('splitMod')">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <span style="font-size:13px;font-weight:700">Income Split</span>
-      <span style="font-size:12px;color:var(--accent);font-weight:600">Simulate →</span>
+  <!-- Hero Balance -->
+  <div style="padding:32px 24px 8px">
+    <div style="font-size:13px;color:var(--muted);font-weight:500;margin-bottom:4px">Total Balance</div>
+    <div style="font-size:48px;font-weight:800;letter-spacing:-2px;line-height:1" id="hBal">$24,830</div>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+      <span style="font-size:14px;font-weight:700;color:var(--green)" id="hChg">+$8,340.00</span>
+      <span style="font-size:12px;color:var(--muted)">this month</span>
     </div>
-    <div style="display:flex;height:10px;border-radius:99px;overflow:hidden;margin-bottom:10px">
+  </div>
+  <!-- Earnings Chart — SVG line like Robinhood -->
+  <div style="padding:16px 0 8px">
+    <svg width="100%" height="80" viewBox="0 0 420 80" preserveAspectRatio="none" style="display:block">
+      <defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--green)" stop-opacity=".15"/><stop offset="100%" stop-color="var(--green)" stop-opacity="0"/></linearGradient></defs>
+      <path d="M0,65 C30,60 60,58 90,52 C120,46 150,50 180,38 C210,26 240,30 270,22 C300,18 330,20 360,14 C380,11 400,8 420,6" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round"/>
+      <path d="M0,65 C30,60 60,58 90,52 C120,46 150,50 180,38 C210,26 240,30 270,22 C300,18 330,20 360,14 C380,11 400,8 420,6 L420,80 L0,80 Z" fill="url(#hg)"/>
+    </svg>
+    <!-- Time Period Selector -->
+    <div style="display:flex;justify-content:center;gap:4px;padding:8px 24px 0">
+      <button onclick="selPeriod(this)" style="background:var(--surface);border:none;border-radius:99px;padding:6px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer">1W</button>
+      <button onclick="selPeriod(this)" style="background:var(--accent);border:none;border-radius:99px;padding:6px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:#fff;cursor:pointer">1M</button>
+      <button onclick="selPeriod(this)" style="background:var(--surface);border:none;border-radius:99px;padding:6px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer">3M</button>
+      <button onclick="selPeriod(this)" style="background:var(--surface);border:none;border-radius:99px;padding:6px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer">1Y</button>
+      <button onclick="selPeriod(this)" style="background:var(--surface);border:none;border-radius:99px;padding:6px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer">ALL</button>
+    </div>
+  </div>
+  <!-- Income Split — thin bar, no card -->
+  <div style="padding:20px 24px 0;cursor:pointer" onclick="openModal('splitMod')">
+    <div style="display:flex;height:4px;border-radius:99px;overflow:hidden;margin-bottom:8px">
       <div style="background:var(--tax);width:28%;transition:width .3s" id="hSplitTax"></div>
       <div style="background:var(--accent);width:10%;transition:width .3s" id="hSplitInv"></div>
       <div style="background:var(--green);width:62%;transition:width .3s" id="hSplitSpend"></div>
     </div>
     <div style="display:flex;justify-content:space-between;font-size:11px">
-      <span style="color:var(--tax);font-weight:700">🔒 Tax <span id="hSplitTaxPct">28</span>%</span>
-      <span style="color:var(--accent);font-weight:700">📈 Invest <span id="hSplitInvPct">10</span>%</span>
-      <span style="color:var(--green);font-weight:700">💰 Spend <span id="hSplitSpendPct">62</span>%</span>
+      <span style="color:var(--tax);font-weight:600">Tax <span id="hSplitTaxPct">28</span>%</span>
+      <span style="color:var(--accent);font-weight:600">Invest <span id="hSplitInvPct">10</span>%</span>
+      <span style="color:var(--green);font-weight:600">Spend <span id="hSplitSpendPct">62</span>%</span>
     </div>
   </div>
-  <!-- Monthly Earnings Trend -->
-  <div style="margin:0 16px 16px;background:var(--surface);border-radius:var(--r);padding:16px">
+  <!-- Tax Alert — minimal -->
+  <div id="taxAlert" style="margin:20px 24px 0;display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--border);cursor:pointer" onclick="showScreen('taxes')">
+    <div style="width:8px;height:8px;border-radius:50%;background:var(--tax);animation:pulse 2s infinite;flex-shrink:0"></div>
+    <div style="flex:1;font-size:13px;font-weight:600"><span id="taxCountdown" style="font-weight:800"></span> Q1 estimated taxes due Apr 15</div>
+    <span style="font-size:12px;color:var(--tax);font-weight:700" id="taxSF">−$1,380</span>
+  </div>
+  <!-- Accounts List — Robinhood style (no cards, just rows) -->
+  <div style="padding:20px 24px 0">
+    <div style="font-size:15px;font-weight:800;margin-bottom:16px">Your Money</div>
+    <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)" onclick="showScreen('banking')">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:36px;height:36px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:16px">💳</div>
+        <div><div style="font-size:14px;font-weight:700">Spending</div><div style="font-size:11px;color:var(--muted)">Stripe Treasury</div></div>
+      </div>
+      <div style="font-size:16px;font-weight:800" id="cBal">$24,830</div>
+    </div>
+    <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)" onclick="showScreen('taxes')">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:36px;height:36px;border-radius:10px;background:var(--tax-light);display:flex;align-items:center;justify-content:center;font-size:16px">🔒</div>
+        <div><div style="font-size:14px;font-weight:700">Tax Vault</div><div style="font-size:11px;color:var(--muted)" id="cTaxDue">Due Apr 15</div></div>
+      </div>
+      <div style="font-size:16px;font-weight:800;color:var(--tax)" id="cTax">$4,820</div>
+    </div>
+    <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)" onclick="showScreen('invest')">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:36px;height:36px;border-radius:10px;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:16px">📈</div>
+        <div><div style="font-size:14px;font-weight:700">Investments</div><div style="font-size:11px;color:var(--green)">+3.2% this week</div></div>
+      </div>
+      <div style="font-size:16px;font-weight:800;color:var(--green)" id="cInv">$11,240</div>
+    </div>
+    <!-- Plaid linked accounts row -->
+    <div id="homePlaid" style="display:none;cursor:pointer;padding:14px 0;border-bottom:1px solid var(--border)" onclick="showScreen('banking')">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;border-radius:10px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:16px;border:1px solid var(--border)">🏦</div>
+          <div><div style="font-size:14px;font-weight:700">Linked Banks</div><div style="font-size:11px;color:var(--muted)">via Plaid</div></div>
+        </div>
+        <div style="font-size:16px;font-weight:800" id="homePlaidTotal">$0</div>
+      </div>
+      <div id="homePlaidAccts" style="display:none"></div>
+    </div>
+    <div id="homePlaidCta" style="display:none;cursor:pointer;padding:14px 0;border-bottom:1px solid var(--border)" onclick="openPlaidLink()">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:36px;height:36px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:16px">🏦</div>
+        <div><div style="font-size:14px;font-weight:600;color:var(--accent)">Link bank account</div><div style="font-size:11px;color:var(--muted)">See all your money here</div></div>
+      </div>
+    </div>
+  </div>
+  <!-- Recent Activity — clean list -->
+  <div style="padding:24px 24px 0">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <span style="font-size:13px;font-weight:700">Earnings Trend</span>
-      <span class="pill pill-g" style="font-size:10px">↑ 12% vs last month</span>
+      <span style="font-size:15px;font-weight:800">Recent</span>
+      <span style="font-size:12px;color:var(--accent);font-weight:600;cursor:pointer" onclick="showScreen('banking')">See all</span>
     </div>
-    <div style="display:flex;align-items:flex-end;gap:6px;height:60px;margin-bottom:8px" id="earningsBars">
-      <div style="flex:1;background:rgba(124,58,237,.15);border-radius:4px 4px 0 0;height:45%;transition:height .5s"></div>
-      <div style="flex:1;background:rgba(124,58,237,.15);border-radius:4px 4px 0 0;height:55%;transition:height .5s"></div>
-      <div style="flex:1;background:rgba(124,58,237,.15);border-radius:4px 4px 0 0;height:40%;transition:height .5s"></div>
-      <div style="flex:1;background:rgba(124,58,237,.2);border-radius:4px 4px 0 0;height:65%;transition:height .5s"></div>
-      <div style="flex:1;background:rgba(124,58,237,.25);border-radius:4px 4px 0 0;height:75%;transition:height .5s"></div>
-      <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:85%;transition:height .5s"></div>
-    </div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted)">
-      <span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span><span style="color:var(--accent);font-weight:700">Mar</span>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-      <div style="text-align:center"><div style="font-size:16px;font-weight:800" id="hMonthInc">$8,340</div><div style="font-size:10px;color:var(--muted)">This Month</div></div>
-      <div style="text-align:center"><div style="font-size:16px;font-weight:800" id="hYtdInc">$52,180</div><div style="font-size:10px;color:var(--muted)">YTD Income</div></div>
-      <div style="text-align:center"><div style="font-size:16px;font-weight:800" id="hAvgInc">$8,697</div><div style="font-size:10px;color:var(--muted)">6mo Avg</div></div>
-    </div>
+    <div id="hAct"></div>
   </div>
-  <!-- Tax Alert with Countdown -->
-  <div class="alert alert-y" id="taxAlert">
-    <div class="adot"></div>
-    <div class="atxt">
-      <span id="taxCountdown" style="font-size:15px;font-weight:800"></span> Q1 taxes due Apr 15
-      <span class="asub" id="taxSF">$1,380 short in your vault</span>
-    </div>
-    <button class="acta" onclick="showScreen('taxes')">Fix it</button>
-  </div>
-  <!-- Platform Breakdown -->
-  <div style="margin:0 16px 16px;background:var(--surface);border-radius:var(--r);padding:16px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <span style="font-size:13px;font-weight:700">Income by Platform</span>
-      <span style="font-size:11px;color:var(--muted)">March 2026</span>
-    </div>
-    <div id="homePlatformBreakdown">
-      <div style="display:flex;align-items:center;gap:10px;padding:6px 0">
-        <span style="font-size:14px">▶️</span>
-        <div style="flex:1"><div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden"><div style="height:100%;width:40%;background:var(--accent);border-radius:99px"></div></div></div>
-        <span style="font-size:12px;font-weight:700;min-width:55px;text-align:right">$12,400</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;padding:6px 0">
-        <span style="font-size:14px">🎵</span>
-        <div style="flex:1"><div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden"><div style="height:100%;width:26%;background:var(--accent);border-radius:99px"></div></div></div>
-        <span style="font-size:12px;font-weight:700;min-width:55px;text-align:right">$8,200</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;padding:6px 0">
-        <span style="font-size:14px">🤝</span>
-        <div style="flex:1"><div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden"><div style="height:100%;width:14%;background:var(--accent);border-radius:99px"></div></div></div>
-        <span style="font-size:12px;font-weight:700;min-width:55px;text-align:right">$4,500</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;padding:6px 0">
-        <span style="font-size:14px">💎</span>
-        <div style="flex:1"><div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden"><div style="height:100%;width:12%;background:var(--accent);border-radius:99px"></div></div></div>
-        <span style="font-size:12px;font-weight:700;min-width:55px;text-align:right">$3,600</span>
-      </div>
-    </div>
-  </div>
-  <!-- Account Cards -->
-  <div class="sh" style="padding-top:4px"><div class="st">Your Accounts</div></div>
-  <div class="mc mc-p" onclick="showScreen('banking')">
-    <div class="cl"><div class="ci ci-p">💳</div><div><div class="ct">Spending</div><div class="cs">via Stripe Treasury</div></div></div>
-    <div class="ca"><div class="cv cv-p" id="cBal">$24,830</div><div class="carrow">›</div></div>
-  </div>
-  <div class="mc mc-y" onclick="showScreen('taxes')">
-    <div class="cl"><div class="ci ci-y">🔒</div><div><div class="ct">Tax Vault</div><div class="cs" id="cTaxDue">Due Apr 15</div></div></div>
-    <div class="ca"><div class="cv cv-y" id="cTax">$4,820</div><div class="carrow">›</div></div>
-  </div>
-  <div class="mc mc-g" onclick="showScreen('invest')">
-    <div class="cl"><div class="ci ci-g">📈</div><div><div class="ct">Investments</div><div class="cs">Managed Portfolio · +3.2%</div></div></div>
-    <div class="ca"><div class="cv cv-g" id="cInv">$11,240</div><div class="carrow">›</div></div>
-  </div>
-  <div id="homePlaid" style="display:none;margin:0 16px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:18px 20px;cursor:pointer" onclick="showScreen('banking')">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">🏦</span><span style="font-size:14px;font-weight:700">Linked Banks</span><span class="pill pill-p" style="font-size:10px">via Plaid</span></div>
-      <div class="carrow">›</div>
-    </div>
-    <div id="homePlaidAccts" style="display:flex;flex-direction:column;gap:8px"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-      <span style="font-size:12px;font-weight:700;color:var(--muted)">Total Linked</span>
-      <span style="font-size:18px;font-weight:800" id="homePlaidTotal">$0</span>
-    </div>
-  </div>
-  <div id="homePlaidCta" style="margin:0 16px 12px;background:var(--accent-light);border:1.5px dashed rgba(124,58,237,.3);border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;display:none" onclick="openPlaidLink()">
-    <div style="font-size:13px;font-weight:700;color:var(--accent)">🏦 Link your bank account</div>
-    <div style="font-size:11px;color:var(--muted);margin-top:4px">See all your money in one place</div>
-  </div>
-  <!-- Weekly Digest -->
-  <div style="margin:0 16px 12px;background:linear-gradient(135deg,#0d1117,#1a1040);border-radius:var(--r);padding:18px;position:relative;overflow:hidden">
-    <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(124,58,237,.15)"></div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;position:relative;z-index:1">
-      <span style="font-size:16px">📋</span>
-      <span style="font-size:13px;font-weight:700;color:#fff">This Week's Summary</span>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;position:relative;z-index:1">
-      <div style="text-align:center"><div style="font-size:16px;font-weight:800;color:var(--green)">+$7,840</div><div style="font-size:10px;color:rgba(255,255,255,.4)">Earned</div></div>
-      <div style="text-align:center"><div style="font-size:16px;font-weight:800;color:var(--tax)">$2,195</div><div style="font-size:10px;color:rgba(255,255,255,.4)">Tax saved</div></div>
-      <div style="text-align:center"><div style="font-size:16px;font-weight:800;color:var(--accent2)">+$348</div><div style="font-size:10px;color:rgba(255,255,255,.4)">Portfolio grew</div></div>
-    </div>
-  </div>
-  <!-- Tax Savings Counter + Streak -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px;margin-bottom:12px">
-    <div style="background:var(--surface);border-radius:var(--r);padding:16px;text-align:center">
-      <div style="font-size:24px;margin-bottom:6px">🏆</div>
-      <div style="font-size:20px;font-weight:800;color:var(--green)" id="lifetimeSaved">$4,200</div>
-      <div style="font-size:10px;color:var(--muted);font-weight:600">Taxes Saved with Apexa</div>
-      <div style="font-size:10px;color:var(--green);margin-top:4px">Since Jan 2026</div>
-    </div>
-    <div style="background:var(--surface);border-radius:var(--r);padding:16px;text-align:center">
-      <div style="font-size:24px;margin-bottom:6px">🔥</div>
-      <div style="font-size:20px;font-weight:800;color:#fbbf24" id="streakCount">12</div>
-      <div style="font-size:10px;color:var(--muted);font-weight:600">Week Saving Streak</div>
-      <div style="display:flex;justify-content:center;gap:3px;margin-top:6px">
-        <div style="width:6px;height:6px;border-radius:50%;background:var(--green)"></div>
-        <div style="width:6px;height:6px;border-radius:50%;background:var(--green)"></div>
-        <div style="width:6px;height:6px;border-radius:50%;background:var(--green)"></div>
-        <div style="width:6px;height:6px;border-radius:50%;background:var(--green)"></div>
-        <div style="width:6px;height:6px;border-radius:50%;background:var(--accent)"></div>
-      </div>
-    </div>
-  </div>
-  <!-- Spending Insights -->
-  <div style="margin:0 16px 12px;background:var(--surface);border-radius:var(--r);padding:16px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <span style="font-size:13px;font-weight:700">💡 Spending Insights</span>
-      <span style="font-size:11px;color:var(--accent);font-weight:600">This month</span>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg);border-radius:var(--rs)">
-        <span style="font-size:14px">📱</span>
-        <div style="flex:1"><div style="font-size:12px;font-weight:700">Software subscriptions up 40%</div><div style="font-size:10px;color:var(--muted)">$680 this month vs $486 last month — all deductible</div></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg);border-radius:var(--rs)">
-        <span style="font-size:14px">✈️</span>
-        <div style="flex:1"><div style="font-size:12px;font-weight:700">Travel expense detected</div><div style="font-size:10px;color:var(--muted)">$920 flight + hotel — potential business deduction</div></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--green-light);border-radius:var(--rs)">
-        <span style="font-size:14px">💰</span>
-        <div style="flex:1"><div style="font-size:12px;font-weight:700;color:var(--green)">You're spending 18% less than avg creators</div><div style="font-size:10px;color:var(--muted)">Great job keeping expenses low relative to income</div></div>
-      </div>
-    </div>
-  </div>
-  <!-- Subscription Status Banner -->
-  <div id="subBanner" style="margin:12px 16px 16px;border-radius:var(--r);padding:18px;cursor:pointer;position:relative;overflow:hidden" onclick="openModal('priceMod')">
-    <!-- Dynamically set based on subscription tier -->
-  </div>
-  <div style="height:8px"></div>
-  <div class="sh"><div class="st">Recent Activity</div><div class="sa" onclick="showScreen('banking')">See all →</div></div>
-  <div class="al" id="hAct"></div>
-  <!-- Premium-only: Expense Tracker -->
-  <div id="homeExpenseTracker" style="display:none;margin:0 16px 12px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <span style="font-size:13px;font-weight:700">Expense Tracker</span>
-      <span class="pill pill-p" style="font-size:10px">Premium</span>
-    </div>
-    <div style="background:var(--surface);border-radius:var(--rs);padding:14px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-        <span style="font-size:12px;color:var(--muted)">This month</span>
-        <span style="font-size:14px;font-weight:800" id="homeExpTotal">$0</span>
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap" id="homeExpCats"></div>
-    </div>
-  </div>
-  <div class="discl">Banking by Stripe Treasury. Investments managed by DriveWealth. Tax estimates are not tax advice. Apexa does not hold funds.</div>
+  <!-- Subscription banner — subtle -->
+  <div id="subBanner" style="margin:20px 16px;border-radius:var(--r);padding:16px;cursor:pointer;position:relative;overflow:hidden" onclick="openModal('priceMod')"></div>
+  <div id="homeExpenseTracker" style="display:none"></div>
+  <div style="padding:8px 24px 20px;font-size:10px;color:var(--muted);text-align:center">Banking by Stripe Treasury. Investments by DriveWealth. Apexa does not hold funds.</div>
 </div>
 
-<!-- BANKING -->
+<!-- BANKING — Robinhood style -->
 <div class="screen" id="screen-banking">
-  <div class="topbar"><div class="page-title">Banking</div><button class="btn btn-p" style="width:auto;padding:8px 16px;font-size:13px" onclick="openModal('sendMod')">+ Transfer</button></div>
-  <div class="bcard">
-    <div class="bchead"><div class="bclogo">Stripe Treasury</div><div class="bcbadge">Via Stripe</div></div>
-    <div class="bcnum">•••• •••• •••• 4821</div>
-    <div style="margin-bottom:16px;position:relative;z-index:1"><div class="bcfl">Available Balance</div><div class="bcbal" id="bnkBal">$24,830</div></div>
-    <div class="bcfoot">
-      <div><div class="bcfl">Routing</div><div class="bcfv">026073150</div></div>
-      <div><div class="bcfl">Account</div><div class="bcfv">••••4821</div></div>
-      <div><div class="bcfl">Pending</div><div class="bcfv" id="bnkPend">$1,200</div></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px">
+    <div style="font-size:18px;font-weight:800">Banking</div>
+    <button style="background:var(--accent);color:#fff;border:none;border-radius:99px;padding:8px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer" onclick="openModal('sendMod')">Transfer</button>
+  </div>
+  <!-- Hero Balance -->
+  <div style="padding:16px 24px 24px">
+    <div style="font-size:13px;color:var(--muted);font-weight:500;margin-bottom:4px">Available Cash</div>
+    <div style="font-size:42px;font-weight:800;letter-spacing:-2px" id="bnkBal">$24,830</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:4px">Pending: <span style="font-weight:700;color:var(--text)" id="bnkPend">$1,200</span></div>
+  </div>
+  <!-- Quick Actions -->
+  <div style="display:flex;gap:8px;padding:0 24px 20px">
+    <div style="flex:1;background:var(--surface);border-radius:12px;padding:14px;text-align:center;cursor:pointer" onclick="openModal('sendMod')">
+      <div style="font-size:16px;margin-bottom:4px">↗️</div><div style="font-size:11px;font-weight:700">Send</div>
+    </div>
+    <div style="flex:1;background:var(--surface);border-radius:12px;padding:14px;text-align:center;cursor:pointer" onclick="openModal('recvMod')">
+      <div style="font-size:16px;margin-bottom:4px">↙️</div><div style="font-size:11px;font-weight:700">Receive</div>
+    </div>
+    <div style="flex:1;background:var(--surface);border-radius:12px;padding:14px;text-align:center;cursor:pointer" onclick="openPlaidLink()">
+      <div style="font-size:16px;margin-bottom:4px">🏦</div><div style="font-size:11px;font-weight:700">Link Bank</div>
     </div>
   </div>
-  <div class="qag">
-    <div class="qab" onclick="openModal('sendMod')"><div class="qaico">↗️</div><div><div class="qal">Send Money</div><div class="qas">Via Stripe ACH</div></div></div>
-    <div class="qab" onclick="openModal('recvMod')"><div class="qaico">↙️</div><div><div class="qal">Receive</div><div class="qas">Share details</div></div></div>
-    <div class="qab" onclick="showScreen('taxes')"><div class="qaico">🔒</div><div><div class="qal">Tax Vault</div><div class="qas">Set aside funds</div></div></div>
-    <div class="qab" onclick="showScreen('invest')"><div class="qaico">📈</div><div><div class="qal">Auto-Invest</div><div class="qas">DriveWealth portfolio</div></div></div>
+  <!-- Account Details -->
+  <div style="padding:0 24px 16px">
+    <div style="display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--border)">
+      <span style="font-size:13px;color:var(--muted)">Routing</span><span style="font-size:13px;font-weight:700">026073150</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--border)">
+      <span style="font-size:13px;color:var(--muted)">Account</span><span style="font-size:13px;font-weight:700">••••4821</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--border)">
+      <span style="font-size:13px;color:var(--muted)">Provider</span><span style="font-size:13px;font-weight:700">Stripe Treasury</span>
+    </div>
   </div>
-  <div class="sh"><div class="st">Linked Accounts</div><div class="sa" onclick="openPlaidLink()">+ Link Bank →</div></div>
-  <div id="linkedAccounts" style="padding:0 16px 16px">
-    <div id="noLinked" style="background:var(--surface);border:1.5px dashed var(--border);border-radius:var(--rs);padding:24px;text-align:center;cursor:pointer" onclick="openPlaidLink()">
-      <div style="font-size:28px;margin-bottom:8px">🏦</div>
-      <div style="font-size:14px;font-weight:700;margin-bottom:4px">Connect Your Bank</div>
-      <div style="font-size:12px;color:var(--muted);line-height:1.5">Link an external bank account via Plaid to see balances and move money faster.</div>
-      <div style="margin-top:12px"><span class="pill pill-p">Powered by Plaid</span></div>
+  <!-- Linked Accounts -->
+  <div style="padding:0 24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-size:15px;font-weight:800">Linked Accounts</span>
+      <span style="font-size:12px;color:var(--accent);font-weight:600;cursor:pointer" onclick="openPlaidLink()">+ Link</span>
+    </div>
+  </div>
+  <div id="linkedAccounts" style="padding:0 24px 16px">
+    <div id="noLinked" style="padding:16px 0;text-align:center;cursor:pointer;border:1px dashed var(--border);border-radius:12px" onclick="openPlaidLink()">
+      <div style="font-size:13px;font-weight:600;color:var(--accent)">Connect your bank via Plaid</div>
     </div>
     <div id="linkedList" style="display:none;display:flex;flex-direction:column;gap:10px"></div>
   </div>
-  <div class="sh"><div class="st">Transactions</div><div class="sa">Filter ↓</div></div>
-  <div class="al" id="bnkAct"></div>
-  <div class="discl">Funds held by Stripe Treasury and its partner banks, not by Apexa. Bank linking powered by Plaid Inc.</div>
+  <!-- Transactions -->
+  <div style="padding:0 24px">
+    <div style="font-size:15px;font-weight:800;margin-bottom:12px">Transactions</div>
+  </div>
+  <div class="al" id="bnkAct" style="padding:0 16px"></div>
+  <div style="padding:16px 24px;font-size:10px;color:var(--muted);text-align:center">Funds held by Stripe Treasury. Apexa does not hold funds. Bank linking by Plaid.</div>
 </div>
 
-<!-- INVESTING -->
+<!-- INVESTING — Robinhood style -->
 <div class="screen" id="screen-invest">
-  <div class="topbar"><div class="page-title">Investing</div><button class="btn btn-p" style="width:auto;padding:8px 16px;font-size:13px" onclick="openInvModal()">+ Invest</button></div>
-  <div class="ph">
-    <div class="phl">Portfolio Value</div>
-    <div class="phv" id="invVal">$11,240</div>
-    <div class="phc" id="invChg">↑ +$348 (+3.2%) this week</div>
-    <svg class="csvg" viewBox="0 0 400 64" preserveAspectRatio="none">
-      <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a78bfa" stop-opacity=".3"/><stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/></linearGradient></defs>
-      <path d="M0,52 L57,46 L114,50 L171,36 L228,40 L285,28 L342,32 L400,16" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
-      <path d="M0,52 L57,46 L114,50 L171,36 L228,40 L285,28 L342,32 L400,16 L400,64 L0,64 Z" fill="url(#cg)"/>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px">
+    <div style="font-size:18px;font-weight:800">Investing</div>
+    <button style="background:var(--accent);color:#fff;border:none;border-radius:99px;padding:8px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer" onclick="openInvModal()">Invest</button>
+  </div>
+  <!-- Hero Portfolio Value -->
+  <div style="padding:16px 24px 8px">
+    <div style="font-size:13px;color:var(--muted);font-weight:500;margin-bottom:4px">Portfolio Value</div>
+    <div style="font-size:42px;font-weight:800;letter-spacing:-2px" id="invVal">$11,240</div>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
+      <span style="font-size:14px;font-weight:700;color:var(--green)" id="invChg">+$348.00 (+3.2%)</span>
+      <span style="font-size:12px;color:var(--muted)">this week</span>
+    </div>
+  </div>
+  <!-- Chart -->
+  <div style="padding:12px 0">
+    <svg width="100%" height="80" viewBox="0 0 420 80" preserveAspectRatio="none" style="display:block">
+      <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--green)" stop-opacity=".12"/><stop offset="100%" stop-color="var(--green)" stop-opacity="0"/></linearGradient></defs>
+      <path d="M0,65 C40,60 80,58 120,52 C160,46 200,50 240,36 C280,26 320,30 360,18 C390,12 410,8 420,6" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round"/>
+      <path d="M0,65 C40,60 80,58 120,52 C160,46 200,50 240,36 C280,26 320,30 360,18 C390,12 410,8 420,6 L420,80 L0,80 Z" fill="url(#cg)"/>
     </svg>
-    <div class="clbs"><span class="clb">Sep</span><span class="clb">Oct</span><span class="clb">Nov</span><span class="clb">Dec</span><span class="clb">Jan</span><span class="clb">Feb</span><span class="clb">Mar</span></div>
+    <div style="display:flex;justify-content:center;gap:4px;padding:8px 24px 0">
+      <button onclick="selPeriod(this)" style="background:var(--surface);border:none;border-radius:99px;padding:6px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer">1W</button>
+      <button onclick="selPeriod(this)" style="background:var(--accent);border:none;border-radius:99px;padding:6px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:#fff;cursor:pointer">1M</button>
+      <button onclick="selPeriod(this)" style="background:var(--surface);border:none;border-radius:99px;padding:6px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer">3M</button>
+      <button onclick="selPeriod(this)" style="background:var(--surface);border:none;border-radius:99px;padding:6px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer">1Y</button>
+      <button onclick="selPeriod(this)" style="background:var(--surface);border:none;border-radius:99px;padding:6px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer">ALL</button>
+    </div>
   </div>
-  <div class="sr">
-    <div class="sb"><div class="sbl">Total Invested</div><div class="sbv" id="invTot">$9,500</div><div class="sbc sg" id="invRet">+18.3% return</div></div>
-    <div class="sb"><div class="sbl">Unrealized Gain</div><div class="sbv" id="invGain">$1,740</div><div class="sbc sg">↑ This week</div></div>
-    <div class="sb"><div class="sbl">Auto-Invest</div><div class="sbv">$500</div><div class="sbc sm">Monthly · On</div></div>
-    <div class="sb"><div class="sbl">Dividends YTD</div><div class="sbv">$124</div><div class="sbc sg">Reinvested</div></div>
+  <!-- Stats Row -->
+  <div style="padding:16px 24px 0">
+    <div style="display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--border)">
+      <span style="font-size:13px;color:var(--muted)">Total Invested</span><span style="font-size:13px;font-weight:700" id="invTot">$9,500</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--border)">
+      <span style="font-size:13px;color:var(--muted)">Total Return</span><span style="font-size:13px;font-weight:700;color:var(--green)" id="invRet">+18.3%</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--border)">
+      <span style="font-size:13px;color:var(--muted)">Unrealized Gain</span><span style="font-size:13px;font-weight:700;color:var(--green)" id="invGain">$1,740</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--border)">
+      <span style="font-size:13px;color:var(--muted)">Auto-Invest</span><span style="font-size:13px;font-weight:700">$500/mo · On</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--border)">
+      <span style="font-size:13px;color:var(--muted)">Dividends YTD</span><span style="font-size:13px;font-weight:700">$124</span>
+    </div>
   </div>
-  <div class="sh"><div class="st">Holdings</div><div class="sa">Edit →</div></div>
-  <div class="al" id="holdList"></div>
-  <div class="discl">Brokerage and custody services provided by DriveWealth LLC, member FINRA/SIPC. DriveWealth manages all portfolio decisions as a registered investment adviser. Apexa does not hold funds or manage investments. Past performance does not guarantee future results.</div>
+  <!-- Holdings -->
+  <div style="padding:20px 24px 0">
+    <div style="font-size:15px;font-weight:800;margin-bottom:12px">Holdings</div>
+  </div>
+  <div class="al" id="holdList" style="padding:0 16px"></div>
+  <div style="padding:16px 24px;font-size:10px;color:var(--muted);text-align:center">Managed by DriveWealth LLC, member FINRA/SIPC. Apexa does not manage investments. Past performance ≠ future results.</div>
 </div>
 
-<!-- TAXES -->
+<!-- TAX VAULT — Robinhood style -->
 <div class="screen" id="screen-taxes">
-  <div class="topbar"><div class="page-title">Tax Vault</div><button class="btn btn-d" style="width:auto;padding:8px 16px;font-size:13px" onclick="openModal('taxMod')">Calculator</button></div>
-  <div class="th">
-    <div class="thl">Vault Balance</div>
-    <div class="thv" id="txVault">$4,820</div>
-    <div class="ths" id="txSub">$1,380 short for Q1 — due April 15</div>
-    <div class="tpw"><div class="tpf" id="txProg" style="width:78%"></div></div>
-    <div class="tpl2"><span class="tpl" id="txSaved">$4,820 saved</span><span class="tpl" id="txTarg">$6,200 target</span></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px">
+    <div style="font-size:18px;font-weight:800">Tax Vault</div>
+    <button style="background:var(--text);color:var(--bg);border:none;border-radius:99px;padding:8px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer" onclick="openModal('taxMod')">Calculator</button>
   </div>
-  <div class="tq">
-    <div class="tqi tqa"><div class="tqil">Q1 2026</div><div class="tqiv cv-y" id="q1v">$4,820</div><div class="tqid">Due Apr 15 ⚠️</div></div>
-    <div class="tqi"><div class="tqil">Q2 2026</div><div class="tqiv">$0</div><div class="tqid">Due Jun 15</div></div>
-    <div class="tqi"><div class="tqil">Q3 2026</div><div class="tqiv">$0</div><div class="tqid">Due Sep 15</div></div>
-    <div class="tqi"><div class="tqil">Q4 2026</div><div class="tqiv">$0</div><div class="tqid">Due Jan 15</div></div>
-  </div>
-  <div class="sh"><div class="st">Income by Platform</div><div class="sa">March 2026</div></div>
-  <div style="padding:0 16px 20px" id="incSrc"></div>
-  <div style="padding:0 16px 20px">
-    <div style="background:var(--green-light);border:1.5px solid rgba(0,200,83,.2);border-radius:var(--rs);padding:16px;margin-bottom:12px">
-      <div style="font-size:13px;font-weight:700;margin-bottom:4px">🎉 No state income tax</div>
-      <div style="font-size:12px;color:var(--muted);line-height:1.5">You only owe federal taxes. Effective rate: 28% based on your bracket.</div>
+  <!-- Hero Vault Balance -->
+  <div style="padding:16px 24px 8px">
+    <div style="font-size:13px;color:var(--muted);font-weight:500;margin-bottom:4px">Vault Balance</div>
+    <div style="font-size:42px;font-weight:800;letter-spacing:-2px;color:var(--tax)" id="txVault">$4,820</div>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
+      <span style="font-size:13px;font-weight:600;color:var(--muted)" id="txSub">$1,380 short for Q1</span>
     </div>
   </div>
-  <div class="sh"><div class="st">Deduction Finder</div><div class="sa" onclick="loadDeductions()">Scan →</div></div>
-  <div id="deductionsList" style="padding:0 16px 20px">
-    <div style="background:var(--surface);border:1.5px dashed var(--border);border-radius:var(--rs);padding:20px;text-align:center;cursor:pointer" onclick="loadDeductions()">
-      <div style="font-size:24px;margin-bottom:8px">🔍</div>
-      <div style="font-size:13px;font-weight:700;margin-bottom:4px">Scan for deductions</div>
-      <div style="font-size:12px;color:var(--muted)">We'll check your transactions for potential write-offs</div>
+  <!-- Progress Bar -->
+  <div style="padding:16px 24px 0">
+    <div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:6px">
+      <div style="height:100%;border-radius:99px;background:linear-gradient(90deg,var(--tax),#fbbf24);animation:gb 1s ease forwards" id="txProg" style="width:78%"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted)">
+      <span id="txSaved">$4,820 saved</span><span id="txTarg">$6,200 target</span>
     </div>
   </div>
-  <!-- Expense Categories -->
-  <div class="sh"><div class="st">Expense Tracker</div><div class="sa">March 2026</div></div>
-  <div style="padding:0 16px 20px">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-      <div style="background:var(--surface);border-radius:var(--rs);padding:14px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:14px">💻</span><span style="font-size:12px;font-weight:700">Equipment</span></div>
-        <div style="font-size:18px;font-weight:800">$1,240</div>
-        <div style="font-size:10px;color:var(--green);font-weight:600">Deductible</div>
-      </div>
-      <div style="background:var(--surface);border-radius:var(--rs);padding:14px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:14px">📱</span><span style="font-size:12px;font-weight:700">Software</span></div>
-        <div style="font-size:18px;font-weight:800">$680</div>
-        <div style="font-size:10px;color:var(--green);font-weight:600">Deductible</div>
-      </div>
-      <div style="background:var(--surface);border-radius:var(--rs);padding:14px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:14px">🏠</span><span style="font-size:12px;font-weight:700">Home Office</span></div>
-        <div style="font-size:18px;font-weight:800">$450</div>
-        <div style="font-size:10px;color:var(--green);font-weight:600">Deductible</div>
-      </div>
-      <div style="background:var(--surface);border-radius:var(--rs);padding:14px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:14px">✈️</span><span style="font-size:12px;font-weight:700">Travel</span></div>
-        <div style="font-size:18px;font-weight:800">$920</div>
-        <div style="font-size:10px;color:var(--green);font-weight:600">Deductible</div>
-      </div>
+  <!-- Quarterly Estimates -->
+  <div style="padding:24px 24px 0">
+    <div style="font-size:15px;font-weight:800;margin-bottom:12px">Quarterly Estimates</div>
+    <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-size:14px;font-weight:700">Q1 2026</div><div style="font-size:11px;color:var(--tax)">Due Apr 15</div></div>
+      <div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px;font-weight:800;color:var(--tax)" id="q1v">$4,820</span><span style="font-size:10px;color:var(--tax)">⚠️</span></div>
     </div>
-    <div style="background:var(--green-light);border:1px solid rgba(0,200,83,.2);border-radius:var(--rs);padding:12px;display:flex;justify-content:space-between;align-items:center">
-      <div><div style="font-size:12px;font-weight:700">Total Deductions</div><div style="font-size:10px;color:var(--muted)">Estimated tax savings</div></div>
-      <div style="text-align:right"><div style="font-size:18px;font-weight:800;color:var(--green)">$3,290</div><div style="font-size:11px;color:var(--green);font-weight:600">Saves ~$921 in taxes</div></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-size:14px;font-weight:700">Q2 2026</div><div style="font-size:11px;color:var(--muted)">Due Jun 15</div></div>
+      <span style="font-size:16px;font-weight:800">$0</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-size:14px;font-weight:700">Q3 2026</div><div style="font-size:11px;color:var(--muted)">Due Sep 15</div></div>
+      <span style="font-size:16px;font-weight:800">$0</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-size:14px;font-weight:700">Q4 2026</div><div style="font-size:11px;color:var(--muted)">Due Jan 15</div></div>
+      <span style="font-size:16px;font-weight:800">$0</span>
     </div>
   </div>
-  <!-- Receipt Scanner -->
-  <div class="sh"><div class="st">Receipt Scanner</div><span class="pill pill-p" style="font-size:10px">Beta</span></div>
-  <div style="padding:0 16px 20px">
-    <div style="background:var(--surface);border:1.5px dashed var(--border);border-radius:var(--rs);padding:24px;text-align:center;cursor:pointer" onclick="showToast('Coming soon','Receipt scanning will auto-categorize your expenses.')">
-      <div style="font-size:32px;margin-bottom:8px">📸</div>
-      <div style="font-size:14px;font-weight:700;margin-bottom:4px">Snap a receipt</div>
-      <div style="font-size:12px;color:var(--muted);line-height:1.5">Take a photo of any receipt and we'll auto-categorize it as a business expense.</div>
-      <div style="display:flex;justify-content:center;gap:8px;margin-top:12px">
-        <span class="pill pill-p">AI-powered</span>
-        <span class="pill pill-g">Auto-deduct</span>
+  <!-- Deductions -->
+  <div style="padding:24px 24px 0">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-size:15px;font-weight:800">Deductions</span>
+      <span style="font-size:12px;color:var(--accent);font-weight:600;cursor:pointer" onclick="loadDeductions()">Scan</span>
+    </div>
+    <div id="deductionsList">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:10px"><span style="font-size:14px">💻</span><span style="font-size:13px;font-weight:700">Equipment</span></div>
+        <span style="font-size:13px;font-weight:700;color:var(--green)">$1,240</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:10px"><span style="font-size:14px">📱</span><span style="font-size:13px;font-weight:700">Software</span></div>
+        <span style="font-size:13px;font-weight:700;color:var(--green)">$680</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:10px"><span style="font-size:14px">🏠</span><span style="font-size:13px;font-weight:700">Home Office</span></div>
+        <span style="font-size:13px;font-weight:700;color:var(--green)">$450</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:10px"><span style="font-size:14px">✈️</span><span style="font-size:13px;font-weight:700">Travel</span></div>
+        <span style="font-size:13px;font-weight:700;color:var(--green)">$920</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0">
+        <span style="font-size:13px;font-weight:800">Total Deductions</span>
+        <div style="text-align:right"><span style="font-size:16px;font-weight:800;color:var(--green)">$3,290</span><div style="font-size:10px;color:var(--green)">saves ~$921</div></div>
       </div>
     </div>
   </div>
-  <!-- Tax Filing Timeline -->
-  <div class="sh"><div class="st">Tax Filing Timeline</div></div>
-  <div style="padding:0 16px 20px">
-    <div style="position:relative;padding-left:24px">
-      <div style="position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--border)"></div>
-      <div style="position:relative;padding-bottom:16px">
-        <div style="position:absolute;left:-20px;top:2px;width:12px;height:12px;border-radius:50%;background:var(--green);border:2px solid var(--bg)"></div>
-        <div style="font-size:13px;font-weight:700">Jan 15 — Q4 2025 paid ✓</div>
-        <div style="font-size:11px;color:var(--muted)">$5,800 submitted to IRS</div>
-      </div>
-      <div style="position:relative;padding-bottom:16px">
-        <div style="position:absolute;left:-20px;top:2px;width:12px;height:12px;border-radius:50%;background:var(--tax);border:2px solid var(--bg);animation:pulse 2s infinite"></div>
-        <div style="font-size:13px;font-weight:700;color:var(--tax)">Apr 15 — Q1 2026 due</div>
-        <div style="font-size:11px;color:var(--muted)">$6,200 estimated · $4,820 saved</div>
-      </div>
-      <div style="position:relative;padding-bottom:16px">
-        <div style="position:absolute;left:-20px;top:2px;width:12px;height:12px;border-radius:50%;background:var(--border);border:2px solid var(--bg)"></div>
-        <div style="font-size:13px;font-weight:700;color:var(--muted)">Jun 15 — Q2 2026</div>
-        <div style="font-size:11px;color:var(--muted)">Estimate pending</div>
-      </div>
-      <div style="position:relative;padding-bottom:16px">
-        <div style="position:absolute;left:-20px;top:2px;width:12px;height:12px;border-radius:50%;background:var(--border);border:2px solid var(--bg)"></div>
-        <div style="font-size:13px;font-weight:700;color:var(--muted)">Sep 15 — Q3 2026</div>
-        <div style="font-size:11px;color:var(--muted)">Estimate pending</div>
-      </div>
-      <div style="position:relative">
-        <div style="position:absolute;left:-20px;top:2px;width:12px;height:12px;border-radius:50%;background:var(--border);border:2px solid var(--bg)"></div>
-        <div style="font-size:13px;font-weight:700;color:var(--muted)">Jan 15 — Q4 2026</div>
-        <div style="font-size:11px;color:var(--muted)">Estimate pending</div>
-      </div>
+  <!-- Income Sources -->
+  <div style="padding:16px 24px 0">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-size:15px;font-weight:800">Income Sources</span>
+      <span style="font-size:11px;color:var(--muted)">March 2026</span>
     </div>
   </div>
-  <div style="padding:0 16px 20px;display:flex;flex-direction:column;gap:10px">
-    <button class="btn btn-p" onclick="showScreen('expert')">👨‍💼 File with a CPA →</button>
-    <button class="btn btn-l" onclick="openModal('taxMod')">🧮 Tax Calculator</button>
+  <div style="padding:0 24px 16px" id="incSrc"></div>
+  <!-- Actions -->
+  <div style="padding:0 24px 16px;display:flex;gap:10px">
+    <button style="flex:1;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer" onclick="showScreen('expert')">File with CPA</button>
+    <button style="flex:1;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer" onclick="openModal('taxMod')">Calculator</button>
   </div>
-  <div class="discl">Tax calculations are estimates based on 2026 federal brackets and are not tax advice. Self-employment tax included. Expense tracking powered by Plaid transaction data. Always consult a licensed CPA for tax filing and planning.</div>
+  <div style="padding:8px 24px 20px;font-size:10px;color:var(--muted);text-align:center">Tax estimates only — not tax advice. Powered by Tight. Consult a licensed CPA.</div>
 </div>
 
 <!-- CHAT -->
@@ -2263,14 +2196,21 @@ function updTaxCountdown(){
 
 // NAV
 function showScreen(n){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById('screen-'+n).classList.add('active');
+  const prev=document.querySelector('.screen.active');
+  if(prev)prev.style.animation='fadeOut .15s ease forwards';
+  setTimeout(()=>{
+    document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.animation=''});
+    const next=document.getElementById('screen-'+n);
+    next.classList.add('active');next.style.animation='fadeIn .2s ease forwards';
+  },prev?150:0);
   const tabs={home:0,taxes:1,invest:2,banking:3,profile:4,chat:4,expert:4,agency:0};
   document.querySelectorAll('.nt').forEach(t=>t.classList.remove('active'));
   if(tabs[n]!==undefined) document.querySelectorAll('.nt')[tabs[n]].classList.add('active');
   window.scrollTo(0,0);
   if(n==='chat'&&chatHist.length===0) initChat();
 }
+// TIME PERIOD SELECTOR
+function selPeriod(el){el.parentElement.querySelectorAll('button').forEach(b=>{b.style.background='var(--surface)';b.style.color='var(--muted)'});el.style.background='var(--accent)';el.style.color='#fff'}
 
 // MODALS
 function openModal(id){document.getElementById(id).classList.add('open');if(id==='splitMod')runSplitSim()}
