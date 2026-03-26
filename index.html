@@ -29,9 +29,28 @@
   --red:#ef4444;--red-light:rgba(239,68,68,0.1);
   --r:18px;--rs:12px;
 }
-body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:420px;margin:0 auto;overflow-x:hidden}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.app-shell{display:flex;min-height:100vh}
+.sidebar{display:none;width:240px;background:var(--surface);border-right:1px solid var(--border);padding:24px 0;position:fixed;top:0;bottom:0;left:0;z-index:100;flex-direction:column}
+.sidebar-logo{font-size:22px;font-weight:800;letter-spacing:-.5px;padding:0 24px 32px;color:var(--text)}
+.sidebar-logo span{color:var(--accent)}
+.sidebar-nav{display:flex;flex-direction:column;gap:2px;padding:0 12px;flex:1}
+.sidebar-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;color:var(--muted);transition:all .15s}
+.sidebar-item:hover{background:var(--bg);color:var(--text)}
+.sidebar-item.active{background:var(--accent-light);color:var(--accent)}
+.sidebar-item span{font-size:18px;width:24px;text-align:center}
+.sidebar-bottom{padding:12px 24px;border-top:1px solid var(--border)}
+.main-content{flex:1;max-width:600px;margin:0 auto}
 .screen{display:none;min-height:100vh;padding-bottom:90px}
 .screen.active{display:block;animation:fu .3s ease forwards}
+@media(min-width:768px){
+  .sidebar{display:flex}
+  .main-content{margin-left:240px;max-width:600px;padding:0 24px}
+  .bnav{display:none!important}
+  .screen{padding-bottom:20px}
+  #screen-onboard .ow{max-width:480px;margin:0 auto}
+  .fabHelp{display:none!important}
+}
 @keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 16px;position:sticky;top:0;background:var(--bg);z-index:50}
 .page-title{font-size:22px;font-weight:800;letter-spacing:-.5px}
@@ -314,6 +333,25 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
 </style>
 </head>
 <body>
+
+<!-- DESKTOP SIDEBAR -->
+<div class="sidebar" id="desktopSidebar">
+  <div class="sidebar-logo">apexa<span>.</span></div>
+  <div class="sidebar-nav">
+    <div class="sidebar-item active" onclick="showScreen('home')" id="sideHome"><span>🏠</span>Home</div>
+    <div class="sidebar-item" onclick="showScreen('taxes')" id="sideTax"><span>🔒</span>Tax Vault</div>
+    <div class="sidebar-item" onclick="showScreen('invest')" id="sideInvest"><span>📈</span>Investing</div>
+    <div class="sidebar-item" onclick="showScreen('banking')" id="sideBanking"><span>💳</span>Banking</div>
+    <div class="sidebar-item" onclick="showScreen('chat')" id="sideChat"><span>💬</span>AI Assistant</div>
+    <div class="sidebar-item" onclick="showScreen('expert')" id="sideExpert"><span>👨‍💼</span>Expert Help</div>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-item" onclick="showScreen('profile')" id="sideProfile"><span>⚙️</span>Settings</div>
+  </div>
+</div>
+
+<div class="app-shell">
+<div class="main-content">
 
 <!-- ONBOARDING -->
 <div class="screen active" id="screen-onboard">
@@ -2040,6 +2078,9 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   <button onclick="document.getElementById('installBanner').style.display='none'" style="background:transparent;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer">✕</button>
 </div>
 
+</div><!-- /main-content -->
+</div><!-- /app-shell -->
+
 <script>
 const API="https://apexa.up.railway.app";
 let obInc=8000,obRate=.28,obRateLbl='28%',chatHist=[],isTyping=false;
@@ -2257,6 +2298,8 @@ function updSum(){
 function enterApp(){
   document.getElementById('bnav').style.display='flex';
   document.getElementById('fabHelp').style.display='flex';
+  // Show sidebar on desktop
+  if(window.innerWidth>=768){document.getElementById('desktopSidebar').style.display='flex'}
   applyAcctType();applyTier();
   if(acctType==='agency'){
     showScreen('agency');
@@ -2314,6 +2357,11 @@ function showScreen(n){
   const tabs={home:0,taxes:1,invest:2,banking:3,profile:4,chat:4,expert:4,agency:0};
   document.querySelectorAll('.nt').forEach(t=>t.classList.remove('active'));
   if(tabs[n]!==undefined) document.querySelectorAll('.nt')[tabs[n]].classList.add('active');
+  // Desktop sidebar
+  document.querySelectorAll('.sidebar-item').forEach(s=>s.classList.remove('active'));
+  const sideMap={home:'sideHome',taxes:'sideTax',invest:'sideInvest',banking:'sideBanking',chat:'sideChat',expert:'sideExpert',profile:'sideProfile',agency:'sideHome'};
+  const sideEl=document.getElementById(sideMap[n]);
+  if(sideEl)sideEl.classList.add('active');
   window.scrollTo(0,0);
   if(n==='chat'&&chatHist.length===0) initChat();
 }
