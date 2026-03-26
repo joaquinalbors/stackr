@@ -932,3 +932,247 @@ def simulate_income_event(amount: float = 5000, platform: str = "YouTube", user_
         ],
         "disclaimer": "Funds held by Stripe Treasury. Investments managed by DriveWealth. Apexa does not hold or manage funds."
     }
+
+# --- Agency Management (Sandbox) ---
+
+import uuid
+
+# In-memory stores for agency sandbox data
+agency_store = {}
+agency_creators_store = {}
+agency_payouts_store = {}
+
+class AgencyOnboardRequest(BaseModel):
+    name: str
+    ein: str
+    contact_email: str
+    platforms: List[str]
+    estimated_volume: float
+
+class AgencyInviteCreatorRequest(BaseModel):
+    agency_id: str
+    creator_name: str
+    creator_email: str
+    platform: str
+    split_percentage: float
+
+class CreatorPayoutItem(BaseModel):
+    creator_id: str
+    gross_amount: float
+
+class AgencyProcessPayoutRequest(BaseModel):
+    agency_id: str
+    payouts: List[CreatorPayoutItem]
+
+@app.post("/api/agency/onboard")
+def agency_onboard(req: AgencyOnboardRequest):
+    """Create an agency profile. Sandbox mode simulates Stripe Connect account creation."""
+    agency_id = f"agency_{uuid.uuid4().hex[:12]}"
+    simulated_stripe_account = f"acct_sandbox_{uuid.uuid4().hex[:10]}"
+    agency_store[agency_id] = {
+        "agency_id": agency_id,
+        "name": req.name,
+        "ein": req.ein,
+        "contact_email": req.contact_email,
+        "platforms": req.platforms,
+        "estimated_volume": req.estimated_volume,
+        "stripe_connect_account": simulated_stripe_account,
+        "created_at": datetime.utcnow().isoformat(),
+        "status": "active",
+    }
+    agency_creators_store[agency_id] = []
+    agency_payouts_store[agency_id] = []
+    return {
+        "agency_id": agency_id,
+        "stripe_connect_account": simulated_stripe_account,
+        "status": "active",
+        "source": "sandbox",
+        "disclaimer": "This is sandbox/demo data. No real Stripe Connect account was created. For production use, integrate with Stripe Connect onboarding."
+    }
+
+@app.post("/api/agency/invite-creator")
+def agency_invite_creator(req: AgencyInviteCreatorRequest):
+    """Invite a creator to join the agency roster."""
+    if req.agency_id not in agency_store:
+        raise HTTPException(status_code=404, detail=f"Agency {req.agency_id} not found.")
+    if req.split_percentage < 0 or req.split_percentage > 100:
+        raise HTTPException(status_code=400, detail="split_percentage must be between 0 and 100.")
+    creator_id = f"creator_{uuid.uuid4().hex[:10]}"
+    invite = {
+        "creator_id": creator_id,
+        "creator_name": req.creator_name,
+        "creator_email": req.creator_email,
+        "platform": req.platform,
+        "split_percentage": req.split_percentage,
+        "status": "invited",
+        "invited_at": datetime.utcnow().isoformat(),
+        "total_volume": 0.0,
+    }
+    agency_creators_store.setdefault(req.agency_id, []).append(invite)
+    return {
+        "creator_id": creator_id,
+        "invite_status": "invited",
+        "creator_name": req.creator_name,
+        "creator_email": req.creator_email,
+        "platform": req.platform,
+        "split_percentage": req.split_percentage,
+        "source": "sandbox",
+        "disclaimer": "This is sandbox/demo data. No real invitation email was sent. In production, an email invite would be dispatched to the creator."
+    }
+
+@app.post("/api/agency/process-payout")
+def agency_process_payout(req: AgencyProcessPayoutRequest):
+    """Process payouts for creators under the agency. Calculates splits, applies 1.5% processing fee."""
+    if req.agency_id not in agency_store:
+        raise HTTPException(status_code=404, detail=f"Agency {req.agency_id} not found.")
+
+    PROCESSING_FEE_RATE = 0.015
+    creators_map = {c["creator_id"]: c for c in agency_creators_store.get(req.agency_id, [])}
+    payout_results = []
+    total_gross = 0.0
+    total_agency_cut = 0.0
+    total_processing_fee = 0.0
+    total_net_to_creators = 0.0
+
+    for item in req.payouts:
+        creator = creators_map.get(item.creator_id)
+        if not creator:
+            payout_results.append({
+                "creator_id": item.creator_id,
+                "error": f"Creator {item.creator_id} not found in agency roster."
+            })
+            continue
+
+        split_pct = creator["split_percentage"]
+        agency_cut = round(item.gross_amount * split_pct / 100, 2)
+        processing_fee = round(item.gross_amount * PROCESSING_FEE_RATE, 2)
+        net_to_creator = round(item.gross_amount - agency_cut - processing_fee, 2)
+
+        total_gross += item.gross_amount
+        total_agency_cut += agency_cut
+        total_processing_fee += processing_fee
+        total_net_to_creators += net_to_creator
+
+        # Update creator total volume
+        creator["total_volume"] = round(creator["total_volume"] + item.gross_amount, 2)
+
+        payout_results.append({
+            "creator_id": item.creator_id,
+            "creator_name": creator["creator_name"],
+            "gross_amount": item.gross_amount,
+            "split_percentage": split_pct,
+            "agency_cut": agency_cut,
+            "processing_fee": processing_fee,
+            "net_to_creator": net_to_creator,
+        })
+
+    # Store payout record
+    payout_record = {
+        "payout_id": f"payout_{uuid.uuid4().hex[:10]}",
+        "agency_id": req.agency_id,
+        "timestamp": datetime.utcnow().isoformat(),
+        "total_gross": round(total_gross, 2),
+        "total_agency_cut": round(total_agency_cut, 2),
+        "total_processing_fee": round(total_processing_fee, 2),
+        "total_net_to_creators": round(total_net_to_creators, 2),
+        "creator_payouts": payout_results,
+        "status": "completed",
+    }
+    agency_payouts_store.setdefault(req.agency_id, []).append(payout_record)
+
+    return {
+        "payout_id": payout_record["payout_id"],
+        "total_gross": round(total_gross, 2),
+        "agency_cut": round(total_agency_cut, 2),
+        "processing_fee": round(total_processing_fee, 2),
+        "net_to_creators": round(total_net_to_creators, 2),
+        "creator_payouts": payout_results,
+        "status": "completed",
+        "source": "sandbox",
+        "disclaimer": "This is sandbox/demo data. No real funds were transferred. Processing fee of 1.5% is simulated. In production, payouts would be executed via Stripe Connect transfers."
+    }
+
+@app.get("/api/agency/roster")
+def agency_roster(agency_id: str):
+    """Returns the list of creators under the agency."""
+    if agency_id not in agency_store:
+        raise HTTPException(status_code=404, detail=f"Agency {agency_id} not found.")
+    creators = agency_creators_store.get(agency_id, [])
+    return {
+        "agency_id": agency_id,
+        "agency_name": agency_store[agency_id]["name"],
+        "creator_count": len(creators),
+        "creators": [
+            {
+                "creator_id": c["creator_id"],
+                "creator_name": c["creator_name"],
+                "creator_email": c["creator_email"],
+                "platform": c["platform"],
+                "split_percentage": c["split_percentage"],
+                "total_volume": c["total_volume"],
+                "status": c["status"],
+            }
+            for c in creators
+        ],
+        "source": "sandbox",
+        "disclaimer": "This is sandbox/demo data. Creator roster is stored in memory and will reset on server restart."
+    }
+
+@app.get("/api/agency/payouts")
+def agency_payouts(agency_id: str):
+    """Returns payout history for the agency."""
+    if agency_id not in agency_store:
+        raise HTTPException(status_code=404, detail=f"Agency {agency_id} not found.")
+    payouts = agency_payouts_store.get(agency_id, [])
+    return {
+        "agency_id": agency_id,
+        "agency_name": agency_store[agency_id]["name"],
+        "total_payouts": len(payouts),
+        "payouts": [
+            {
+                "payout_id": p["payout_id"],
+                "timestamp": p["timestamp"],
+                "total_gross": p["total_gross"],
+                "agency_cut": p["total_agency_cut"],
+                "processing_fee": p["total_processing_fee"],
+                "net_to_creators": p["total_net_to_creators"],
+                "creator_count": len(p["creator_payouts"]),
+                "status": p["status"],
+            }
+            for p in payouts
+        ],
+        "source": "sandbox",
+        "disclaimer": "This is sandbox/demo data. Payout history is stored in memory and will reset on server restart."
+    }
+
+@app.get("/api/agency/stats")
+def agency_stats(agency_id: str):
+    """Returns agency dashboard stats."""
+    if agency_id not in agency_store:
+        raise HTTPException(status_code=404, detail=f"Agency {agency_id} not found.")
+    agency = agency_store[agency_id]
+    creators = agency_creators_store.get(agency_id, [])
+    payouts = agency_payouts_store.get(agency_id, [])
+
+    total_volume = sum(p["total_gross"] for p in payouts)
+    total_revenue = sum(p["total_processing_fee"] for p in payouts)
+    creator_count = len(creators)
+    avg_split = round(sum(c["split_percentage"] for c in creators) / creator_count, 2) if creator_count > 0 else 0.0
+
+    # Simulated monthly subscription revenue based on creator count
+    MONTHLY_SUB_PER_CREATOR = 29.99
+    monthly_sub_revenue = round(creator_count * MONTHLY_SUB_PER_CREATOR, 2)
+
+    return {
+        "agency_id": agency_id,
+        "agency_name": agency["name"],
+        "total_volume": round(total_volume, 2),
+        "total_revenue": round(total_revenue, 2),
+        "creator_count": creator_count,
+        "avg_split": avg_split,
+        "monthly_sub_revenue": monthly_sub_revenue,
+        "platforms": agency["platforms"],
+        "status": agency["status"],
+        "source": "sandbox",
+        "disclaimer": "This is sandbox/demo data. Stats are computed from in-memory sandbox transactions. Monthly subscription revenue is simulated at $29.99 per creator."
+    }

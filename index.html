@@ -54,13 +54,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .pill-p{background:var(--accent-light);color:var(--accent)}
 .pill-y{background:var(--tax-light);color:var(--tax)}
 /* NAV */
-.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:var(--bg);border-top:1px solid var(--border);display:flex;padding:10px 0 20px;z-index:100}
-.nt{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0}
-.nti{font-size:20px}.ntl{font-size:10px;font-weight:600;color:var(--muted);transition:color .15s}
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:var(--bg);border-top:1px solid var(--border);display:flex;padding:8px 0 20px;z-index:100}
+.nt{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 0;transition:all .15s}
+.nti{font-size:20px;transition:transform .15s}.ntl{font-size:10px;font-weight:600;color:var(--muted);transition:color .15s}
 .nt.active .ntl{color:var(--accent)}
-.nc{flex:0 0 64px;display:flex;align-items:center;justify-content:center;margin-top:-22px}
-.ncb{width:52px;height:52px;border-radius:16px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,.4);transition:all .15s}
-.ncb:active{transform:scale(.93)}
+.nt.active .nti{transform:scale(1.1)}
+.nt:active{transform:scale(.92)}
 /* CARDS */
 .card{background:var(--surface);border-radius:var(--r);padding:20px;margin:0 16px 12px}
 .mc{border-radius:var(--r);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:transform .15s;margin:0 16px 10px}
@@ -196,6 +195,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .td{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:td 1.2s infinite}
 .td:nth-child(2){animation-delay:.2s}.td:nth-child(3){animation-delay:.4s}
 @keyframes td{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 .qr{display:flex;flex-wrap:wrap;gap:8px;padding:8px 16px 12px}
 .qrb{background:var(--surface);border:1.5px solid var(--border);border-radius:99px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;transition:all .15s;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap}
 .qrb:active{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
@@ -282,6 +283,27 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
 .obbtn:disabled{opacity:0.4;cursor:not-allowed}
 .discl{font-size:10px;color:var(--muted);line-height:1.5;padding:12px 16px;text-align:center;margin-top:8px}
 #installBanner{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:388px;background:var(--text);color:#fff;border-radius:16px;padding:16px;z-index:150;display:none;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+/* MOBILE & ACCESSIBILITY */
+@media(max-width:380px){
+  .ba{font-size:44px!important;letter-spacing:-2px}
+  .pg{grid-template-columns:repeat(3,1fr);gap:6px}
+  .pc{padding:10px 6px}.pce{font-size:18px}.pcn{font-size:10px}
+  .tos{gap:6px}.to{padding:12px 8px}
+  .tq{grid-template-columns:1fr 1fr;gap:8px}
+  .sr{grid-template-columns:1fr 1fr;gap:8px}
+  .smg{grid-template-columns:1fr 1fr;gap:8px}
+  .prosts{grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .modal{padding:20px 16px 32px}
+}
+@media(max-width:320px){
+  .ba{font-size:36px!important}
+  .pg{grid-template-columns:repeat(3,1fr);gap:4px}
+}
+/* SAFE AREAS */
+@supports(padding-bottom:env(safe-area-inset-bottom)){
+  .bnav{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+  .ciw{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+}
 @media(prefers-color-scheme:dark){
   :root{--bg:#0a0a0a;--surface:#1a1a1a;--border:#2a2a2a;--text:#f0f0f0;--muted:#666;--muted2:#444;
     --accent-light:rgba(124,58,237,.12);--green-light:rgba(0,200,83,.1);--tax-light:rgba(245,158,11,.1);--red-light:rgba(239,68,68,.1)}
@@ -295,13 +317,30 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
 <div class="screen active" id="screen-onboard">
 <div class="ow">
   <div class="olog">apexa<span>.</span></div>
-  <div class="obprog"><div class="obdot done" id="od1"></div><div class="obdot" id="od2"></div><div class="obdot" id="od3"></div><div class="obdot" id="od4"></div><div class="obdot" id="od5"></div><div class="obdot" id="od6"></div><div class="obdot" id="od7"></div><div class="obdot" id="od8"></div></div>
+  <div class="obprog"><div class="obdot done" id="od1"></div><div class="obdot" id="od2"></div><div class="obdot" id="od3"></div><div class="obdot" id="od4"></div><div class="obdot" id="od5"></div></div>
 
   <div class="obs active" id="ob1">
-    <div class="obtag">Step 01 / 08</div>
+    <div class="obtag">Step 01 / 05</div>
     <div class="obtit">Your money,<br>finally under control.</div>
-    <div class="obsub">Apexa handles taxes, banking, and investing automatically — so you can focus on creating.</div>
-    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px">
+    <div class="obsub">Taxes, banking, investing, and payouts — automated.</div>
+    <!-- Account Type Selector -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px">
+      <div id="obTypeCreator" class="to sel" onclick="selectAcctType('creator')" style="padding:20px 14px;text-align:center;border-radius:16px">
+        <div style="font-size:28px;margin-bottom:8px">⚡</div>
+        <div style="font-size:14px;font-weight:800;margin-bottom:4px">Creator</div>
+        <div style="font-size:11px;color:var(--muted)">I earn from content</div>
+        <div style="font-size:12px;font-weight:700;color:var(--green);margin-top:8px">Free to start</div>
+        <div style="font-size:10px;color:var(--muted)">Pro from $49.99/mo</div>
+      </div>
+      <div id="obTypeAgency" class="to" onclick="selectAcctType('agency')" style="padding:20px 14px;text-align:center;border-radius:16px">
+        <div style="font-size:28px;margin-bottom:8px">🏢</div>
+        <div style="font-size:14px;font-weight:800;margin-bottom:4px">Agency</div>
+        <div style="font-size:11px;color:var(--muted)">I manage creators</div>
+        <div style="font-size:12px;font-weight:700;color:#fbbf24;margin-top:8px">From $149.99/mo</div>
+        <div style="font-size:10px;color:var(--muted)">+ 1.5-2.5% processing</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px" id="ob1Features">
       <div style="display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:14px;padding:16px"><div style="font-size:24px">🔒</div><div><div style="font-size:14px;font-weight:700;margin-bottom:2px">Auto Tax Vault</div><div style="font-size:12px;color:var(--muted)">28% set aside from every payment automatically</div></div></div>
       <div style="display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:14px;padding:16px"><div style="font-size:24px">📈</div><div><div style="font-size:14px;font-weight:700;margin-bottom:2px">Auto Investing</div><div style="font-size:12px;color:var(--muted)">Your income grows in the stock market on autopilot</div></div></div>
       <div style="display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:14px;padding:16px"><div style="font-size:24px">💳</div><div><div style="font-size:14px;font-weight:700;margin-bottom:2px">Smart Money Hub</div><div style="font-size:12px;color:var(--muted)">See all your accounts in one place via Plaid & Stripe</div></div></div>
@@ -310,26 +349,58 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   </div>
 
   <div class="obs" id="ob2">
-    <div class="obtag">Step 02 / 08</div>
-    <div class="obtit">Where do you earn?</div>
-    <div class="obsub">Select all platforms you get paid from. We'll track income from each automatically.</div>
-    <div class="pg">
-      <div class="pc sel" onclick="this.classList.toggle('sel')"><div class="pce">🔞</div><div class="pcn">OnlyFans</div></div>
-      <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">▶️</div><div class="pcn">YouTube</div></div>
-      <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">📸</div><div class="pcn">Instagram</div></div>
-      <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🎵</div><div class="pcn">TikTok</div></div>
-      <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🤝</div><div class="pcn">Brand Deals</div></div>
-      <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🎁</div><div class="pcn">Patreon</div></div>
-      <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">📧</div><div class="pcn">Substack</div></div>
-      <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🛍️</div><div class="pcn">Merch</div></div>
-      <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🎮</div><div class="pcn">Twitch</div></div>
+    <div class="obtag">Step 02 / 05</div>
+    <div class="obtit" id="ob2Title">Where do you earn?</div>
+    <div class="obsub" id="ob2Sub">Select all platforms you get paid from. We'll track income from each automatically.</div>
+    <!-- Creator: platform selection -->
+    <div id="ob2Creator">
+      <div class="pg">
+        <div class="pc sel" onclick="this.classList.toggle('sel')"><div class="pce">▶️</div><div class="pcn">YouTube</div></div>
+        <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🎵</div><div class="pcn">TikTok</div></div>
+        <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">📸</div><div class="pcn">Instagram</div></div>
+        <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🎮</div><div class="pcn">Twitch</div></div>
+        <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🤝</div><div class="pcn">Brand Deals</div></div>
+        <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🎁</div><div class="pcn">Patreon</div></div>
+        <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">📧</div><div class="pcn">Substack</div></div>
+        <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🛍️</div><div class="pcn">Merch</div></div>
+        <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">💎</div><div class="pcn">OnlyFans</div></div>
+      </div>
+    </div>
+    <!-- Agency: business info -->
+    <div id="ob2Agency" style="display:none">
+      <div class="field"><label>Agency name</label><input type="text" id="agencyName" placeholder="e.g. Elite Talent Management"></div>
+      <div class="field"><label>How many creators do you manage?</label>
+        <div class="tos" style="grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div class="to sel" onclick="this.parentElement.querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));this.classList.add('sel')"><div class="tor" style="font-size:14px">1-10</div><div class="tod">Small</div></div>
+          <div class="to" onclick="this.parentElement.querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));this.classList.add('sel')"><div class="tor" style="font-size:14px">10-50</div><div class="tod">Medium</div></div>
+          <div class="to" onclick="this.parentElement.querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));this.classList.add('sel')"><div class="tor" style="font-size:14px">50+</div><div class="tod">Large</div></div>
+        </div>
+      </div>
+      <div class="field"><label>Estimated monthly payout volume</label>
+        <div class="tos" style="grid-template-columns:1fr 1fr;gap:8px">
+          <div class="to sel" onclick="this.parentElement.querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));this.classList.add('sel')"><div class="tor" style="font-size:13px">Under $100K</div></div>
+          <div class="to" onclick="this.parentElement.querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));this.classList.add('sel')"><div class="tor" style="font-size:13px">$100K-$500K</div></div>
+          <div class="to" onclick="this.parentElement.querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));this.classList.add('sel')"><div class="tor" style="font-size:13px">$500K-$1M</div></div>
+          <div class="to" onclick="this.parentElement.querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));this.classList.add('sel')"><div class="tor" style="font-size:13px">$1M+</div></div>
+        </div>
+      </div>
+      <div class="field"><label>Which platforms do your creators use?</label>
+        <div class="pg" style="margin-bottom:0">
+          <div class="pc sel" onclick="this.classList.toggle('sel')"><div class="pce">💎</div><div class="pcn">OnlyFans</div></div>
+          <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🎵</div><div class="pcn">TikTok</div></div>
+          <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">▶️</div><div class="pcn">YouTube</div></div>
+          <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">📸</div><div class="pcn">Instagram</div></div>
+          <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🎮</div><div class="pcn">Twitch</div></div>
+          <div class="pc" onclick="this.classList.toggle('sel')"><div class="pce">🤝</div><div class="pcn">Other</div></div>
+        </div>
+      </div>
     </div>
     <button class="obbtn" onclick="obNext(3)">Continue →</button>
     <button class="obbtnb" onclick="obNext(1)">← Back</button>
   </div>
 
   <div class="obs" id="ob3">
-    <div class="obtag">Step 03 / 08</div>
+    <div class="obtag">Step 03 / 05</div>
     <div class="obtit">Your tax profile</div>
     <div class="obsub">We'll estimate your taxes so you never get surprised.</div>
 
@@ -439,7 +510,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
       </div>
     </div>
     <div style="font-size:10px;color:var(--muted);text-align:center;margin-bottom:16px">This is an estimate, not tax advice. Consult a licensed CPA.</div>
-    <button class="obbtn" onclick="obNext(4)">Continue →</button>
+    <button class="obbtn" id="ob3Btn" onclick="validateOb3()">Continue →</button>
     <button class="obbtnb" onclick="obNext(2)">← Back</button>
   </div>
 
@@ -470,7 +541,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
       <div style="display:flex;justify-content:space-between;padding:4px 0"><span style="font-size:13px">Investments</span><span style="font-size:14px;font-weight:800;color:var(--accent)" id="obAllocInvAmt">$800</span></div>
       <div style="display:flex;justify-content:space-between;padding:4px 0"><span style="font-size:13px">Spending</span><span style="font-size:14px;font-weight:800;color:var(--green)" id="obAllocSpendAmt">$4,960</span></div>
     </div>
-    <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:24px;text-align:center">Tax vault held by Stripe Treasury. Investments managed by Alpaca Securities LLC.</div>
+    <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:24px;text-align:center">Tax vault held by Stripe Treasury. Investments managed by DriveWealth LLC.</div>
     <button class="obbtn" onclick="obNext(5)">Continue →</button>
     <button class="obbtnb" onclick="obNext(3)">← Back</button>
   </div>
@@ -522,7 +593,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
         <div style="font-size:22px;font-weight:800;margin-bottom:4px" id="rqProfile">Moderate</div>
         <div style="font-size:13px;color:var(--muted);margin-bottom:20px" id="rqDesc">Balanced growth and income.</div>
         <div style="background:var(--surface);border-radius:var(--rs);padding:16px;text-align:left;margin-bottom:16px" id="rqPortfolio"></div>
-        <div style="font-size:10px;color:var(--muted);line-height:1.5">Portfolio recommendations powered by Alpaca Securities LLC, member FINRA/SIPC. This is not investment advice. Past performance does not guarantee future results.</div>
+        <div style="font-size:10px;color:var(--muted);line-height:1.5">Portfolio recommendations powered by DriveWealth LLC, member FINRA/SIPC. This is not investment advice. Past performance does not guarantee future results.</div>
       </div>
     </div>
     <button class="obbtn" id="rqBtn" onclick="rqNext()">Next Question →</button>
@@ -541,7 +612,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
       </div>
       <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
         <span style="font-size:18px">💳</span>
-        <div style="flex:1;font-size:13px"><strong>Funds held by</strong> Stripe Treasury (FDIC insured) · Trades by Alpaca (FINRA/SIPC)</div>
+        <div style="flex:1;font-size:13px"><strong>Funds held by</strong> Stripe Treasury (FDIC insured) · Investments by DriveWealth (FINRA/SIPC)</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;padding:10px 0">
         <span style="font-size:18px">🧮</span>
@@ -552,13 +623,28 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
       <input type="checkbox" id="tosCheck" onchange="document.getElementById('tosBtn').disabled=!this.checked;document.getElementById('tosBtn').style.opacity=this.checked?'1':'0.4'" style="width:22px;height:22px;accent-color:var(--accent);flex-shrink:0">
       <span style="font-size:13px;font-weight:600;line-height:1.4">I agree to the <span style="color:var(--accent)">Terms of Service</span> and <span style="color:var(--accent)">Privacy Policy</span></span>
     </label>
+    <!-- Agency-specific ToS additions -->
+    <div id="ob6Agency" style="display:none;background:var(--surface);border-radius:16px;padding:20px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:18px">💸</span>
+        <div style="flex:1;font-size:13px"><strong>1.5-2.5% processing fee</strong> based on volume tier — applies to all outbound payouts</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:18px">🔐</span>
+        <div style="flex:1;font-size:13px"><strong>Stripe Connect</strong> handles all KYC, compliance, and money transmission</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0">
+        <span style="font-size:18px">📋</span>
+        <div style="flex:1;font-size:13px"><strong>Creator consent required</strong> — each creator must individually agree to their split</div>
+      </div>
+    </div>
     <button class="obbtn" id="tosBtn" onclick="obNext(7)" disabled style="opacity:0.4">Continue →</button>
-    <button class="obbtnb" onclick="obNext(5)">← Back</button>
+    <button class="obbtnb" onclick="obNext(acctType==='agency'?2:5)">← Back</button>
   </div>
 
   <!-- Step 7: Link Bank (Plaid) -->
   <div class="obs" id="ob7">
-    <div class="obtag">Step 07 / 08</div>
+    <div class="obtag">Step 04 / 05</div>
     <div class="obtit">Link your bank</div>
     <div class="obsub">Connect an existing bank account so you can see all your money in one place. Powered by Plaid — secure and encrypted.</div>
     <div style="background:var(--surface);border-radius:16px;padding:24px;text-align:center;margin-bottom:24px">
@@ -572,23 +658,48 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
       <div style="font-size:12px;color:var(--muted);line-height:1.5"><strong style="color:var(--text)">Bank-level security.</strong> Plaid uses 256-bit encryption. Apexa never sees your login credentials.</div>
     </div>
     <button class="obbtn" onclick="obNext(8)">Continue →</button>
-    <button class="obbtnb" onclick="obNext(6)">← Back</button>
+    <button class="obbtnb" onclick="obNext(3)">← Back</button>
   </div>
 
-  <!-- Step 8: Success -->
+  <!-- Step 5: Success -->
   <div class="obs" id="ob8">
     <div class="suci">⚡</div>
-    <div style="text-align:center;margin-bottom:28px">
-      <div style="font-size:26px;font-weight:800;letter-spacing:-1px;margin-bottom:8px">You're all set!</div>
-      <div style="font-size:14px;color:var(--muted);line-height:1.5">Your Apexa account is ready. Income auto-split, investing on autopilot.</div>
+    <!-- Creator success -->
+    <div id="ob8Creator">
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="font-size:26px;font-weight:800;letter-spacing:-1px;margin-bottom:8px">You're all set!</div>
+        <div style="font-size:14px;color:var(--muted);line-height:1.5">Your Apexa account is ready. Income auto-split, investing on autopilot.</div>
+      </div>
+      <div class="smg">
+        <div class="smi"><div class="smil">Monthly Income</div><div class="smiv smiv-p" id="sumInc">$8,000</div></div>
+        <div class="smi"><div class="smil">Tax Rate</div><div class="smiv smiv-p" id="sumRate">28%</div></div>
+        <div class="smi"><div class="smil">Tax Vault / mo</div><div class="smiv" id="sumVault">$2,240</div></div>
+        <div class="smi"><div class="smil">Investing / mo</div><div class="smiv" style="color:var(--accent)" id="sumInvest">$800</div></div>
+        <div class="smi"><div class="smil">Yours to Spend</div><div class="smiv" style="color:var(--green)" id="sumSpend">$4,160</div></div>
+        <div class="smi"><div class="smil">Risk Profile</div><div class="smiv smiv-p" id="sumRisk">Moderate</div></div>
+      </div>
     </div>
-    <div class="smg">
-      <div class="smi"><div class="smil">Monthly Income</div><div class="smiv smiv-p" id="sumInc">$8,000</div></div>
-      <div class="smi"><div class="smil">Tax Rate</div><div class="smiv smiv-p" id="sumRate">28%</div></div>
-      <div class="smi"><div class="smil">Tax Vault / mo</div><div class="smiv" id="sumVault">$2,240</div></div>
-      <div class="smi"><div class="smil">Investing / mo</div><div class="smiv" style="color:var(--accent)" id="sumInvest">$800</div></div>
-      <div class="smi"><div class="smil">Yours to Spend</div><div class="smiv" style="color:var(--green)" id="sumSpend">$4,160</div></div>
-      <div class="smi"><div class="smil">Risk Profile</div><div class="smiv smiv-p" id="sumRisk">Moderate</div></div>
+    <!-- Agency success -->
+    <div id="ob8Agency" style="display:none">
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="font-size:26px;font-weight:800;letter-spacing:-1px;margin-bottom:8px">Agency dashboard ready!</div>
+        <div style="font-size:14px;color:var(--muted);line-height:1.5">Start adding creators to your roster and process your first payout.</div>
+      </div>
+      <div class="smg">
+        <div class="smi"><div class="smil">Account Type</div><div class="smiv" style="color:#fbbf24">Agency</div></div>
+        <div class="smi"><div class="smil">Processing Fee</div><div class="smiv smiv-p">1.5-2.5%</div></div>
+        <div class="smi"><div class="smil">Plans from</div><div class="smiv">$49.99/mo</div></div>
+        <div class="smi"><div class="smil">Payouts</div><div class="smiv" style="color:var(--green)">Via Stripe</div></div>
+      </div>
+      <div style="background:var(--surface);border-radius:var(--rs);padding:16px;margin-bottom:20px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px">NEXT STEPS</div>
+        <div style="font-size:13px;line-height:2">
+          1. Add creators to your roster<br>
+          2. Set payment split percentages<br>
+          3. Connect your agency bank account<br>
+          4. Process your first payout
+        </div>
+      </div>
     </div>
     <button class="obbtn" onclick="enterApp()">Go to My Dashboard →</button>
   </div>
@@ -601,6 +712,10 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
     <div style="font-size:16px;font-weight:700" id="hgreet">Hey, Creator 👋</div>
     <div style="display:flex;align-items:center;gap:10px">
       <div class="badge demo" id="apiBadge"><div class="bdot"></div><span id="apiTxt">Demo</span></div>
+      <div style="position:relative;cursor:pointer" onclick="openModal('notifMod')">
+        <div style="font-size:20px">🔔</div>
+        <div style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff" id="notifCount">3</div>
+      </div>
       <div class="avatar" onclick="showScreen('profile')">⚡</div>
     </div>
   </div>
@@ -632,11 +747,66 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
       <span style="color:var(--green);font-weight:700">💰 Spend <span id="hSplitSpendPct">62</span>%</span>
     </div>
   </div>
-  <!-- Tax Alert -->
+  <!-- Monthly Earnings Trend -->
+  <div style="margin:0 16px 16px;background:var(--surface);border-radius:var(--r);padding:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-size:13px;font-weight:700">Earnings Trend</span>
+      <span class="pill pill-g" style="font-size:10px">↑ 12% vs last month</span>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:6px;height:60px;margin-bottom:8px" id="earningsBars">
+      <div style="flex:1;background:rgba(124,58,237,.15);border-radius:4px 4px 0 0;height:45%;transition:height .5s"></div>
+      <div style="flex:1;background:rgba(124,58,237,.15);border-radius:4px 4px 0 0;height:55%;transition:height .5s"></div>
+      <div style="flex:1;background:rgba(124,58,237,.15);border-radius:4px 4px 0 0;height:40%;transition:height .5s"></div>
+      <div style="flex:1;background:rgba(124,58,237,.2);border-radius:4px 4px 0 0;height:65%;transition:height .5s"></div>
+      <div style="flex:1;background:rgba(124,58,237,.25);border-radius:4px 4px 0 0;height:75%;transition:height .5s"></div>
+      <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:85%;transition:height .5s"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted)">
+      <span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span><span style="color:var(--accent);font-weight:700">Mar</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <div style="text-align:center"><div style="font-size:16px;font-weight:800" id="hMonthInc">$8,340</div><div style="font-size:10px;color:var(--muted)">This Month</div></div>
+      <div style="text-align:center"><div style="font-size:16px;font-weight:800" id="hYtdInc">$52,180</div><div style="font-size:10px;color:var(--muted)">YTD Income</div></div>
+      <div style="text-align:center"><div style="font-size:16px;font-weight:800" id="hAvgInc">$8,697</div><div style="font-size:10px;color:var(--muted)">6mo Avg</div></div>
+    </div>
+  </div>
+  <!-- Tax Alert with Countdown -->
   <div class="alert alert-y" id="taxAlert">
     <div class="adot"></div>
-    <div class="atxt">Q1 taxes due Apr 15<span class="asub" id="taxSF">$1,380 short in your vault</span></div>
+    <div class="atxt">
+      <span id="taxCountdown" style="font-size:15px;font-weight:800"></span> Q1 taxes due Apr 15
+      <span class="asub" id="taxSF">$1,380 short in your vault</span>
+    </div>
     <button class="acta" onclick="showScreen('taxes')">Fix it</button>
+  </div>
+  <!-- Platform Breakdown -->
+  <div style="margin:0 16px 16px;background:var(--surface);border-radius:var(--r);padding:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-size:13px;font-weight:700">Income by Platform</span>
+      <span style="font-size:11px;color:var(--muted)">March 2026</span>
+    </div>
+    <div id="homePlatformBreakdown">
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 0">
+        <span style="font-size:14px">▶️</span>
+        <div style="flex:1"><div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden"><div style="height:100%;width:40%;background:var(--accent);border-radius:99px"></div></div></div>
+        <span style="font-size:12px;font-weight:700;min-width:55px;text-align:right">$12,400</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 0">
+        <span style="font-size:14px">🎵</span>
+        <div style="flex:1"><div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden"><div style="height:100%;width:26%;background:var(--accent);border-radius:99px"></div></div></div>
+        <span style="font-size:12px;font-weight:700;min-width:55px;text-align:right">$8,200</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 0">
+        <span style="font-size:14px">🤝</span>
+        <div style="flex:1"><div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden"><div style="height:100%;width:14%;background:var(--accent);border-radius:99px"></div></div></div>
+        <span style="font-size:12px;font-weight:700;min-width:55px;text-align:right">$4,500</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 0">
+        <span style="font-size:14px">💎</span>
+        <div style="flex:1"><div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden"><div style="height:100%;width:12%;background:var(--accent);border-radius:99px"></div></div></div>
+        <span style="font-size:12px;font-weight:700;min-width:55px;text-align:right">$3,600</span>
+      </div>
+    </div>
   </div>
   <!-- Account Cards -->
   <div class="sh" style="padding-top:4px"><div class="st">Your Accounts</div></div>
@@ -667,22 +837,83 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
     <div style="font-size:13px;font-weight:700;color:var(--accent)">🏦 Link your bank account</div>
     <div style="font-size:11px;color:var(--muted);margin-top:4px">See all your money in one place</div>
   </div>
-  <!-- Upgrade CTA -->
-  <div style="margin:12px 16px 16px;background:linear-gradient(135deg,#1e1040,#2d1b69);border-radius:var(--r);padding:18px;cursor:pointer;position:relative;overflow:hidden" onclick="openModal('priceMod')" id="upgradeCard">
-    <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(124,58,237,.2)"></div>
-    <div style="display:flex;align-items:center;gap:12px;position:relative;z-index:1">
-      <div style="font-size:28px">⭐</div>
-      <div style="flex:1">
-        <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:2px">Unlock Apexa Pro</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.5)">Auto-invest, tax vault, bank linking, deductions</div>
-      </div>
-      <div style="background:var(--accent);color:#fff;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:700">Upgrade</div>
+  <!-- Weekly Digest -->
+  <div style="margin:0 16px 12px;background:linear-gradient(135deg,#0d1117,#1a1040);border-radius:var(--r);padding:18px;position:relative;overflow:hidden">
+    <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(124,58,237,.15)"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;position:relative;z-index:1">
+      <span style="font-size:16px">📋</span>
+      <span style="font-size:13px;font-weight:700;color:#fff">This Week's Summary</span>
     </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;position:relative;z-index:1">
+      <div style="text-align:center"><div style="font-size:16px;font-weight:800;color:var(--green)">+$7,840</div><div style="font-size:10px;color:rgba(255,255,255,.4)">Earned</div></div>
+      <div style="text-align:center"><div style="font-size:16px;font-weight:800;color:var(--tax)">$2,195</div><div style="font-size:10px;color:rgba(255,255,255,.4)">Tax saved</div></div>
+      <div style="text-align:center"><div style="font-size:16px;font-weight:800;color:var(--accent2)">+$348</div><div style="font-size:10px;color:rgba(255,255,255,.4)">Portfolio grew</div></div>
+    </div>
+  </div>
+  <!-- Tax Savings Counter + Streak -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px;margin-bottom:12px">
+    <div style="background:var(--surface);border-radius:var(--r);padding:16px;text-align:center">
+      <div style="font-size:24px;margin-bottom:6px">🏆</div>
+      <div style="font-size:20px;font-weight:800;color:var(--green)" id="lifetimeSaved">$4,200</div>
+      <div style="font-size:10px;color:var(--muted);font-weight:600">Taxes Saved with Apexa</div>
+      <div style="font-size:10px;color:var(--green);margin-top:4px">Since Jan 2026</div>
+    </div>
+    <div style="background:var(--surface);border-radius:var(--r);padding:16px;text-align:center">
+      <div style="font-size:24px;margin-bottom:6px">🔥</div>
+      <div style="font-size:20px;font-weight:800;color:#fbbf24" id="streakCount">12</div>
+      <div style="font-size:10px;color:var(--muted);font-weight:600">Week Saving Streak</div>
+      <div style="display:flex;justify-content:center;gap:3px;margin-top:6px">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--green)"></div>
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--green)"></div>
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--green)"></div>
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--green)"></div>
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--accent)"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Spending Insights -->
+  <div style="margin:0 16px 12px;background:var(--surface);border-radius:var(--r);padding:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:13px;font-weight:700">💡 Spending Insights</span>
+      <span style="font-size:11px;color:var(--accent);font-weight:600">This month</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg);border-radius:var(--rs)">
+        <span style="font-size:14px">📱</span>
+        <div style="flex:1"><div style="font-size:12px;font-weight:700">Software subscriptions up 40%</div><div style="font-size:10px;color:var(--muted)">$680 this month vs $486 last month — all deductible</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg);border-radius:var(--rs)">
+        <span style="font-size:14px">✈️</span>
+        <div style="flex:1"><div style="font-size:12px;font-weight:700">Travel expense detected</div><div style="font-size:10px;color:var(--muted)">$920 flight + hotel — potential business deduction</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--green-light);border-radius:var(--rs)">
+        <span style="font-size:14px">💰</span>
+        <div style="flex:1"><div style="font-size:12px;font-weight:700;color:var(--green)">You're spending 18% less than avg creators</div><div style="font-size:10px;color:var(--muted)">Great job keeping expenses low relative to income</div></div>
+      </div>
+    </div>
+  </div>
+  <!-- Subscription Status Banner -->
+  <div id="subBanner" style="margin:12px 16px 16px;border-radius:var(--r);padding:18px;cursor:pointer;position:relative;overflow:hidden" onclick="openModal('priceMod')">
+    <!-- Dynamically set based on subscription tier -->
   </div>
   <div style="height:8px"></div>
   <div class="sh"><div class="st">Recent Activity</div><div class="sa" onclick="showScreen('banking')">See all →</div></div>
   <div class="al" id="hAct"></div>
-  <div class="discl">Banking by Stripe Treasury. Investments managed by your chosen robo-advisor. Tax estimates are not tax advice.</div>
+  <!-- Premium-only: Expense Tracker -->
+  <div id="homeExpenseTracker" style="display:none;margin:0 16px 12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:13px;font-weight:700">Expense Tracker</span>
+      <span class="pill pill-p" style="font-size:10px">Premium</span>
+    </div>
+    <div style="background:var(--surface);border-radius:var(--rs);padding:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:12px;color:var(--muted)">This month</span>
+        <span style="font-size:14px;font-weight:800" id="homeExpTotal">$0</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="homeExpCats"></div>
+    </div>
+  </div>
+  <div class="discl">Banking by Stripe Treasury. Investments managed by DriveWealth. Tax estimates are not tax advice. Apexa does not hold funds.</div>
 </div>
 
 <!-- BANKING -->
@@ -699,10 +930,10 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
     </div>
   </div>
   <div class="qag">
-    <div class="qab" onclick="openModal('sendMod')"><div class="qaico">↗️</div><div><div class="qal">Send Money</div><div class="qas">Via Dwolla ACH</div></div></div>
+    <div class="qab" onclick="openModal('sendMod')"><div class="qaico">↗️</div><div><div class="qal">Send Money</div><div class="qas">Via Stripe ACH</div></div></div>
     <div class="qab" onclick="openModal('recvMod')"><div class="qaico">↙️</div><div><div class="qal">Receive</div><div class="qas">Share details</div></div></div>
     <div class="qab" onclick="showScreen('taxes')"><div class="qaico">🔒</div><div><div class="qal">Tax Vault</div><div class="qas">Set aside funds</div></div></div>
-    <div class="qab" onclick="showScreen('invest')"><div class="qaico">📈</div><div><div class="qal">Auto-Invest</div><div class="qas">Alpaca portfolio</div></div></div>
+    <div class="qab" onclick="showScreen('invest')"><div class="qaico">📈</div><div><div class="qal">Auto-Invest</div><div class="qas">DriveWealth portfolio</div></div></div>
   </div>
   <div class="sh"><div class="st">Linked Accounts</div><div class="sa" onclick="openPlaidLink()">+ Link Bank →</div></div>
   <div id="linkedAccounts" style="padding:0 16px 16px">
@@ -741,7 +972,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   </div>
   <div class="sh"><div class="st">Holdings</div><div class="sa">Edit →</div></div>
   <div class="al" id="holdList"></div>
-  <div class="discl">Brokerage services provided by Alpaca Securities LLC, member FINRA/SIPC. Portfolio allocations are not investment advice. Past performance does not guarantee future results.</div>
+  <div class="discl">Brokerage and custody services provided by DriveWealth LLC, member FINRA/SIPC. DriveWealth manages all portfolio decisions as a registered investment adviser. Apexa does not hold funds or manage investments. Past performance does not guarantee future results.</div>
 </div>
 
 <!-- TAXES -->
@@ -776,11 +1007,86 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
       <div style="font-size:12px;color:var(--muted)">We'll check your transactions for potential write-offs</div>
     </div>
   </div>
+  <!-- Expense Categories -->
+  <div class="sh"><div class="st">Expense Tracker</div><div class="sa">March 2026</div></div>
+  <div style="padding:0 16px 20px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="background:var(--surface);border-radius:var(--rs);padding:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:14px">💻</span><span style="font-size:12px;font-weight:700">Equipment</span></div>
+        <div style="font-size:18px;font-weight:800">$1,240</div>
+        <div style="font-size:10px;color:var(--green);font-weight:600">Deductible</div>
+      </div>
+      <div style="background:var(--surface);border-radius:var(--rs);padding:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:14px">📱</span><span style="font-size:12px;font-weight:700">Software</span></div>
+        <div style="font-size:18px;font-weight:800">$680</div>
+        <div style="font-size:10px;color:var(--green);font-weight:600">Deductible</div>
+      </div>
+      <div style="background:var(--surface);border-radius:var(--rs);padding:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:14px">🏠</span><span style="font-size:12px;font-weight:700">Home Office</span></div>
+        <div style="font-size:18px;font-weight:800">$450</div>
+        <div style="font-size:10px;color:var(--green);font-weight:600">Deductible</div>
+      </div>
+      <div style="background:var(--surface);border-radius:var(--rs);padding:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:14px">✈️</span><span style="font-size:12px;font-weight:700">Travel</span></div>
+        <div style="font-size:18px;font-weight:800">$920</div>
+        <div style="font-size:10px;color:var(--green);font-weight:600">Deductible</div>
+      </div>
+    </div>
+    <div style="background:var(--green-light);border:1px solid rgba(0,200,83,.2);border-radius:var(--rs);padding:12px;display:flex;justify-content:space-between;align-items:center">
+      <div><div style="font-size:12px;font-weight:700">Total Deductions</div><div style="font-size:10px;color:var(--muted)">Estimated tax savings</div></div>
+      <div style="text-align:right"><div style="font-size:18px;font-weight:800;color:var(--green)">$3,290</div><div style="font-size:11px;color:var(--green);font-weight:600">Saves ~$921 in taxes</div></div>
+    </div>
+  </div>
+  <!-- Receipt Scanner -->
+  <div class="sh"><div class="st">Receipt Scanner</div><span class="pill pill-p" style="font-size:10px">Beta</span></div>
+  <div style="padding:0 16px 20px">
+    <div style="background:var(--surface);border:1.5px dashed var(--border);border-radius:var(--rs);padding:24px;text-align:center;cursor:pointer" onclick="showToast('Coming soon','Receipt scanning will auto-categorize your expenses.')">
+      <div style="font-size:32px;margin-bottom:8px">📸</div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:4px">Snap a receipt</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5">Take a photo of any receipt and we'll auto-categorize it as a business expense.</div>
+      <div style="display:flex;justify-content:center;gap:8px;margin-top:12px">
+        <span class="pill pill-p">AI-powered</span>
+        <span class="pill pill-g">Auto-deduct</span>
+      </div>
+    </div>
+  </div>
+  <!-- Tax Filing Timeline -->
+  <div class="sh"><div class="st">Tax Filing Timeline</div></div>
+  <div style="padding:0 16px 20px">
+    <div style="position:relative;padding-left:24px">
+      <div style="position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--border)"></div>
+      <div style="position:relative;padding-bottom:16px">
+        <div style="position:absolute;left:-20px;top:2px;width:12px;height:12px;border-radius:50%;background:var(--green);border:2px solid var(--bg)"></div>
+        <div style="font-size:13px;font-weight:700">Jan 15 — Q4 2025 paid ✓</div>
+        <div style="font-size:11px;color:var(--muted)">$5,800 submitted to IRS</div>
+      </div>
+      <div style="position:relative;padding-bottom:16px">
+        <div style="position:absolute;left:-20px;top:2px;width:12px;height:12px;border-radius:50%;background:var(--tax);border:2px solid var(--bg);animation:pulse 2s infinite"></div>
+        <div style="font-size:13px;font-weight:700;color:var(--tax)">Apr 15 — Q1 2026 due</div>
+        <div style="font-size:11px;color:var(--muted)">$6,200 estimated · $4,820 saved</div>
+      </div>
+      <div style="position:relative;padding-bottom:16px">
+        <div style="position:absolute;left:-20px;top:2px;width:12px;height:12px;border-radius:50%;background:var(--border);border:2px solid var(--bg)"></div>
+        <div style="font-size:13px;font-weight:700;color:var(--muted)">Jun 15 — Q2 2026</div>
+        <div style="font-size:11px;color:var(--muted)">Estimate pending</div>
+      </div>
+      <div style="position:relative;padding-bottom:16px">
+        <div style="position:absolute;left:-20px;top:2px;width:12px;height:12px;border-radius:50%;background:var(--border);border:2px solid var(--bg)"></div>
+        <div style="font-size:13px;font-weight:700;color:var(--muted)">Sep 15 — Q3 2026</div>
+        <div style="font-size:11px;color:var(--muted)">Estimate pending</div>
+      </div>
+      <div style="position:relative">
+        <div style="position:absolute;left:-20px;top:2px;width:12px;height:12px;border-radius:50%;background:var(--border);border:2px solid var(--bg)"></div>
+        <div style="font-size:13px;font-weight:700;color:var(--muted)">Jan 15 — Q4 2026</div>
+        <div style="font-size:11px;color:var(--muted)">Estimate pending</div>
+      </div>
+    </div>
+  </div>
   <div style="padding:0 16px 20px;display:flex;flex-direction:column;gap:10px">
     <button class="btn btn-p" onclick="showScreen('expert')">👨‍💼 File with a CPA →</button>
     <button class="btn btn-l" onclick="openModal('taxMod')">🧮 Tax Calculator</button>
   </div>
-  <div class="discl">Tax calculations are estimates based on 2026 federal brackets and are not tax advice. Self-employment tax included. Always consult a licensed CPA for tax filing and planning.</div>
+  <div class="discl">Tax calculations are estimates based on 2026 federal brackets and are not tax advice. Self-employment tax included. Expense tracking powered by Plaid transaction data. Always consult a licensed CPA for tax filing and planning.</div>
 </div>
 
 <!-- CHAT -->
@@ -817,7 +1123,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
     <div class="esi"><div class="esv">4.9★</div><div class="esl">Avg Rating</div></div>
   </div>
   <div class="eopts">
-    <div class="ec feat" onclick="cExp('cpa')"><div class="eci">🧾</div><div class="ecin"><div class="ecit">File with a CPA</div><div class="ecis">Licensed CPA reviews your Apexa data and files your taxes. From $299.</div></div><div class="ecb ecb-p">Popular</div></div>
+    <div class="ec feat" onclick="cExp('cpa')"><div class="eci">🧾</div><div class="ecin"><div class="ecit">File with a CPA</div><div class="ecis">Licensed CPA reviews your Apexa data and files your taxes. Included in Premium.</div></div><div class="ecb ecb-p">Popular</div></div>
     <div class="ec" onclick="cExp('consult')"><div class="eci">💬</div><div class="ecin"><div class="ecit">Tax Consultation</div><div class="ecis">30-min video call with a CPA. Get answers fast. $75.</div></div><div class="ecb ecb-g">30 min</div></div>
     <div class="ec" onclick="cExp('plan')"><div class="eci">📊</div><div class="ecin"><div class="ecit">Financial Planning</div><div class="ecis">Build a wealth plan for your creator income. $150.</div></div><div class="ecb ecb-g">1 hour</div></div>
     <div class="ec" onclick="cExp('books')"><div class="eci">📚</div><div class="ecin"><div class="ecit">Bookkeeping Setup</div><div class="ecis">Get your books clean and organized. $199 one-time.</div></div><div class="ecb ecb-g">One-time</div></div>
@@ -831,41 +1137,291 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
 
 <!-- PROFILE -->
 <div class="screen" id="screen-profile">
-  <div class="topbar"><div class="page-title">Profile</div><span class="pill pill-p">Pro</span></div>
+  <div class="topbar"><div class="page-title">Profile</div><span class="pill pill-p" id="profileTierBadge">Pro</span></div>
   <div class="proh">
     <div class="proav">⚡</div>
     <div class="proname" id="proName">Your Account</div>
     <div class="prohan" id="proHan">@creator</div>
     <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap" id="proPlatforms"></div>
   </div>
+  <!-- Profile Completeness -->
+  <div style="margin:0 16px 16px;background:var(--surface);border-radius:var(--r);padding:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span style="font-size:13px;font-weight:700">Profile Completeness</span>
+      <span style="font-size:13px;font-weight:800;color:var(--accent)" id="profilePct">75%</span>
+    </div>
+    <div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:10px">
+      <div style="height:100%;width:75%;background:var(--accent);border-radius:99px;transition:width .5s" id="profileBar"></div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px" id="profileChecklist">
+      <span class="pill pill-g" style="font-size:10px">✓ Tax profile</span>
+      <span class="pill pill-g" style="font-size:10px">✓ Platforms</span>
+      <span class="pill pill-g" style="font-size:10px">✓ Risk quiz</span>
+      <span class="pill pill-y" style="font-size:10px">○ Bank linked</span>
+      <span class="pill pill-y" style="font-size:10px">○ Photo</span>
+    </div>
+  </div>
+  <!-- Stats -->
   <div class="prosts">
     <div class="psi"><div class="psv cv-p" id="psInc">$8,340</div><div class="psl">This Month</div></div>
     <div class="psi"><div class="psv" id="psPlat">5</div><div class="psl">Platforms</div></div>
     <div class="psi"><div class="psv" id="psRate">28%</div><div class="psl">Tax Rate</div></div>
   </div>
+  <!-- Quick Actions -->
+  <div class="sh"><div class="st">Quick Actions</div></div>
+  <div style="padding:0 16px 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div style="background:var(--surface);border-radius:var(--rs);padding:14px;cursor:pointer;text-align:center" onclick="openModal('reportMod')">
+      <div style="font-size:20px;margin-bottom:6px">📊</div>
+      <div style="font-size:12px;font-weight:700">Income Report</div>
+      <div style="font-size:10px;color:var(--muted)">Monthly breakdown</div>
+    </div>
+    <div style="background:var(--surface);border-radius:var(--rs);padding:14px;cursor:pointer;text-align:center" onclick="openModal('goalsMod')">
+      <div style="font-size:20px;margin-bottom:6px">🎯</div>
+      <div style="font-size:12px;font-weight:700">Goals</div>
+      <div style="font-size:10px;color:var(--muted)">Track progress</div>
+    </div>
+    <div style="background:var(--surface);border-radius:var(--rs);padding:14px;cursor:pointer;text-align:center" onclick="openModal('referralMod')">
+      <div style="font-size:20px;margin-bottom:6px">🔗</div>
+      <div style="font-size:12px;font-weight:700">Refer a Creator</div>
+      <div style="font-size:10px;color:var(--muted)">Earn $25 each</div>
+    </div>
+    <div style="background:var(--surface);border-radius:var(--rs);padding:14px;cursor:pointer;text-align:center" onclick="openModal('helpMod')">
+      <div style="font-size:20px;margin-bottom:6px">❓</div>
+      <div style="font-size:12px;font-weight:700">Help & FAQ</div>
+      <div style="font-size:10px;color:var(--muted)">Common questions</div>
+    </div>
+  </div>
+  <!-- Connected Services -->
   <div class="sh"><div class="st">Connected Services</div><div class="sa">Manage →</div></div>
   <div class="svl">
     <div class="svi con"><div class="svic">💳</div><div class="svin"><div class="svit">Stripe Treasury</div><div class="svid">Banking & payments</div></div><div class="svst svst-c">● Live</div></div>
-    <div class="svi con"><div class="svic">🦙</div><div class="svin"><div class="svit">Alpaca</div><div class="svid">Investing & auto-invest</div></div><div class="svst svst-c">● Live</div></div>
+    <div class="svi con"><div class="svic">📈</div><div class="svin"><div class="svit">DriveWealth</div><div class="svid">Managed investing & custody</div></div><div class="svst svst-c">● Live</div></div>
     <div class="svi" id="plaidSvc"><div class="svic">🏦</div><div class="svin"><div class="svit">Plaid</div><div class="svid">Bank account linking</div></div><div class="svst svst-p" id="plaidSvcStatus" style="cursor:pointer" onclick="openPlaidLink()">Connect</div></div>
-    <div class="svi"><div class="svic">🔞</div><div class="svin"><div class="svit">OnlyFans</div><div class="svid">Income sync</div></div><div class="svst svst-p" style="cursor:pointer" onclick="alert('OnlyFans connection coming soon!')">Connect</div></div>
-    <div class="svi"><div class="svic">🔄</div><div class="svin"><div class="svit">Dwolla</div><div class="svid">Fast ACH transfers</div></div><div class="svst svst-p">Connect</div></div>
-    <div class="svi"><div class="svic">👨‍💼</div><div class="svin"><div class="svit">Taxfyle CPA</div><div class="svid">File taxes with a real CPA</div></div><div class="svst svst-p" style="cursor:pointer" onclick="showScreen('expert')">Connect</div></div>
+    <div class="svi"><div class="svic">🧮</div><div class="svin"><div class="svit">Tight</div><div class="svid">Tax estimation & filing</div></div><div class="svst svst-c">● Live</div></div>
   </div>
+  <!-- Notification Preferences -->
+  <div class="sh"><div class="st">Notifications</div></div>
+  <div style="padding:0 16px 16px;display:flex;flex-direction:column;gap:8px">
+    <div style="background:var(--surface);border-radius:var(--rs);padding:14px;display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font-size:13px;font-weight:700">Tax deadline alerts</div><div style="font-size:11px;color:var(--muted)">7, 3, and 1 day before</div></div>
+      <input type="checkbox" checked style="width:20px;height:20px;accent-color:var(--accent)">
+    </div>
+    <div style="background:var(--surface);border-radius:var(--rs);padding:14px;display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font-size:13px;font-weight:700">Payout received</div><div style="font-size:11px;color:var(--muted)">When income hits your account</div></div>
+      <input type="checkbox" checked style="width:20px;height:20px;accent-color:var(--accent)">
+    </div>
+    <div style="background:var(--surface);border-radius:var(--rs);padding:14px;display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font-size:13px;font-weight:700">Vault shortfall warning</div><div style="font-size:11px;color:var(--muted)">When tax vault is behind target</div></div>
+      <input type="checkbox" checked style="width:20px;height:20px;accent-color:var(--accent)">
+    </div>
+    <div style="background:var(--surface);border-radius:var(--rs);padding:14px;display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font-size:13px;font-weight:700">Weekly summary</div><div style="font-size:11px;color:var(--muted)">Income, expenses, portfolio update</div></div>
+      <input type="checkbox" style="width:20px;height:20px;accent-color:var(--accent)">
+    </div>
+  </div>
+  <!-- Account Actions -->
   <div style="padding:0 16px 20px;display:flex;flex-direction:column;gap:10px">
-    <button class="btn btn-l" onclick="openModal('priceMod')">⭐ Upgrade Plan</button>
-    <button class="btn btn-l">⚙️ Account Settings</button>
-    <button class="btn btn-l" style="color:var(--red)" onclick="showScreen('onboard')">Sign Out</button>
+    <button class="btn btn-l" id="profileUpgradeBtn" onclick="openModal('priceMod')">⭐ Upgrade Plan</button>
+    <button class="btn btn-l" style="color:var(--muted)" onclick="setTier('free');showToast('Reset','Plan reset to Free tier for demo.')">Reset to Free (Demo)</button>
+    <button class="btn btn-l" style="color:var(--red)" onclick="localStorage.clear();showScreen('onboard');document.getElementById('bnav').style.display='none'">Sign Out</button>
   </div>
+  <div class="discl">Apexa LLC. Banking by Stripe Treasury. Investing by DriveWealth LLC, member FINRA/SIPC. Tax services by Tight. Apexa does not hold funds or provide financial advice.</div>
+</div>
+
+<!-- AGENCY DASHBOARD -->
+<div class="screen" id="screen-agency">
+  <div class="topbar"><div class="page-title">Agency</div><div style="display:flex;gap:8px"><button class="btn btn-l" style="width:auto;padding:8px 14px;font-size:12px" onclick="openModal('addCreatorMod')">+ Creator</button><button class="btn btn-g" style="width:auto;padding:8px 14px;font-size:12px" onclick="openModal('payoutMod')">💸 Payouts</button></div></div>
+  <!-- Agency Stats -->
+  <div style="background:linear-gradient(160deg,#0a0a1a 0%,#1a0a2e 100%);border-radius:20px;margin:0 16px 20px;padding:24px;position:relative;overflow:hidden">
+    <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(251,191,36,.1)"></div>
+    <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:6px">TOTAL PROCESSING VOLUME</div>
+    <div style="font-size:42px;font-weight:800;color:#fbbf24;letter-spacing:-2px;margin-bottom:8px;position:relative;z-index:1" id="agencyVol">$284,600</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:16px" id="agencyVolSub">This month · 12 creators</div>
+    <div style="display:flex;gap:12px">
+      <div style="flex:1;background:rgba(255,255,255,.06);border-radius:10px;padding:12px">
+        <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px">YOUR REVENUE</div>
+        <div style="font-size:20px;font-weight:800;color:var(--green)" id="agencyRev">$4,269</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.3)">Volume-based fee</div>
+      </div>
+      <div style="flex:1;background:rgba(255,255,255,.06);border-radius:10px;padding:12px">
+        <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px">PAYOUTS SENT</div>
+        <div style="font-size:20px;font-weight:800;color:var(--accent2)" id="agencyPayouts">$227,680</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.3)">To 12 creators</div>
+      </div>
+    </div>
+  </div>
+  <!-- Volume Tier Pricing -->
+  <div style="margin:0 16px 16px;background:var(--surface);border-radius:var(--r);padding:16px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:12px">Your Processing Tier</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:var(--rs);border:1.5px solid rgba(124,58,237,.3);background:var(--accent-light)">
+        <div><div style="font-size:13px;font-weight:700">Starter</div><div style="font-size:11px;color:var(--muted)">Under $100K/mo</div></div>
+        <div style="text-align:right"><div style="font-size:16px;font-weight:800;color:var(--accent)">2.5%</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:var(--rs);border:1.5px solid rgba(251,191,36,.3);background:rgba(251,191,36,.08)">
+        <div><div style="font-size:13px;font-weight:700;color:#fbbf24">⭐ Growth</div><div style="font-size:11px;color:var(--muted)">$100K - $500K/mo</div></div>
+        <div style="text-align:right"><div style="font-size:16px;font-weight:800;color:#fbbf24">2.0%</div><div style="font-size:10px;color:var(--green)">Current tier</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:var(--rs);border:1.5px solid var(--border)">
+        <div><div style="font-size:13px;font-weight:700;color:var(--muted)">Enterprise</div><div style="font-size:11px;color:var(--muted)">$500K+/mo</div></div>
+        <div style="text-align:right"><div style="font-size:16px;font-weight:800;color:var(--muted)">1.5%</div><div style="font-size:10px;color:var(--muted)">$215K to unlock</div></div>
+      </div>
+    </div>
+  </div>
+  <!-- Quick Stats -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 16px 20px">
+    <div style="background:var(--surface);border-radius:var(--rs);padding:14px;text-align:center">
+      <div style="font-size:20px;font-weight:800;color:var(--accent)" id="agCreatorCount">12</div>
+      <div style="font-size:10px;color:var(--muted);font-weight:600">Creators</div>
+    </div>
+    <div style="background:var(--surface);border-radius:var(--rs);padding:14px;text-align:center">
+      <div style="font-size:20px;font-weight:800;color:var(--green)" id="agAvgSplit">20%</div>
+      <div style="font-size:10px;color:var(--muted);font-weight:600">Avg Split</div>
+    </div>
+    <div style="background:var(--surface);border-radius:var(--rs);padding:14px;text-align:center">
+      <div style="font-size:20px;font-weight:800;color:#fbbf24" id="agMonthlyFees">$240</div>
+      <div style="font-size:10px;color:var(--muted);font-weight:600">Sub Revenue</div>
+    </div>
+  </div>
+  <!-- Payment Split Config -->
+  <div class="sh"><div class="st">Payment Splits</div><div class="sa" onclick="openModal('splitConfigMod')">Configure →</div></div>
+  <div style="padding:0 16px 16px">
+    <div style="background:var(--surface);border-radius:var(--rs);padding:16px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-size:13px;font-weight:700">Default Agency Split</span>
+        <span style="font-size:15px;font-weight:800;color:#fbbf24" id="agDefaultSplit">20%</span>
+      </div>
+      <div style="display:flex;height:10px;border-radius:99px;overflow:hidden;margin-bottom:8px">
+        <div style="background:#fbbf24;width:20%" id="agSplitBarAgency"></div>
+        <div style="background:var(--accent);width:80%" id="agSplitBarCreator"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px">
+        <span style="color:#fbbf24;font-weight:700">Agency 20%</span>
+        <span style="color:var(--accent);font-weight:700">Creator 80%</span>
+      </div>
+    </div>
+  </div>
+  <!-- Creator Roster -->
+  <div class="sh"><div class="st">Creator Roster</div><div class="sa" onclick="openModal('addCreatorMod')">+ Invite →</div></div>
+  <div class="al" id="agencyRoster">
+    <div class="ai" style="animation-delay:.05s">
+      <div class="aic" style="background:linear-gradient(135deg,#ff6b9d,#c44dff);color:#fff;font-size:12px;font-weight:800;border:none">JM</div>
+      <div class="aii"><div class="ain">Jessica Martinez</div><div class="aid">OnlyFans · $42,000/mo · 20% split</div></div>
+      <div class="air"><div class="aia cr">$8,400</div><div style="font-size:10px;color:var(--muted)">your cut</div></div>
+    </div>
+    <div class="ai" style="animation-delay:.1s">
+      <div class="aic" style="background:linear-gradient(135deg,#4deeea,#7b2ff7);color:#fff;font-size:12px;font-weight:800;border:none">SK</div>
+      <div class="aii"><div class="ain">Sarah Kim</div><div class="aid">TikTok + OF · $38,500/mo · 20% split</div></div>
+      <div class="air"><div class="aia cr">$7,700</div><div style="font-size:10px;color:var(--muted)">your cut</div></div>
+    </div>
+    <div class="ai" style="animation-delay:.15s">
+      <div class="aic" style="background:linear-gradient(135deg,#f7971e,#ffd200);color:#fff;font-size:12px;font-weight:800;border:none">AR</div>
+      <div class="aii"><div class="ain">Alex Rivera</div><div class="aid">YouTube + Patreon · $28,000/mo · 15% split</div></div>
+      <div class="air"><div class="aia cr">$4,200</div><div style="font-size:10px;color:var(--muted)">your cut</div></div>
+    </div>
+    <div class="ai" style="animation-delay:.2s">
+      <div class="aic" style="background:linear-gradient(135deg,#00c9ff,#92fe9d);color:#fff;font-size:12px;font-weight:800;border:none">MB</div>
+      <div class="aii"><div class="ain">Mia Brooks</div><div class="aid">OnlyFans · $35,200/mo · 25% split</div></div>
+      <div class="air"><div class="aia cr">$8,800</div><div style="font-size:10px;color:var(--muted)">your cut</div></div>
+    </div>
+    <div class="ai" style="animation-delay:.25s">
+      <div class="aic" style="background:linear-gradient(135deg,#6a11cb,#2575fc);color:#fff;font-size:12px;font-weight:800;border:none">DT</div>
+      <div class="aii"><div class="ain">Dylan Torres</div><div class="aid">Twitch + YT · $22,400/mo · 20% split</div></div>
+      <div class="air"><div class="aia cr">$4,480</div><div style="font-size:10px;color:var(--muted)">your cut</div></div>
+    </div>
+  </div>
+  <!-- Recent Payouts -->
+  <div class="sh" style="margin-top:8px"><div class="st">Recent Payouts</div><div class="sa">See all →</div></div>
+  <div class="al" id="agencyPayoutList">
+    <div class="ai" style="animation-delay:.05s">
+      <div class="aic">💸</div>
+      <div class="aii"><div class="ain">Jessica Martinez</div><div class="aid">Mar 10 · OnlyFans payout</div></div>
+      <div class="air"><div class="aia db">-$33,600</div><div style="font-size:10px;color:var(--green)">→ Creator</div></div>
+    </div>
+    <div class="ai" style="animation-delay:.1s">
+      <div class="aic">💰</div>
+      <div class="aii"><div class="ain">Processing Fee</div><div class="aid">Mar 10 · Jessica Martinez payout</div></div>
+      <div class="air"><div class="aia cr">+$630</div><div style="font-size:10px;color:var(--muted)">2.0% fee</div></div>
+    </div>
+    <div class="ai" style="animation-delay:.15s">
+      <div class="aic">💸</div>
+      <div class="aii"><div class="ain">Sarah Kim</div><div class="aid">Mar 08 · TikTok + OF payout</div></div>
+      <div class="air"><div class="aia db">-$30,800</div><div style="font-size:10px;color:var(--green)">→ Creator</div></div>
+    </div>
+    <div class="ai" style="animation-delay:.2s">
+      <div class="aic">💰</div>
+      <div class="aii"><div class="ain">Processing Fee</div><div class="aid">Mar 08 · Sarah Kim payout</div></div>
+      <div class="air"><div class="aia cr">+$578</div><div style="font-size:10px;color:var(--muted)">2.0% fee</div></div>
+    </div>
+  </div>
+  <!-- Revenue Projections -->
+  <div class="sh" style="margin-top:8px"><div class="st">Revenue Projections</div><div class="sa">Annual</div></div>
+  <div style="padding:0 16px 20px">
+    <div style="background:linear-gradient(135deg,#0d1117,#1a0a2e);border-radius:var(--r);padding:20px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px">PROCESSING REVENUE</div>
+          <div style="font-size:24px;font-weight:800;color:var(--green)">$51,228</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.3)">1.5-2.5% × $3.4M annual vol</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px">SUBSCRIPTION REVENUE</div>
+          <div style="font-size:24px;font-weight:800;color:var(--accent2)">$7,199</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.3)">12 creators × $49.99/mo × 12</div>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:12px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4)">TOTAL ANNUAL REVENUE</div>
+          <div style="font-size:28px;font-weight:800;color:#fbbf24">$58,427</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:rgba(255,255,255,.4)">GROSS MARGIN</div>
+          <div style="font-size:20px;font-weight:800;color:var(--green)">~94%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Growth Metrics -->
+  <div style="padding:0 16px 20px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div style="background:var(--surface);border-radius:var(--rs);padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:800;color:var(--accent)">$23.7K</div>
+        <div style="font-size:10px;color:var(--muted)">Avg Creator/Mo</div>
+      </div>
+      <div style="background:var(--surface);border-radius:var(--rs);padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:800;color:var(--green)">$356</div>
+        <div style="font-size:10px;color:var(--muted)">Avg Fee/Creator</div>
+      </div>
+      <div style="background:var(--surface);border-radius:var(--rs);padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:800;color:#fbbf24">98.2%</div>
+        <div style="font-size:10px;color:var(--muted)">Retention Rate</div>
+      </div>
+    </div>
+  </div>
+  <div class="discl">Payment processing via Stripe Connect. Apexa does not hold funds — all payouts processed by Stripe. Processing fees apply to outbound transactions only. Revenue projections are estimates based on current volume.</div>
 </div>
 
 <!-- BOTTOM NAV -->
+<!-- Floating Help Button -->
+<div id="fabHelp" style="display:none;position:fixed;bottom:90px;right:16px;z-index:99;flex-direction:column;gap:8px;align-items:flex-end" class="fab-container">
+  <div id="fabMenu" style="display:none;flex-direction:column;gap:8px;animation:fu .2s ease forwards">
+    <div style="background:var(--text);color:#fff;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3)" onclick="hideFab();showScreen('chat')">
+      <span style="font-size:14px">💬</span><span style="font-size:12px;font-weight:700">AI Chat</span>
+    </div>
+    <div style="background:var(--text);color:#fff;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3)" onclick="hideFab();showScreen('expert')">
+      <span style="font-size:14px">👨‍💼</span><span style="font-size:12px;font-weight:700">Talk to CPA</span>
+    </div>
+  </div>
+  <div style="width:48px;height:48px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,.4);transition:all .15s" onclick="toggleFab()" id="fabBtn">❓</div>
+</div>
+
 <nav class="bnav" id="bnav" style="display:none">
   <div class="nt active" onclick="showScreen('home')"><div class="nti">🏠</div><div class="ntl">Home</div></div>
-  <div class="nt" onclick="showScreen('banking')"><div class="nti">💳</div><div class="ntl">Banking</div></div>
-  <div class="nc"><div class="ncb" onclick="showScreen('chat')">💬</div></div>
+  <div class="nt" onclick="showScreen('taxes')"><div class="nti">🔒</div><div class="ntl">Tax Vault</div></div>
   <div class="nt" onclick="showScreen('invest')"><div class="nti">📈</div><div class="ntl">Invest</div></div>
-  <div class="nt" onclick="showScreen('expert')"><div class="nti">👨‍💼</div><div class="ntl">Expert</div></div>
+  <div class="nt" onclick="showScreen('banking')"><div class="nti">💳</div><div class="ntl">Banking</div></div>
+  <div class="nt" id="navProfile" onclick="showScreen('profile')"><div class="nti">👤</div><div class="ntl">Profile</div></div>
 </nav>
 
 <!-- MODALS -->
@@ -882,9 +1438,222 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
   </div>
 </div>
 
+<!-- Payout Processing Modal -->
+<div class="mo" id="payoutMod" onclick="closeBg(event,'payoutMod')">
+  <div class="modal" style="max-height:90vh;overflow-y:auto"><div class="mh"></div>
+    <div class="mt">Process Payouts</div>
+    <div class="ms">Review and send payouts to your creators. One tap to pay everyone.</div>
+    <!-- Payout Summary -->
+    <div style="background:linear-gradient(135deg,#0a0a1a,#1a0a2e);border-radius:16px;padding:20px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-size:12px;color:rgba(255,255,255,.4)">TOTAL PAYOUT BATCH</span>
+        <span class="pill" style="background:rgba(251,191,36,.15);color:#fbbf24;font-size:10px" id="payoutBatchStatus">Ready</span>
+      </div>
+      <div style="font-size:32px;font-weight:800;color:#fff;letter-spacing:-1px;margin-bottom:12px" id="payoutBatchTotal">$166,100</div>
+      <div style="display:flex;gap:8px">
+        <div style="flex:1;background:rgba(255,255,255,.06);border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:rgba(255,255,255,.3)">To creators</div>
+          <div style="font-size:14px;font-weight:800;color:var(--accent2)" id="payoutToCreators">$134,480</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,.06);border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:rgba(255,255,255,.3)">Agency cut</div>
+          <div style="font-size:14px;font-weight:800;color:#fbbf24" id="payoutAgencyCut">$31,620</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,.06);border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:rgba(255,255,255,.3)">Processing fee</div>
+          <div style="font-size:14px;font-weight:800;color:var(--green)" id="payoutProcFee">$2,492</div>
+        </div>
+      </div>
+    </div>
+    <!-- Individual Creator Payouts -->
+    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px">CREATOR PAYOUTS</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px" id="payoutCreatorList">
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rs);padding:14px" class="payout-item">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--accent)" onchange="recalcPayouts()">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#ff6b9d,#c44dff);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:800">JM</div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">Jessica Martinez</div><div style="font-size:11px;color:var(--muted)">OnlyFans · $42,000 gross</div></div>
+          <div style="text-align:right"><div style="font-size:14px;font-weight:800">$33,600</div><div style="font-size:10px;color:#fbbf24">-$8,400 agency</div></div>
+        </div>
+        <div style="display:flex;height:6px;border-radius:99px;overflow:hidden">
+          <div style="background:var(--accent);width:80%"></div>
+          <div style="background:#fbbf24;width:20%"></div>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rs);padding:14px" class="payout-item">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--accent)" onchange="recalcPayouts()">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#4deeea,#7b2ff7);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:800">SK</div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">Sarah Kim</div><div style="font-size:11px;color:var(--muted)">TikTok + OF · $38,500 gross</div></div>
+          <div style="text-align:right"><div style="font-size:14px;font-weight:800">$30,800</div><div style="font-size:10px;color:#fbbf24">-$7,700 agency</div></div>
+        </div>
+        <div style="display:flex;height:6px;border-radius:99px;overflow:hidden">
+          <div style="background:var(--accent);width:80%"></div>
+          <div style="background:#fbbf24;width:20%"></div>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rs);padding:14px" class="payout-item">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--accent)" onchange="recalcPayouts()">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f7971e,#ffd200);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:800">AR</div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">Alex Rivera</div><div style="font-size:11px;color:var(--muted)">YouTube + Patreon · $28,000 gross</div></div>
+          <div style="text-align:right"><div style="font-size:14px;font-weight:800">$23,800</div><div style="font-size:10px;color:#fbbf24">-$4,200 agency</div></div>
+        </div>
+        <div style="display:flex;height:6px;border-radius:99px;overflow:hidden">
+          <div style="background:var(--accent);width:85%"></div>
+          <div style="background:#fbbf24;width:15%"></div>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rs);padding:14px" class="payout-item">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--accent)" onchange="recalcPayouts()">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#00c9ff,#92fe9d);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:800">MB</div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">Mia Brooks</div><div style="font-size:11px;color:var(--muted)">OnlyFans · $35,200 gross</div></div>
+          <div style="text-align:right"><div style="font-size:14px;font-weight:800">$26,400</div><div style="font-size:10px;color:#fbbf24">-$8,800 agency</div></div>
+        </div>
+        <div style="display:flex;height:6px;border-radius:99px;overflow:hidden">
+          <div style="background:var(--accent);width:75%"></div>
+          <div style="background:#fbbf24;width:25%"></div>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rs);padding:14px" class="payout-item">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--accent)" onchange="recalcPayouts()">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6a11cb,#2575fc);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:800">DT</div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">Dylan Torres</div><div style="font-size:11px;color:var(--muted)">Twitch + YT · $22,400 gross</div></div>
+          <div style="text-align:right"><div style="font-size:14px;font-weight:800">$17,920</div><div style="font-size:10px;color:#fbbf24">-$4,480 agency</div></div>
+        </div>
+        <div style="display:flex;height:6px;border-radius:99px;overflow:hidden">
+          <div style="background:var(--accent);width:80%"></div>
+          <div style="background:#fbbf24;width:20%"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Payout Method -->
+    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px">PAYOUT METHOD</div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <div style="flex:1;background:var(--accent-light);border:1.5px solid var(--accent);border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer" id="payMethodACH" onclick="selPayMethod('ach')">
+        <div style="font-size:18px;margin-bottom:4px">🏦</div>
+        <div style="font-size:12px;font-weight:700">ACH Transfer</div>
+        <div style="font-size:10px;color:var(--muted)">1-2 business days</div>
+      </div>
+      <div style="flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer" id="payMethodInstant" onclick="selPayMethod('instant')">
+        <div style="font-size:18px;margin-bottom:4px">⚡</div>
+        <div style="font-size:12px;font-weight:700">Instant</div>
+        <div style="font-size:10px;color:var(--muted)">Minutes · +1% fee</div>
+      </div>
+      <div style="flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer" id="payMethodWire" onclick="selPayMethod('wire')">
+        <div style="font-size:18px;margin-bottom:4px">🌐</div>
+        <div style="font-size:12px;font-weight:700">Wire</div>
+        <div style="font-size:10px;color:var(--muted)">Same day · $25 flat</div>
+      </div>
+    </div>
+    <!-- Fee Breakdown -->
+    <div style="background:var(--surface);border-radius:var(--rs);padding:14px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">FEE BREAKDOWN</div>
+      <div style="display:flex;justify-content:space-between;padding:4px 0"><span style="font-size:13px">Gross payouts</span><span style="font-size:13px;font-weight:700" id="feeGross">$166,100</span></div>
+      <div style="display:flex;justify-content:space-between;padding:4px 0"><span style="font-size:13px;color:#fbbf24">Agency commission</span><span style="font-size:13px;font-weight:700;color:#fbbf24" id="feeAgency">-$31,620</span></div>
+      <div style="display:flex;justify-content:space-between;padding:4px 0"><span style="font-size:13px;color:var(--muted)">Processing fee (2.0%)</span><span style="font-size:13px;font-weight:700;color:var(--muted)" id="feeProcAmt">-$2,492</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border);margin-top:4px"><span style="font-size:13px;font-weight:700">Net to creators</span><span style="font-size:15px;font-weight:800;color:var(--accent)" id="feeNetCreators">$131,988</span></div>
+    </div>
+    <!-- Process Button -->
+    <div id="payoutResult" style="display:none;background:var(--green-light);border:1.5px solid rgba(0,200,83,.2);border-radius:var(--rs);padding:16px;margin-bottom:16px;text-align:center">
+      <div style="font-size:24px;margin-bottom:8px">✅</div>
+      <div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:4px">Payouts processing!</div>
+      <div style="font-size:12px;color:var(--muted)">5 creators will receive funds within 1-2 business days via Stripe Connect.</div>
+    </div>
+    <button class="btn btn-g" id="payoutBtn" onclick="processPayouts()" style="font-size:16px;padding:18px">💸 Process All Payouts →</button>
+    <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:10px">Payouts processed via Stripe Connect. Apexa does not hold funds. Processing fees (1.5-2.5%) based on volume tier.</div>
+  </div>
+</div>
+
+<!-- Add Creator Modal -->
+<div class="mo" id="addCreatorMod" onclick="closeBg(event,'addCreatorMod')">
+  <div class="modal"><div class="mh"></div><div class="mt">Add Creator</div><div class="ms">Invite a creator to your agency roster.</div>
+    <div class="field"><label>Creator name</label><input type="text" id="newCreatorName" placeholder="e.g. Jessica Martinez"></div>
+    <div class="field"><label>Email</label><input type="email" id="newCreatorEmail" placeholder="creator@email.com"></div>
+    <div class="field"><label>Primary platform</label>
+      <select id="newCreatorPlatform" style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;width:100%;color:var(--text);appearance:none">
+        <option>OnlyFans</option><option>TikTok</option><option>YouTube</option><option>Instagram</option><option>Twitch</option><option>Patreon</option><option>Multiple</option>
+      </select>
+    </div>
+    <div class="field"><label>Agency split percentage</label>
+      <div style="display:flex;align-items:center;gap:12px">
+        <input type="range" id="newCreatorSplit" min="5" max="50" value="20" oninput="document.getElementById('newSplitLbl').textContent=this.value+'%'" style="flex:1">
+        <span style="font-size:20px;font-weight:800;color:#fbbf24;min-width:50px;text-align:right" id="newSplitLbl">20%</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px"><span>5%</span><span>50%</span></div>
+    </div>
+    <div style="background:var(--surface);border-radius:var(--rs);padding:14px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">HOW IT WORKS</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.8">
+        1. Creator receives invite email<br>
+        2. They sign up and connect their income sources<br>
+        3. Payouts auto-split: your cut goes to your account<br>
+        4. Creator's share auto-splits into tax/invest/spend
+      </div>
+    </div>
+    <button class="btn btn-p" onclick="addCreator()">Send Invite →</button>
+    <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:8px">Creator will receive an email with onboarding instructions.</div>
+  </div>
+</div>
+
+<!-- Split Config Modal -->
+<div class="mo" id="splitConfigMod" onclick="closeBg(event,'splitConfigMod')">
+  <div class="modal"><div class="mh"></div><div class="mt">Configure Splits</div><div class="ms">Set custom payment splits per creator or per platform.</div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px">DEFAULT AGENCY SPLIT</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        <input type="range" id="defaultAgencySplit" min="5" max="50" value="20" oninput="updDefaultSplit(this.value)" style="flex:1">
+        <span style="font-size:24px;font-weight:800;color:#fbbf24;min-width:60px;text-align:right" id="defaultSplitLbl">20%</span>
+      </div>
+      <div style="display:flex;height:10px;border-radius:99px;overflow:hidden;margin-bottom:8px">
+        <div style="background:#fbbf24;transition:width .2s" id="cfgSplitAgency"></div>
+        <div style="background:var(--accent);transition:width .2s" id="cfgSplitCreator"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:16px">
+        <span style="color:#fbbf24;font-weight:700">Agency <span id="cfgAgPct">20</span>%</span>
+        <span style="color:var(--accent);font-weight:700">Creator <span id="cfgCrPct">80</span>%</span>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px">PLATFORM-SPECIFIC OVERRIDES</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px" id="platformSplits">
+      <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--rs);padding:12px">
+        <span style="font-size:16px">📱</span>
+        <span style="flex:1;font-size:13px;font-weight:700">OnlyFans</span>
+        <input type="number" value="20" min="5" max="50" style="width:60px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;text-align:center;color:var(--text)">
+        <span style="font-size:12px;color:var(--muted)">%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--rs);padding:12px">
+        <span style="font-size:16px">🎵</span>
+        <span style="flex:1;font-size:13px;font-weight:700">TikTok</span>
+        <input type="number" value="15" min="5" max="50" style="width:60px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;text-align:center;color:var(--text)">
+        <span style="font-size:12px;color:var(--muted)">%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--rs);padding:12px">
+        <span style="font-size:16px">▶️</span>
+        <span style="flex:1;font-size:13px;font-weight:700">YouTube</span>
+        <input type="number" value="15" min="5" max="50" style="width:60px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;text-align:center;color:var(--text)">
+        <span style="font-size:12px;color:var(--muted)">%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--rs);padding:12px">
+        <span style="font-size:16px">🤝</span>
+        <span style="flex:1;font-size:13px;font-weight:700">Brand Deals</span>
+        <input type="number" value="25" min="5" max="50" style="width:60px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;text-align:center;color:var(--text)">
+        <span style="font-size:12px;color:var(--muted)">%</span>
+      </div>
+    </div>
+    <div style="background:var(--tax-light);border:1.5px solid rgba(245,158,11,.2);border-radius:var(--rs);padding:12px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--tax);margin-bottom:4px">Processing Fee</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.5">Processing fees (1.5-2.5%) based on monthly volume tier. Fee is charged to the agency, not the creator.</div>
+    </div>
+    <button class="btn btn-p" onclick="saveSplitConfig()">Save Configuration →</button>
+  </div>
+</div>
+
 <div class="mo" id="sendMod" onclick="closeBg(event,'sendMod')">
-  <div class="modal"><div class="mh"></div><div class="mt">Send Money</div><div class="ms">Transfer funds via Dwolla ACH — arrives in 1–2 business days.</div>
-    <div class="field"><label>Send To</label><select><option>Tax Vault</option><option>Alpaca Portfolio</option><option>External Bank Account</option></select></div>
+  <div class="modal"><div class="mh"></div><div class="mt">Send Money</div><div class="ms">Transfer funds via Stripe — arrives in 1–2 business days.</div>
+    <div class="field"><label>Send To</label><select><option>Tax Vault</option><option>DriveWealth Portfolio</option><option>External Bank Account</option></select></div>
     <div class="field"><label>Amount</label><input type="text" placeholder="$0.00"></div>
     <div class="field"><label>Note (optional)</label><input type="text" placeholder="What's this for?"></div>
     <button class="btn btn-p" onclick="closeModal('sendMod')">Send Now →</button>
@@ -906,7 +1675,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
 </div>
 
 <div class="mo" id="invMod" onclick="closeBg(event,'invMod')">
-  <div class="modal"><div class="mh"></div><div class="mt">Invest Now</div><div class="ms">Funds allocated based on your risk profile via Alpaca.</div>
+  <div class="modal"><div class="mh"></div><div class="mt">Invest Now</div><div class="ms">Funds allocated based on your risk profile via DriveWealth.</div>
     <div class="field"><label>Amount to invest</label><input type="number" id="invAmount" placeholder="500" value="500" style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;width:100%;color:var(--text)"></div>
     <div id="invPreview" style="background:var(--surface);border-radius:var(--rs);padding:14px;margin-bottom:16px"></div>
     <div id="invResult" style="display:none;background:var(--green-light);border-radius:var(--rs);padding:14px;margin-bottom:16px;text-align:center">
@@ -914,7 +1683,7 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
       <div style="font-size:14px;font-weight:700;color:var(--green)" id="invResultMsg">Orders submitted!</div>
     </div>
     <button class="btn btn-p" id="invBtn" onclick="executeInvest()">Invest Now →</button>
-    <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:8px">Trades executed by Alpaca Securities LLC, member FINRA/SIPC.</div>
+    <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:8px">Trades executed by DriveWealth LLC, member FINRA/SIPC.</div>
   </div>
 </div>
 
@@ -931,42 +1700,314 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
 </div>
 
 <div class="mo" id="priceMod" onclick="closeBg(event,'priceMod')">
-  <div class="modal"><div class="mh"></div><div class="mt">Choose your plan</div><div class="ms">Automate your creator finances. Cancel anytime.</div>
-    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
-      <div style="background:var(--accent-light);border:1.5px solid var(--accent);border-radius:16px;padding:20px;position:relative;cursor:pointer" onclick="selectedPlan='pro';this.parentElement.querySelectorAll(':scope > div').forEach(d=>{d.style.borderColor='var(--border)'});this.style.borderColor='var(--accent)'">
-        <div style="position:absolute;top:-8px;right:16px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px">MOST POPULAR</div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <span style="font-size:17px;font-weight:800;color:var(--accent)">Apexa Pro</span>
-          <span style="font-size:22px;font-weight:800"><span style="font-size:12px;color:var(--muted);font-weight:500">$</span>299<span style="font-size:12px;color:var(--muted);font-weight:500">/mo</span></span>
+  <div class="modal" style="max-height:90vh;overflow-y:auto"><div class="mh"></div>
+    <!-- Tab toggle: Creator vs Agency -->
+    <div style="display:flex;background:var(--surface);border-radius:12px;padding:3px;margin-bottom:16px">
+      <div id="priceTabCreator" style="flex:1;text-align:center;padding:10px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;background:var(--accent);color:#fff" onclick="switchPriceTab('creator')">Creator Plans</div>
+      <div id="priceTabAgency" style="flex:1;text-align:center;padding:10px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted)" onclick="switchPriceTab('agency')">Agency Plans</div>
+    </div>
+    <!-- CREATOR PLANS -->
+    <div id="creatorPlans">
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+        <!-- Free -->
+        <div id="planFree" style="background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:16px;cursor:pointer" onclick="selectPlanCard('free')">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:15px;font-weight:800">Free</span>
+            <span style="font-size:18px;font-weight:800;color:var(--green)">$0</span>
+          </div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.7">
+            ✓ Dashboard — see all income in one place<br>
+            ✓ Basic tax estimate<br>
+            ✓ Income tracking by platform<br>
+            ✗ <span style="opacity:.5">Tax vault, investing, Plaid, deductions</span>
+          </div>
         </div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.8">
-          ✓ Auto income splitting (tax / invest / spend)<br>
-          ✓ Tax estimation — all 50 states + quarterly alerts<br>
-          ✓ Bank account linking via Plaid<br>
-          ✓ Managed investing via robo-advisor<br>
-          ✓ Tax Vault with shortfall alerts<br>
-          ✓ Deduction finder — scan for write-offs<br>
-          ✓ AI financial assistant
+        <!-- Pro -->
+        <div id="planPro" style="background:var(--accent-light);border:1.5px solid var(--accent);border-radius:14px;padding:16px;position:relative;cursor:pointer" onclick="selectPlanCard('pro')">
+          <div style="position:absolute;top:-8px;right:14px;background:var(--accent);color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:99px">MOST POPULAR</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:15px;font-weight:800;color:var(--accent)">Pro</span>
+            <div style="text-align:right"><span style="font-size:18px;font-weight:800">$49.99</span><span style="font-size:11px;color:var(--muted)">/mo</span></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.7">
+            ✓ Everything in Free<br>
+            ✓ Auto income splitting (tax / invest / spend)<br>
+            ✓ Tax Vault with quarterly alerts<br>
+            ✓ Bank linking via Plaid<br>
+            ✓ Managed investing via DriveWealth<br>
+            ✓ Deduction finder + AI assistant
+          </div>
+        </div>
+        <!-- Premium -->
+        <div id="planPremium" style="background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:16px;position:relative;cursor:pointer" onclick="selectPlanCard('premium')">
+          <div style="position:absolute;top:-8px;right:14px;background:#fbbf24;color:#000;font-size:9px;font-weight:700;padding:3px 8px;border-radius:99px">BEST VALUE</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:15px;font-weight:800">Premium</span>
+            <div style="text-align:right"><span style="font-size:18px;font-weight:800">$99.99</span><span style="font-size:11px;color:var(--muted)">/mo</span></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.7">
+            ✓ Everything in Pro<br>
+            ✓ Tax filing via licensed CPA<br>
+            ✓ Custom portfolio strategies<br>
+            ✓ Expense tracking + receipt capture<br>
+            ✓ Quarterly CPA tax review<br>
+            ✓ Priority support
+          </div>
         </div>
       </div>
-      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:20px;cursor:pointer" onclick="selectedPlan='premium';this.parentElement.querySelectorAll(':scope > div').forEach(d=>{d.style.borderColor='var(--border)'});this.style.borderColor='var(--accent)'">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <span style="font-size:17px;font-weight:800">Apexa Premium</span>
-          <span style="font-size:22px;font-weight:800"><span style="font-size:12px;color:var(--muted);font-weight:500">$</span>599<span style="font-size:12px;color:var(--muted);font-weight:500">/mo</span></span>
+    </div>
+    <!-- AGENCY PLANS -->
+    <div id="agencyPlans" style="display:none">
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+        <!-- Agency Starter -->
+        <div id="planAgStarter" style="background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:16px;cursor:pointer" onclick="selectPlanCard('ag_starter')">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:15px;font-weight:800">Starter</span>
+            <div style="text-align:right"><span style="font-size:18px;font-weight:800">$149.99</span><span style="font-size:11px;color:var(--muted)">/mo</span></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.7">
+            ✓ Payout processing + roster up to 25 creators<br>
+            ✓ Custom payment splits per creator<br>
+            ✓ Basic dashboard + payout history<br>
+            ✓ Creator onboarding invites
+          </div>
+          <div style="margin-top:8px;font-size:11px;font-weight:700;color:var(--accent)">+ 2.5% processing fee</div>
         </div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.8">
-          ✓ Everything in Pro<br>
-          ✓ Tax filing via licensed CPA<br>
-          ✓ Custom portfolio strategies<br>
-          ✓ Expense tracking + receipt capture<br>
-          ✓ Priority support — dedicated account manager<br>
-          ✓ Quarterly tax review with CPA<br>
-          ✓ Business entity tax optimization
+        <!-- Agency Growth -->
+        <div id="planAgGrowth" style="background:rgba(251,191,36,.08);border:1.5px solid rgba(251,191,36,.3);border-radius:14px;padding:16px;position:relative;cursor:pointer" onclick="selectPlanCard('ag_growth')">
+          <div style="position:absolute;top:-8px;right:14px;background:#fbbf24;color:#000;font-size:9px;font-weight:700;padding:3px 8px;border-radius:99px">MOST POPULAR</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:15px;font-weight:800;color:#fbbf24">Growth</span>
+            <div style="text-align:right"><span style="font-size:18px;font-weight:800">$299.99</span><span style="font-size:11px;color:var(--muted)">/mo</span></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.7">
+            ✓ Unlimited creators<br>
+            ✓ Business tax vault + expense tracking<br>
+            ✓ Agency investing via DriveWealth<br>
+            ✓ Revenue analytics + export reports<br>
+            ✓ Bulk payout processing
+          </div>
+          <div style="margin-top:8px;font-size:11px;font-weight:700;color:#fbbf24">+ 2.0% processing fee</div>
+        </div>
+        <!-- Agency Enterprise -->
+        <div id="planAgEnterprise" style="background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:16px;position:relative;cursor:pointer" onclick="selectPlanCard('ag_enterprise')">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:15px;font-weight:800">Enterprise</span>
+            <div style="text-align:right"><span style="font-size:18px;font-weight:800">$499.99</span><span style="font-size:11px;color:var(--muted)">/mo</span></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.7">
+            ✓ Everything in Growth<br>
+            ✓ Business investing + custom portfolios<br>
+            ✓ Dedicated account manager<br>
+            ✓ CPA tax filing for agency<br>
+            ✓ Custom API access + webhooks
+          </div>
+          <div style="margin-top:8px;font-size:11px;font-weight:700;color:var(--green)">+ 1.5% processing fee</div>
         </div>
       </div>
     </div>
     <button class="btn btn-p" id="priceBtn" onclick="subscribePlan()">Start 7-Day Free Trial →</button>
-    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:10px">Cancel anytime. You won't be charged during the trial.</div>
+    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:10px">Cancel anytime. Payments via Stripe.</div>
+  </div>
+</div>
+
+<!-- Notifications Modal -->
+<div class="mo" id="notifMod" onclick="closeBg(event,'notifMod')">
+  <div class="modal"><div class="mh"></div>
+    <div class="mt">Notifications</div>
+    <div class="ms">Recent activity and alerts.</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      <div style="background:var(--tax-light);border:1px solid rgba(245,158,11,.2);border-radius:var(--rs);padding:14px;display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:18px">⚠️</span>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">Tax vault shortfall</div><div style="font-size:11px;color:var(--muted);margin-top:2px">You're $1,380 short for Q1. Due April 15.</div><div style="font-size:10px;color:var(--muted);margin-top:4px">2 hours ago</div></div>
+      </div>
+      <div style="background:var(--green-light);border:1px solid rgba(0,200,83,.2);border-radius:var(--rs);padding:14px;display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:18px">💰</span>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">YouTube payout received</div><div style="font-size:11px;color:var(--muted);margin-top:2px">$12,400 deposited. $3,472 → Tax Vault, $1,240 → Investing.</div><div style="font-size:10px;color:var(--muted);margin-top:4px">Yesterday</div></div>
+      </div>
+      <div style="background:var(--accent-light);border:1px solid rgba(124,58,237,.2);border-radius:var(--rs);padding:14px;display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:18px">📈</span>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">Portfolio up +3.2% this week</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Your investments grew by $348. Total: $11,240.</div><div style="font-size:10px;color:var(--muted);margin-top:4px">3 days ago</div></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:14px;display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:18px">🔍</span>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">3 new deductions found</div><div style="font-size:11px;color:var(--muted);margin-top:2px">We found $921 in potential tax savings from your transactions.</div><div style="font-size:10px;color:var(--muted);margin-top:4px">5 days ago</div></div>
+      </div>
+    </div>
+    <button class="btn btn-p" onclick="closeModal('notifMod');document.getElementById('notifCount').style.display='none'">Mark All Read</button>
+  </div>
+</div>
+
+<!-- Income Report Modal -->
+<div class="mo" id="reportMod" onclick="closeBg(event,'reportMod')">
+  <div class="modal" style="max-height:90vh;overflow-y:auto"><div class="mh"></div>
+    <div class="mt">Income Report</div>
+    <div class="ms">March 2026 summary</div>
+    <div style="background:var(--surface);border-radius:var(--rs);padding:16px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px;color:var(--muted)">Gross Income</span>
+        <span style="font-size:14px;font-weight:800">$30,920</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px;color:var(--muted)">Business Expenses</span>
+        <span style="font-size:14px;font-weight:800;color:var(--red)">-$3,290</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px;color:var(--muted)">Net Income</span>
+        <span style="font-size:14px;font-weight:800;color:var(--green)">$27,630</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px;color:var(--muted)">Tax Vault (28%)</span>
+        <span style="font-size:14px;font-weight:800;color:var(--tax)">$8,658</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px;color:var(--muted)">Invested (10%)</span>
+        <span style="font-size:14px;font-weight:800;color:var(--accent)">$3,092</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0">
+        <span style="font-size:13px;font-weight:700">Yours to Spend</span>
+        <span style="font-size:16px;font-weight:800;color:var(--green)">$19,170</span>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">BY PLATFORM</div>
+    <div style="background:var(--surface);border-radius:var(--rs);padding:16px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="font-size:13px">▶️ YouTube</span><span style="font-size:13px;font-weight:700">$12,400</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="font-size:13px">🎵 TikTok</span><span style="font-size:13px;font-weight:700">$8,200</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="font-size:13px">🤝 Brand Deals</span><span style="font-size:13px;font-weight:700">$4,500</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="font-size:13px">📱 OnlyFans</span><span style="font-size:13px;font-weight:700">$3,600</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="font-size:13px">🎁 Patreon</span><span style="font-size:13px;font-weight:700">$1,240</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="font-size:13px">📸 Instagram</span><span style="font-size:13px;font-weight:700">$980</span></div>
+    </div>
+    <button class="btn btn-l" onclick="showToast('Coming soon','CSV and PDF export will be available at launch.')">📥 Export as CSV</button>
+    <div style="height:8px"></div>
+    <button class="btn btn-p" onclick="closeModal('reportMod')">Done</button>
+  </div>
+</div>
+
+<!-- Goals Modal -->
+<div class="mo" id="goalsMod" onclick="closeBg(event,'goalsMod')">
+  <div class="modal"><div class="mh"></div>
+    <div class="mt">Your Goals</div>
+    <div class="ms">Track your financial milestones.</div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+      <div style="background:var(--surface);border-radius:var(--rs);padding:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:13px;font-weight:700">🎯 Monthly Income Goal</span>
+          <span style="font-size:13px;font-weight:800;color:var(--accent)">$30,920 / $35,000</span>
+        </div>
+        <div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden">
+          <div style="height:100%;width:88%;background:var(--accent);border-radius:99px"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">88% — $4,080 to go this month</div>
+      </div>
+      <div style="background:var(--surface);border-radius:var(--rs);padding:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:13px;font-weight:700">💰 Emergency Fund</span>
+          <span style="font-size:13px;font-weight:800;color:var(--green)">$24,830 / $50,000</span>
+        </div>
+        <div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden">
+          <div style="height:100%;width:50%;background:var(--green);border-radius:99px"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">50% — on track for August</div>
+      </div>
+      <div style="background:var(--surface);border-radius:var(--rs);padding:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:13px;font-weight:700">📈 Investment Portfolio</span>
+          <span style="font-size:13px;font-weight:800;color:var(--accent)">$11,240 / $25,000</span>
+        </div>
+        <div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden">
+          <div style="height:100%;width:45%;background:var(--accent);border-radius:99px"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">45% — growing $500/mo auto-invest</div>
+      </div>
+      <div style="background:var(--surface);border-radius:var(--rs);padding:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:13px;font-weight:700">🔒 Q1 Tax Target</span>
+          <span style="font-size:13px;font-weight:800;color:var(--tax)">$4,820 / $6,200</span>
+        </div>
+        <div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden">
+          <div style="height:100%;width:78%;background:var(--tax);border-radius:99px"></div>
+        </div>
+        <div style="font-size:11px;color:var(--tax);margin-top:6px">78% — $1,380 short, due Apr 15</div>
+      </div>
+    </div>
+    <button class="btn btn-p" onclick="closeModal('goalsMod')">Done</button>
+  </div>
+</div>
+
+<!-- Referral Modal -->
+<div class="mo" id="referralMod" onclick="closeBg(event,'referralMod')">
+  <div class="modal"><div class="mh"></div>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:48px;margin-bottom:12px">🔗</div>
+      <div class="mt" style="margin-bottom:4px">Invite Creators, Earn $25</div>
+      <div class="ms">For every creator who signs up and subscribes, you both get $25 credit.</div>
+    </div>
+    <div style="background:var(--surface);border-radius:var(--rs);padding:16px;margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px">YOUR REFERRAL LINK</div>
+      <div style="display:flex;gap:8px">
+        <input type="text" value="apexa.app/r/creator2026" readonly style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text)">
+        <button class="btn btn-p" style="width:auto;padding:12px 16px" onclick="navigator.clipboard.writeText('apexa.app/r/creator2026');showToast('Copied!','Share your link to earn $25 per signup.')">Copy</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
+      <div style="background:var(--surface);border-radius:var(--rs);padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:800;color:var(--accent)">3</div>
+        <div style="font-size:10px;color:var(--muted)">Invited</div>
+      </div>
+      <div style="background:var(--surface);border-radius:var(--rs);padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:800;color:var(--green)">1</div>
+        <div style="font-size:10px;color:var(--muted)">Subscribed</div>
+      </div>
+      <div style="background:var(--surface);border-radius:var(--rs);padding:12px;text-align:center">
+        <div style="font-size:18px;font-weight:800;color:#fbbf24">$25</div>
+        <div style="font-size:10px;color:var(--muted)">Earned</div>
+      </div>
+    </div>
+    <button class="btn btn-p" onclick="closeModal('referralMod')">Done</button>
+  </div>
+</div>
+
+<!-- Help / FAQ Modal -->
+<div class="mo" id="helpMod" onclick="closeBg(event,'helpMod')">
+  <div class="modal" style="max-height:90vh;overflow-y:auto"><div class="mh"></div>
+    <div class="mt">Help & FAQ</div>
+    <div class="ms">Common questions about Apexa.</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      <details style="background:var(--surface);border-radius:var(--rs);padding:14px;cursor:pointer">
+        <summary style="font-size:13px;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center">How does the Tax Vault work?<span style="color:var(--muted)">+</span></summary>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px">Every time you receive income, Apexa automatically sets aside your estimated tax percentage into a separate vault held by Stripe Treasury. This money is FDIC-insured and untouchable until tax time. When quarterly taxes are due, you simply pay from the vault.</div>
+      </details>
+      <details style="background:var(--surface);border-radius:var(--rs);padding:14px;cursor:pointer">
+        <summary style="font-size:13px;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center">Does Apexa hold my money?<span style="color:var(--muted)">+</span></summary>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px">No. Apexa never holds, manages, or has access to your funds. All banking is through Stripe Treasury (FDIC-insured). All investing is managed by DriveWealth LLC (FINRA/SIPC member). All tax calculations are powered by Tight. Apexa is the dashboard that connects everything.</div>
+      </details>
+      <details style="background:var(--surface);border-radius:var(--rs);padding:14px;cursor:pointer">
+        <summary style="font-size:13px;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center">How accurate are the tax estimates?<span style="color:var(--muted)">+</span></summary>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px">Our estimates use current federal and state tax brackets, self-employment tax rates, QBI deductions, and your specific filing status. They are powered by Tight's tax engine. However, tax estimates are not tax advice — always consult a licensed CPA for filing.</div>
+      </details>
+      <details style="background:var(--surface);border-radius:var(--rs);padding:14px;cursor:pointer">
+        <summary style="font-size:13px;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center">Can I cancel anytime?<span style="color:var(--muted)">+</span></summary>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px">Yes. All subscriptions can be cancelled anytime with no penalty. Your data remains accessible and your connected accounts (Stripe, Plaid, DriveWealth) stay active independently of Apexa.</div>
+      </details>
+      <details style="background:var(--surface);border-radius:var(--rs);padding:14px;cursor:pointer">
+        <summary style="font-size:13px;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center">How do agency payouts work?<span style="color:var(--muted)">+</span></summary>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px">Agencies process payouts through Stripe Connect. You set the split percentage per creator (e.g., 80/20). When you hit "Process Payouts," each creator receives their share automatically. Their portion then auto-splits into tax vault, investing, and spending. Processing fees are 1.5-2.5% depending on your plan.</div>
+      </details>
+      <details style="background:var(--surface);border-radius:var(--rs);padding:14px;cursor:pointer">
+        <summary style="font-size:13px;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center">Is my data secure?<span style="color:var(--muted)">+</span></summary>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px">Yes. Bank linking is through Plaid (256-bit encryption, bank-level security). Apexa never sees your bank login credentials. All financial data is encrypted in transit and at rest. We are SOC 2 compliant.</div>
+      </details>
+    </div>
+    <div style="background:var(--accent-light);border-radius:var(--rs);padding:16px;text-align:center;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:4px">Need more help?</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Chat with our AI assistant or connect with a CPA.</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-p" style="flex:1" onclick="closeModal('helpMod');showScreen('chat')">💬 AI Chat</button>
+        <button class="btn btn-l" style="flex:1" onclick="closeModal('helpMod');showScreen('expert')">👨‍💼 Talk to CPA</button>
+      </div>
+    </div>
+    <button class="btn btn-l" onclick="closeModal('helpMod')">Close</button>
   </div>
 </div>
 
@@ -980,25 +2021,120 @@ input[type=range]::-webkit-slider-thumb{appearance:none;width:22px;height:22px;b
 <script>
 const API="https://apexa.up.railway.app";
 let obInc=8000,obRate=.28,obRateLbl='28%',chatHist=[],isTyping=false;
+// SUBSCRIPTION TIER: 'free','pro','premium'
+let userTier='free';
+function setTier(t){userTier=t;localStorage.setItem('apexa_tier',t);applyTier()}
+function applyTier(){
+  const banner=document.getElementById('subBanner');
+  if(!banner)return;
+  const pro=userTier==='pro',prem=userTier==='premium',paid=pro||prem;
+  // Subscription banner on home
+  if(!paid){
+    banner.style.background='linear-gradient(135deg,#1e1040,#2d1b69)';
+    banner.innerHTML=`<div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(124,58,237,.2)"></div>
+      <div style="display:flex;align-items:center;gap:12px;position:relative;z-index:1">
+        <div style="font-size:28px">⭐</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:2px">Unlock Apexa Pro — $49.99/mo</div><div style="font-size:12px;color:rgba(255,255,255,.5)">Auto-invest, tax vault, bank linking, deductions</div></div>
+        <div style="background:var(--accent);color:#fff;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:700">Upgrade</div>
+      </div>`;
+    banner.onclick=()=>openModal('priceMod');
+    banner.style.cursor='pointer';
+  }else if(pro){
+    banner.style.background='linear-gradient(135deg,#0d1117,#1a1040)';
+    banner.innerHTML=`<div style="display:flex;align-items:center;gap:12px;position:relative;z-index:1">
+      <div style="font-size:22px">⚡</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--accent2)">Apexa Pro</div><div style="font-size:11px;color:rgba(255,255,255,.4)">All features unlocked</div></div>
+      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.3);cursor:pointer" onclick="event.stopPropagation();openModal('priceMod')">Upgrade to Premium →</div>
+    </div>`;
+    banner.style.cursor='default';banner.onclick=null;
+  }else{
+    banner.style.background='linear-gradient(135deg,#1a0a2e,#2d1060)';
+    banner.innerHTML=`<div style="display:flex;align-items:center;gap:12px;position:relative;z-index:1">
+      <div style="font-size:22px">👑</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#fbbf24">Apexa Premium</div><div style="font-size:11px;color:rgba(255,255,255,.4)">CPA filing · Priority support · Custom portfolios</div></div>
+      <span class="pill" style="background:rgba(251,191,36,.15);color:#fbbf24;font-size:10px">Active</span>
+    </div>`;
+    banner.style.cursor='default';banner.onclick=null;
+  }
+  // Profile badge
+  const proBadge=document.querySelector('#screen-profile .topbar .pill');
+  if(proBadge){
+    if(prem){proBadge.textContent='Premium';proBadge.style.background='rgba(251,191,36,.15)';proBadge.style.color='#fbbf24'}
+    else if(pro){proBadge.textContent='Pro';proBadge.style.background='';proBadge.style.color=''}
+    else{proBadge.textContent='Free';proBadge.style.background='var(--surface)';proBadge.style.color='var(--muted)'}
+  }
+  // Show/hide premium-only features
+  const expTracker=document.getElementById('homeExpenseTracker');
+  if(expTracker)expTracker.style.display=prem?'block':'none';
+  // Locked features overlay for free tier
+  document.querySelectorAll('[data-tier]').forEach(el=>{
+    const req=el.dataset.tier;
+    const locked=(req==='pro'&&!paid)||(req==='premium'&&!prem);
+    el.style.opacity=locked?'0.5':'1';
+    el.style.pointerEvents=locked?'none':'auto';
+    const lock=el.querySelector('.lock-badge');
+    if(locked&&!lock){
+      const b=document.createElement('div');b.className='lock-badge';
+      b.style.cssText='position:absolute;top:8px;right:8px;background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:2px 8px;font-size:10px;font-weight:700;color:var(--muted);z-index:2';
+      b.textContent=req==='premium'?'🔒 Premium':'🔒 Pro';
+      el.style.position='relative';el.appendChild(b);
+    }else if(!locked&&lock){lock.remove()}
+  });
+}
+// Load saved tier
+(function(){const saved=localStorage.getItem('apexa_tier');if(saved)userTier=saved})()
 
 // FORMAT
 const fmt=n=>'$'+Number(n).toLocaleString('en-US',{maximumFractionDigits:0});
-const ICONS={'OnlyFans':'🔞','YouTube':'▶️','Substack':'📧','Patreon':'🎁','Nike Brand Deal':'🤝','Brand Deal':'🤝','Alpaca Auto-invest':'📈','Merch':'🛍️','Twitch':'🎮','TikTok':'🎵','Instagram':'📸'};
+const ICONS={'OnlyFans':'💎','YouTube':'▶️','Substack':'📧','Patreon':'🎁','Nike Brand Deal':'🤝','Brand Deal':'🤝','Auto-invest':'📈','Merch':'🛍️','Twitch':'🎮','TikTok':'🎵','Instagram':'📸'};
 
 // ONBOARDING
 function obNext(s){
+  // Agency flow: skip steps 3-5 (tax/allocation/risk) — go 2→7 (bank link)
+  if(acctType==='agency'&&s===3){s=7}
+  if(acctType==='agency'&&s===5){s=7}
+  // Update Step 2 for account type
+  if(s===2){
+    const isAgency=acctType==='agency';
+    document.getElementById('ob2Title').textContent=isAgency?'About your agency':'Where do you earn?';
+    document.getElementById('ob2Sub').textContent=isAgency?'Tell us about your agency so we can set up your dashboard.':'Select all platforms you get paid from.';
+    document.getElementById('ob2Creator').style.display=isAgency?'none':'block';
+    document.getElementById('ob2Agency').style.display=isAgency?'block':'none';
+  }
   document.querySelectorAll('.obs').forEach(x=>x.classList.remove('active'));
   document.getElementById('ob'+s).classList.add('active');
-  for(let i=1;i<=8;i++) document.getElementById('od'+i).className='obdot'+(i<=s?' done':'');
+  // Map actual step numbers to progress dots (1-5)
+  const stepMap={1:1,2:2,3:3,4:3,5:3,6:3,7:4,8:5};
+  const dotIdx=stepMap[s]||s;
+  for(let i=1;i<=5;i++){const d=document.getElementById('od'+i);if(d)d.className='obdot'+(i<=dotIdx?' done':'')}
   if(s===4){document.getElementById('obTaxSlider').value=obTaxPct;updAlloc()}
   if(s===5){rqStep=1;document.querySelectorAll('.rq-q').forEach(q=>q.classList.remove('active'));document.getElementById('rq1').classList.add('active');document.getElementById('rqBtn').textContent='Next Question →';document.getElementById('rqBtn').onclick=rqNext}
-  if(s===8) updSum();
+  if(s===6){
+    const agToS=document.getElementById('ob6Agency');
+    if(agToS)agToS.style.display=acctType==='agency'?'block':'none';
+  }
+  if(s===8){
+    document.getElementById('ob8Creator').style.display=acctType==='creator'?'block':'none';
+    document.getElementById('ob8Agency').style.display=acctType==='agency'?'block':'none';
+    if(acctType==='creator')updSum();
+  }
 }
 let obFiling='single',obState='',obW2=false,obW2Inc=0,obHomeOffice=false,obExpenses=0;
 function updSlider(v){obInc=parseInt(v);const d=obInc>=1000?'$'+(obInc/1000).toFixed(obInc%1000===0?0:1)+'k':'$'+obInc;document.getElementById('slDisp').textContent=d}
 function selFiling(el,val){el.closest('.tos').querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');obFiling=val;calcObTax()}
 function selW2(el,val){el.closest('.tos').querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');obW2=val;document.getElementById('obW2Fields').style.display=val?'block':'none';calcObTax()}
 function selHomeOffice(el,val){el.closest('.tos').querySelectorAll('.to').forEach(t=>t.classList.remove('sel'));el.classList.add('sel');obHomeOffice=val;calcObTax()}
+function validateOb3(){
+  const state=document.getElementById('obState').value;
+  if(!state){
+    const sel=document.getElementById('obState');
+    sel.style.borderColor='var(--red)';sel.style.animation='shake .4s ease';
+    setTimeout(()=>{sel.style.borderColor='var(--border)';sel.style.animation=''},500);
+    showToast('Select your state','We need your state to calculate taxes accurately.');
+    return;
+  }
+  obNext(7);// skip to bank link
+}
 async function calcObTax(){
   obState=document.getElementById('obState').value;
   if(!obState)return;
@@ -1081,13 +2217,51 @@ function updSum(){
   document.getElementById('sumVault').textContent=fmt(taxAmt);document.getElementById('sumInvest').textContent=fmt(invAmt);
   document.getElementById('sumSpend').textContent=fmt(spAmt);document.getElementById('sumRisk').textContent=rqProfileName;
 }
-function enterApp(){document.getElementById('bnav').style.display='flex';showScreen('home');loadAll();loadLinkedAccounts();updHomeSplit()}
+function enterApp(){
+  document.getElementById('bnav').style.display='flex';
+  document.getElementById('fabHelp').style.display='flex';
+  applyAcctType();applyTier();
+  if(acctType==='agency'){showScreen('agency')}else{showScreen('home')}
+  loadAll();loadLinkedAccounts();updHomeSplit();updTaxCountdown();
+  // Animate main balance
+  setTimeout(()=>animateNum('hBal',0,24830,1200),300);
+}
+// ANIMATED NUMBER COUNTING
+function animateNum(id,from,to,dur){
+  const el=document.getElementById(id);if(!el)return;
+  const start=performance.now();
+  function tick(now){
+    const p=Math.min((now-start)/dur,1);
+    const ease=1-Math.pow(1-p,3);// ease out cubic
+    const val=Math.round(from+(to-from)*ease);
+    el.textContent='$'+val.toLocaleString('en-US');
+    if(p<1)requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+// TAX COUNTDOWN
+function updTaxCountdown(){
+  const el=document.getElementById('taxCountdown');
+  if(!el)return;
+  const now=new Date();
+  const deadlines=[
+    {q:'Q1',date:new Date(now.getFullYear(),3,15)},
+    {q:'Q2',date:new Date(now.getFullYear(),5,15)},
+    {q:'Q3',date:new Date(now.getFullYear(),8,15)},
+    {q:'Q4',date:new Date(now.getFullYear()+1,0,15)},
+  ];
+  const next=deadlines.find(d=>d.date>now)||deadlines[0];
+  const days=Math.ceil((next.date-now)/(1000*60*60*24));
+  el.textContent=days+'d left ·';
+  if(days<=14){el.style.color='var(--red)'}
+  else if(days<=30){el.style.color='var(--tax)'}
+}
 
 // NAV
 function showScreen(n){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+n).classList.add('active');
-  const tabs={home:0,banking:1,invest:3,expert:4};
+  const tabs={home:0,taxes:1,invest:2,banking:3,profile:4,chat:4,expert:4,agency:0};
   document.querySelectorAll('.nt').forEach(t=>t.classList.remove('active'));
   if(tabs[n]!==undefined) document.querySelectorAll('.nt')[tabs[n]].classList.add('active');
   window.scrollTo(0,0);
@@ -1101,6 +2275,8 @@ function closeBg(e,id){if(e.target===document.getElementById(id))closeModal(id)}
 
 // DATA
 async function loadAll(){
+  // Show loading skeletons
+  ['hAct','bnkAct'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<div style="padding:20px;text-align:center"><div style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto"></div><div style="font-size:12px;color:var(--muted);margin-top:8px">Loading...</div></div>'});
   try{
     const[s,t,p,i]=await Promise.all([
       fetch(API+'/api/dashboard/summary').then(r=>r.json()),
@@ -1114,20 +2290,22 @@ async function loadAll(){
     renderH(p.holdings);renderIS(i.sources);
   }catch(e){
     renderT([
-      {platform:'OnlyFans',amount:18000,date:'Mar 10 · 28% → Tax Vault',type:'credit'},
-      {platform:'YouTube',amount:3420,date:'Mar 08 · 28% → Tax Vault',type:'credit'},
-      {platform:'Brand Deal',amount:1600,date:'Mar 05',type:'credit'},
-      {platform:'Alpaca Auto-invest',amount:-500,date:'Mar 01 · SPY + QQQ',type:'debit'},
+      {platform:'YouTube',amount:12400,date:'Mar 10 · 28% → Tax Vault',type:'credit'},
+      {platform:'TikTok',amount:8200,date:'Mar 08 · 28% → Tax Vault',type:'credit'},
+      {platform:'Brand Deal',amount:4500,date:'Mar 05',type:'credit'},
+      {platform:'Auto-invest',amount:-500,date:'Mar 01 · SPY + QQQ',type:'debit'},
     ],'hAct',4);
     renderT([
-      {platform:'OnlyFans',amount:18000,date:'Mar 10 · 28% → Tax Vault',type:'credit'},
-      {platform:'YouTube',amount:3420,date:'Mar 08 · 28% → Tax Vault',type:'credit'},
-      {platform:'Brand Deal',amount:1600,date:'Mar 05',type:'credit'},
-      {platform:'Alpaca Auto-invest',amount:-500,date:'Mar 01 · SPY + QQQ',type:'debit'},
-      {platform:'Patreon',amount:720,date:'Feb 28',type:'credit'},
+      {platform:'YouTube',amount:12400,date:'Mar 10 · 28% → Tax Vault',type:'credit'},
+      {platform:'TikTok',amount:8200,date:'Mar 08 · 28% → Tax Vault',type:'credit'},
+      {platform:'Brand Deal',amount:4500,date:'Mar 05',type:'credit'},
+      {platform:'Auto-invest',amount:-500,date:'Mar 01 · SPY + QQQ',type:'debit'},
+      {platform:'Patreon',amount:1240,date:'Feb 28',type:'credit'},
+      {platform:'Instagram',amount:980,date:'Feb 25',type:'credit'},
+      {platform:'OnlyFans',amount:3600,date:'Feb 22',type:'credit'},
     ],'bnkAct',10);
     renderH([{ticker:'SPY',name:'S&P 500 ETF',shares:12.4,value:5620,return_pct:8.2},{ticker:'QQQ',name:'Nasdaq 100 ETF',shares:8.2,value:3480,return_pct:9.1},{ticker:'JEPI',name:'JPM Income ETF',shares:18.6,value:1240,return_pct:2.4},{ticker:'IWM',name:'Russell 2000 ETF',shares:5.1,value:740,return_pct:-1.2}]);
-    renderIS([{platform:'OnlyFans',amount:18000,pct:72},{platform:'YouTube',amount:3420,pct:14},{platform:'Brand Deals',amount:1600,pct:6},{platform:'Patreon',amount:720,pct:3},{platform:'Merch',amount:350,pct:1}]);
+    renderIS([{platform:'YouTube',amount:12400,pct:40},{platform:'TikTok',amount:8200,pct:26},{platform:'Brand Deals',amount:4500,pct:14},{platform:'OnlyFans',amount:3600,pct:12},{platform:'Patreon',amount:1240,pct:4},{platform:'Instagram',amount:980,pct:3}]);
   }
 }
 function updHome(d){document.getElementById('hBal').textContent=fmt(d.total_balance);document.getElementById('hChg').textContent='↑ +'+fmt(d.monthly_income)+' this month';document.getElementById('cBal').textContent=fmt(d.total_balance);document.getElementById('cTax').textContent=fmt(d.tax_vault);document.getElementById('cInv').textContent=fmt(d.portfolio_value);const sf=d.tax_vault_target-d.tax_vault;if(sf>0)document.getElementById('taxSF').textContent=fmt(sf)+' short in your vault'}
@@ -1142,7 +2320,7 @@ function renderIS(s){document.getElementById('incSrc').innerHTML=s.map(x=>`<div 
 async function calcTax(){const inc=parseFloat(document.getElementById('txInc').value),rate=parseFloat(document.getElementById('txRate').value);if(!inc||inc<=0){document.getElementById('txRes').classList.remove('show');return}try{const r=await fetch(API+'/api/tax/calculate?income='+inc+'&tax_rate='+rate);const d=await r.json();document.getElementById('rcI').textContent=fmt(d.income);document.getElementById('rcT').textContent=fmt(d.tax_amount);document.getElementById('rcS').textContent=fmt(d.spendable)}catch(e){const t=Math.round(inc*rate);document.getElementById('rcI').textContent=fmt(inc);document.getElementById('rcT').textContent=fmt(t);document.getElementById('rcS').textContent=fmt(inc-t)}document.getElementById('txRes').classList.add('show')}
 
 // CHAT
-const BOT={tax:["As a creator, set aside **28-35%** of every payment for taxes. Apexa does this automatically — the moment income hits, it splits instantly into your Tax Vault. 🔒","Your Q1 deadline is **April 15**. Your vault has $4,820 but you need $6,200. Want me to help close that gap?"],vault:["Your Tax Vault automatically receives **28%** of every payment. You can't accidentally spend it. On April 15, just tap 'File Taxes' — done. 💜","Think of the vault as a savings account that only opens at tax time. Every dollar from OnlyFans, YouTube, brand deals — 28% goes straight in."],invest:["Apexa auto-invests **$500 every month** into your Alpaca portfolio — SPY (50%), QQQ (30%), JEPI (20%). You're up **+18.3%** since you started. 📈","Your $11,240 portfolio grows on autopilot. Want to increase your monthly auto-invest? Even an extra $200/mo compounds significantly over 5 years."],rate:["Based on your income, your estimated federal tax rate is **28%**. No state income tax — you're already saving thousands there. 🎉","Your effective rate is **28%** — for every $1,000 you earn, $280 goes to taxes and $720 is yours. Apexa handles that split automatically."],cpa:["I can connect you with a licensed CPA through Taxfyle right now. They specialize in creator finances and understand OnlyFans income. Tap **Expert** above. 👨‍💼","A CPA can find deductions you're missing — home office, equipment, subscriptions. Most creators save $3,000-8,000 more than expected."],of:["Apexa is built specifically for OnlyFans creators. Banking that accepts your income, automatic tax withholding, and investing — all in one app. No judgment, total privacy. 🔒","Your OnlyFans income is treated exactly like any other business income. We set aside your taxes automatically so you're never surprised."],hello:["Hey! I'm Apexa AI — here to help you manage creator finances. Ask me anything about taxes, investing, or banking. 👋💜","Hi! Finances as a creator can feel overwhelming — that's exactly why Apexa exists. Ask me anything, I'm here 24/7. ⚡"],def:["Great question! Apexa handles the heavy lifting — taxes set aside automatically, investing on autopilot, banking that works for you. What would you like to know more about? 💰","Could you tell me a bit more about what you're looking for? Or tap one of the quick options below. 👇","That's something a CPA could give you the most accurate answer on. Tap **Expert** above to connect with one. 👨‍💼"]};
+const BOT={tax:["As a creator, set aside **28-35%** of every payment for taxes. Apexa does this automatically — the moment income hits, it splits instantly into your Tax Vault. 🔒","Your Q1 deadline is **April 15**. Your vault has $4,820 but you need $6,200. Want me to help close that gap?"],vault:["Your Tax Vault automatically receives **28%** of every payment. You can't accidentally spend it. On April 15, just tap 'File Taxes' — done. 💜","Think of the vault as a savings account that only opens at tax time. Every dollar from OnlyFans, YouTube, brand deals — 28% goes straight in."],invest:["Apexa auto-invests **$500 every month** into your DriveWealth portfolio — SPY (50%), QQQ (30%), JEPI (20%). You're up **+18.3%** since you started. 📈","Your $11,240 portfolio grows on autopilot. Want to increase your monthly auto-invest? Even an extra $200/mo compounds significantly over 5 years."],rate:["Based on your income, your estimated federal tax rate is **28%**. No state income tax — you're already saving thousands there. 🎉","Your effective rate is **28%** — for every $1,000 you earn, $280 goes to taxes and $720 is yours. Apexa handles that split automatically."],cpa:["I can connect you with a licensed CPA through Taxfyle right now. They specialize in creator finances and understand OnlyFans income. Tap **Expert** above. 👨‍💼","A CPA can find deductions you're missing — home office, equipment, subscriptions. Most creators save $3,000-8,000 more than expected."],of:["Apexa is built specifically for OnlyFans creators. Banking that accepts your income, automatic tax withholding, and investing — all in one app. No judgment, total privacy. 🔒","Your OnlyFans income is treated exactly like any other business income. We set aside your taxes automatically so you're never surprised."],hello:["Hey! I'm Apexa AI — here to help you manage creator finances. Ask me anything about taxes, investing, or banking. 👋💜","Hi! Finances as a creator can feel overwhelming — that's exactly why Apexa exists. Ask me anything, I'm here 24/7. ⚡"],def:["Great question! Apexa handles the heavy lifting — taxes set aside automatically, investing on autopilot, banking that works for you. What would you like to know more about? 💰","Could you tell me a bit more about what you're looking for? Or tap one of the quick options below. 👇","That's something a CPA could give you the most accurate answer on. Tap **Expert** above to connect with one. 👨‍💼"]};
 function getBR(msg){const l=msg.toLowerCase();if(l.includes('onlyfan')||l.includes('of '))return BOT.of;if(l.includes('tax')&&(l.includes('save')||l.includes('much')||l.includes('set aside')||l.includes('owe')))return BOT.tax;if(l.includes('vault'))return BOT.vault;if(l.includes('invest')||l.includes('portfolio')||l.includes('stock'))return BOT.invest;if(l.includes('rate')||l.includes('percent'))return BOT.rate;if(l.includes('cpa')||l.includes('accountant')||l.includes('expert')||l.includes('file'))return BOT.cpa;if(l.includes('hi')||l.includes('hello')||l.includes('hey'))return BOT.hello;return BOT.def}
 function getTime(){return new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
 function addMsg(text,isBot,delay=0){setTimeout(()=>{const msgs=document.getElementById('chatMsgs');const ty=document.getElementById('tyInd');if(ty)ty.remove();const m=document.createElement('div');m.className='msg '+(isBot?'mb':'mu');const html=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');m.innerHTML=`${isBot?'<div class="bav">⚡</div>':''}<div class="mbu">${html}</div><div class="mti">${getTime()}</div>`;msgs.appendChild(m);msgs.scrollTop=msgs.scrollHeight},delay)}
@@ -1345,7 +2523,12 @@ async function executeInvest(){
     document.getElementById('invResult').style.display='block';
     document.getElementById('invResultMsg').textContent=d.orders.map(o=>o.ticker+' $'+o.amount).join(' · ');
     btn.textContent='✓ Invested';btn.style.background='var(--green)';
-  }catch(e){btn.textContent='Invest Now →';btn.disabled=false}
+  }catch(e){
+    // Fallback — show success for demo
+    document.getElementById('invResult').style.display='block';
+    document.getElementById('invResultMsg').textContent='Demo: Orders would be submitted via DriveWealth';
+    btn.textContent='✓ Invested (Demo)';btn.style.background='var(--green)';
+  }
 }
 function openInvModal(){
   document.getElementById('invResult').style.display='none';
@@ -1361,15 +2544,58 @@ function openInvModal(){
 
 // STRIPE SUBSCRIPTIONS
 let selectedPlan='pro';
+function switchPriceTab(tab){
+  const ct=document.getElementById('priceTabCreator'),at=document.getElementById('priceTabAgency');
+  const cp=document.getElementById('creatorPlans'),ap=document.getElementById('agencyPlans');
+  if(tab==='creator'){ct.style.background='var(--accent)';ct.style.color='#fff';at.style.background='transparent';at.style.color='var(--muted)';cp.style.display='block';ap.style.display='none';selectPlanCard('pro')}
+  else{at.style.background='#fbbf24';at.style.color='#000';ct.style.background='transparent';ct.style.color='var(--muted)';ap.style.display='block';cp.style.display='none';selectPlanCard('ag_growth')}
+}
+function selectPlanCard(plan){
+  selectedPlan=plan;
+  // Reset all plan cards
+  const allCards=['planFree','planPro','planPremium','planAgStarter','planAgGrowth','planAgEnterprise'];
+  allCards.forEach(id=>{const el=document.getElementById(id);if(el){el.style.borderColor='var(--border)';el.style.background='var(--surface)'}});
+  // Highlight selected
+  const cardMap={free:'planFree',pro:'planPro',premium:'planPremium',ag_starter:'planAgStarter',ag_growth:'planAgGrowth',ag_enterprise:'planAgEnterprise'};
+  const sel=document.getElementById(cardMap[plan]);
+  if(sel){sel.style.borderColor='var(--accent)';sel.style.background='var(--accent-light)'}
+  // Update button text
+  const labels={free:'Continue with Free',pro:'Start Pro Free Trial →',premium:'Start Premium Free Trial →',ag_starter:'Start Starter Free Trial →',ag_growth:'Start Growth Free Trial →',ag_enterprise:'Start Enterprise Free Trial →'};
+  document.getElementById('priceBtn').textContent=labels[plan]||'Start Free Trial →';
+}
 function subscribePlan(){
   const btn=document.getElementById('priceBtn');
-  btn.textContent='Redirecting...';btn.disabled=true;
+  btn.textContent='Redirecting to Stripe...';btn.disabled=true;
   fetch(API+'/api/stripe/create-checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan:selectedPlan})})
     .then(r=>r.json()).then(d=>{
-      if(d.url&&d.url!=='#'){window.open(d.url,'_blank')}
-      else{alert(d.message||'Stripe not configured yet. Coming soon!')}
-      btn.textContent='Start Free Trial →';btn.disabled=false;
-    }).catch(()=>{btn.textContent='Start Free Trial →';btn.disabled=false});
+      if(d.url&&d.url!=='#'){window.open(d.url,'_blank');setTier(selectedPlan);closeModal('priceMod')}
+      else{
+        // Demo mode — set tier locally
+        setTier(selectedPlan);closeModal('priceMod');
+        showToast(selectedPlan==='premium'?'Premium activated!':'Pro activated!','Stripe checkout will be live at launch.');
+      }
+      btn.textContent='Start 7-Day Free Trial →';btn.disabled=false;
+    }).catch(()=>{
+      setTier(selectedPlan);closeModal('priceMod');
+      showToast('Plan activated (demo)','Stripe payments configured at launch.');
+      btn.textContent='Start 7-Day Free Trial →';btn.disabled=false;
+    });
+}
+// TOAST NOTIFICATIONS
+// FLOATING HELP BUTTON
+function toggleFab(){
+  const menu=document.getElementById('fabMenu');
+  const btn=document.getElementById('fabBtn');
+  if(menu.style.display==='flex'){menu.style.display='none';btn.textContent='❓'}
+  else{menu.style.display='flex';btn.textContent='✕'}
+}
+function hideFab(){document.getElementById('fabMenu').style.display='none';document.getElementById('fabBtn').textContent='❓'}
+
+function showToast(title,msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;border-radius:14px;padding:14px 20px;z-index:300;max-width:360px;animation:fu .3s ease forwards;box-shadow:0 8px 32px rgba(0,0,0,.3)';
+  t.innerHTML=`<div style="font-size:13px;font-weight:700;margin-bottom:2px">${title}</div><div style="font-size:11px;color:rgba(255,255,255,.6)">${msg}</div>`;
+  document.body.appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300)},3000);
 }
 
 // DEDUCTION FINDER
@@ -1394,6 +2620,129 @@ async function loadDeductions(){
       '<div style="font-size:10px;color:var(--muted);margin-top:10px;text-align:center">'+d.disclaimer+'</div>';
   }catch(e){el.innerHTML='<div style="padding:20px;text-align:center;font-size:13px;color:var(--muted)">Could not load deductions.</div>'}
 }
+
+// AGENCY FEATURES
+let acctType='creator'; // 'creator' or 'agency'
+function selectAcctType(type){
+  acctType=type;localStorage.setItem('apexa_acct_type',type);
+  document.getElementById('obTypeCreator').classList.toggle('sel',type==='creator');
+  document.getElementById('obTypeAgency').classList.toggle('sel',type==='agency');
+  const features=document.getElementById('ob1Features');
+  if(type==='agency'){
+    features.innerHTML=`
+      <div style="display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:14px;padding:16px"><div style="font-size:24px">🏢</div><div><div style="font-size:14px;font-weight:700;margin-bottom:2px">Creator Roster</div><div style="font-size:12px;color:var(--muted)">Manage all your creators from one dashboard</div></div></div>
+      <div style="display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:14px;padding:16px"><div style="font-size:24px">💸</div><div><div style="font-size:14px;font-weight:700;margin-bottom:2px">Auto Payment Splits</div><div style="font-size:12px;color:var(--muted)">Custom splits per creator, per platform — automatic</div></div></div>
+      <div style="display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:14px;padding:16px"><div style="font-size:24px">📊</div><div><div style="font-size:14px;font-weight:700;margin-bottom:2px">Volume Analytics</div><div style="font-size:12px;color:var(--muted)">Track processing volume, revenue, and growth</div></div></div>`;
+  }else{
+    features.innerHTML=`
+      <div style="display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:14px;padding:16px"><div style="font-size:24px">🔒</div><div><div style="font-size:14px;font-weight:700;margin-bottom:2px">Auto Tax Vault</div><div style="font-size:12px;color:var(--muted)">28% set aside from every payment automatically</div></div></div>
+      <div style="display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:14px;padding:16px"><div style="font-size:24px">📈</div><div><div style="font-size:14px;font-weight:700;margin-bottom:2px">Auto Investing</div><div style="font-size:12px;color:var(--muted)">Your income grows in the stock market on autopilot</div></div></div>
+      <div style="display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:14px;padding:16px"><div style="font-size:24px">💳</div><div><div style="font-size:14px;font-weight:700;margin-bottom:2px">Smart Money Hub</div><div style="font-size:12px;color:var(--muted)">See all your accounts in one place via Plaid & Stripe</div></div></div>`;
+  }
+}
+function applyAcctType(){
+  const nav=document.getElementById('navExpert');
+  if(acctType==='agency'&&nav){
+    nav.innerHTML='<div class="nti">🏢</div><div class="ntl">Agency</div>';
+    nav.onclick=()=>showScreen('agency');
+  }
+}
+function addCreator(){
+  const name=document.getElementById('newCreatorName').value.trim();
+  const email=document.getElementById('newCreatorEmail').value.trim();
+  if(!name||!email){showToast('Missing info','Enter creator name and email.');return}
+  const split=document.getElementById('newCreatorSplit').value;
+  const platform=document.getElementById('newCreatorPlatform').value;
+  // Add to roster (demo)
+  const initials=name.split(' ').map(n=>n[0]).join('').toUpperCase();
+  const colors=['#ff6b9d,#c44dff','#4deeea,#7b2ff7','#f7971e,#ffd200','#00c9ff,#92fe9d','#6a11cb,#2575fc','#fc5c7d,#6a82fb'];
+  const color=colors[Math.floor(Math.random()*colors.length)];
+  const roster=document.getElementById('agencyRoster');
+  const item=document.createElement('div');item.className='ai';item.style.animationDelay='.05s';
+  item.innerHTML=`
+    <div class="aic" style="background:linear-gradient(135deg,${color});color:#fff;font-size:12px;font-weight:800;border:none">${initials}</div>
+    <div class="aii"><div class="ain">${name}</div><div class="aid">${platform} · Pending · ${split}% split</div></div>
+    <div class="air"><span class="pill pill-y" style="font-size:10px">Invited</span></div>`;
+  roster.insertBefore(item,roster.firstChild);
+  closeModal('addCreatorMod');
+  showToast('Invite sent!',`${name} will receive an onboarding email at ${email}.`);
+  // Clear form
+  document.getElementById('newCreatorName').value='';
+  document.getElementById('newCreatorEmail').value='';
+}
+function updDefaultSplit(val){
+  const v=parseInt(val),cv=100-v;
+  document.getElementById('defaultSplitLbl').textContent=v+'%';
+  document.getElementById('cfgSplitAgency').style.width=v+'%';
+  document.getElementById('cfgSplitCreator').style.width=cv+'%';
+  document.getElementById('cfgAgPct').textContent=v;
+  document.getElementById('cfgCrPct').textContent=cv;
+  document.getElementById('agDefaultSplit').textContent=v+'%';
+  document.getElementById('agSplitBarAgency').style.width=v+'%';
+  document.getElementById('agSplitBarCreator').style.width=cv+'%';
+}
+function saveSplitConfig(){
+  closeModal('splitConfigMod');
+  showToast('Splits saved!','New split configuration will apply to future payouts.');
+}
+// PAYOUT PROCESSING
+let payMethod='ach';
+function selPayMethod(m){
+  payMethod=m;
+  ['ach','instant','wire'].forEach(t=>{
+    const el=document.getElementById('payMethod'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(!el)return;
+    el.style.background=t===m?'var(--accent-light)':'var(--surface)';
+    el.style.borderColor=t===m?'var(--accent)':'var(--border)';
+  });
+  recalcPayouts();
+}
+function recalcPayouts(){
+  const items=document.querySelectorAll('.payout-item');
+  const grossAmts=[42000,38500,28000,35200,22400];
+  const splits=[.20,.20,.15,.25,.20];
+  let totalGross=0,totalAgency=0,totalCreator=0;
+  items.forEach((item,i)=>{
+    const cb=item.querySelector('input[type=checkbox]');
+    if(cb&&cb.checked){
+      const g=grossAmts[i]||0,s=splits[i]||.20;
+      const agency=Math.round(g*s),creator=g-agency;
+      totalGross+=g;totalAgency+=agency;totalCreator+=creator;
+    }
+  });
+  let extraFee=0,extraLabel='';
+  if(payMethod==='instant'){extraFee=Math.round(totalCreator*.005);extraLabel=' + 0.5% instant'}
+  if(payMethod==='wire'){extraFee=items.length*25;extraLabel=' + $25/wire'}
+  const procFee=Math.round(totalGross*.015)+extraFee;
+  const netCreators=totalCreator-procFee+totalAgency;// proc fee comes from gross
+  document.getElementById('payoutBatchTotal').textContent=fmt(totalGross);
+  document.getElementById('payoutToCreators').textContent=fmt(totalCreator);
+  document.getElementById('payoutAgencyCut').textContent=fmt(totalAgency);
+  document.getElementById('payoutProcFee').textContent=fmt(procFee);
+  document.getElementById('feeGross').textContent=fmt(totalGross);
+  document.getElementById('feeAgency').textContent='-'+fmt(totalAgency);
+  document.getElementById('feeProcAmt').textContent='-'+fmt(procFee)+(extraLabel?` (${extraLabel})`:'');
+  document.getElementById('feeNetCreators').textContent=fmt(totalCreator-procFee+totalAgency);
+}
+function processPayouts(){
+  const btn=document.getElementById('payoutBtn');
+  btn.textContent='Processing...';btn.disabled=true;btn.style.opacity='.6';
+  document.getElementById('payoutBatchStatus').textContent='Processing';
+  document.getElementById('payoutBatchStatus').style.background='rgba(124,58,237,.15)';
+  document.getElementById('payoutBatchStatus').style.color='var(--accent)';
+  setTimeout(()=>{
+    document.getElementById('payoutResult').style.display='block';
+    document.getElementById('payoutBatchStatus').textContent='Sent';
+    document.getElementById('payoutBatchStatus').style.background='rgba(0,200,83,.15)';
+    document.getElementById('payoutBatchStatus').style.color='var(--green)';
+    btn.textContent='✅ Payouts Sent';btn.style.background='var(--green)';
+    // Update agency dashboard numbers
+    showToast('Payouts sent!','5 creators will receive funds within 1-2 business days.');
+  },2000);
+}
+
+// Load saved account type
+(function(){const saved=localStorage.getItem('apexa_acct_type');if(saved)acctType=saved})()
 
 // PWA
 let dp;
