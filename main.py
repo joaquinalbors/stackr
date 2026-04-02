@@ -6,6 +6,7 @@ import os
 import stripe
 import httpx
 from datetime import datetime
+import anthropic
 import plaid
 from plaid.api import plaid_api
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
@@ -24,6 +25,7 @@ except:
     pass
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 
 # Plaid setup
 PLAID_CLIENT_ID = os.getenv("PLAID_CLIENT_ID", "")
@@ -1176,3 +1178,67 @@ def agency_stats(agency_id: str):
         "source": "sandbox",
         "disclaimer": "This is sandbox/demo data. Stats are computed from in-memory sandbox transactions. Monthly subscription revenue is simulated at $29.99 per creator."
     }
+
+
+# ── APEXA AI CHAT ─────────────────────────────────────────────────────────────
+
+class ChatMessage(BaseModel):
+    role: str  # "user" or "assistant"
+    content: str
+
+class ChatRequest(BaseModel):
+    messages: List[ChatMessage]
+    context: Optional[dict] = None  # optional financial context (balance, tax, etc.)
+
+APEXA_SYSTEM_PROMPT = """You are Apexa AI, a smart financial assistant built specifically for content creators and influencers. You help users with:
+- Tax planning (quarterly estimated taxes, deductions, write-offs for creators)
+- Investment guidance (portfolio allocation, auto-invest, ETF recommendations)
+- Income management (tracking earnings from YouTube, TikTok, brand deals, etc.)
+- Banking (Stripe Treasury, transfers, spending)
+- Agency payouts and payment splitting
+
+You are friendly, concise, and speak in plain language — not overly formal. You understand creator finances deeply: 1099 income, self-employment tax, quarterly deadlines (Apr 15, Jun 16, Sep 15, Jan 15), home office deductions, equipment write-offs, travel for work, software subscriptions.
+
+Always be helpful and specific. If asked about a user's specific numbers, reference them if provided in context. Keep responses under 3 short paragraphs unless the user asks for detail. Never give generic disclaimers — be direct and useful."""
+
+@app.post("/api/chat")
+async def chat(req: ChatRequest):
+    """Apexa AI chat powered by Claude."""
+    if not ANTHROPIC_API_KEY:
+        raise HTTPException(status_code=503, detail="AI service not configured")
+
+    try:
+        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+
+        # Build system prompt — optionally inject financial context
+        system = APEXA_SYSTEM_PROMPT
+        if req.context:
+            ctx_lines = []
+            if req.context.get("balance"):
+                ctx_lines.append(f"User's current balance: ${req.context['balance']:,.2f}")
+            if req.context.get("tax_vault"):
+                ctx_lines.append(f"Tax vault balance: ${req.context['tax_vault']:,.2f}")
+            if req.context.get("tax_due"):
+                ctx_lines.append(f"Tax due: ${req.context['tax_due']:,.2f}")
+            if req.context.get("monthly_income"):
+                ctx_lines.append(f"Monthly income: ${req.context['monthly_income']:,.2f}")
+            if req.context.get("portfolio_value"):
+                ctx_lines.append(f"Investment portfolio: ${req.context['portfolio_value']:,.2f}")
+            if ctx_lines:
+                system += "\n\nUser financial context:\n" + "\n".join(ctx_lines)
+
+        messages = [{"role": m.role, "content": m.content} for m in req.messages]
+
+        response = client.messages.create(
+            model="claude-3-5-haiku-20241022",
+            max_tokens=512,
+            system=system,
+            messages=messages
+        )
+
+        return {"reply": response.content[0].text}
+
+    except anthropic.APIError as e:
+        raise HTTPException(status_code=502, detail=f"AI error: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
