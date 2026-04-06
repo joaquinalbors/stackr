@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi import FastAPI, HTTPException, File, UploadFile, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List
@@ -878,10 +878,8 @@ def setup_stripe_products():
             results[plan] = {"error": str(e)}
     return {"status": "done", "prices": results, "note": "Set these as Railway env vars to persist them across deploys."}
 
-from fastapi import Request as FastAPIRequest
-
 @app.post("/api/stripe/webhook")
-async def stripe_webhook(request: FastAPIRequest):
+async def stripe_webhook(request: Request):
     """Handle Stripe subscription lifecycle events."""
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature", "")
