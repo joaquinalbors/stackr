@@ -1731,6 +1731,8 @@ import uuid
 agency_store = {}
 agency_creators_store = {}
 agency_payouts_store = {}
+# creator_email -> list of payouts received from agencies
+_creator_payouts: dict = {}
 
 class AgencyOnboardRequest(BaseModel):
     name: str
@@ -1748,11 +1750,15 @@ class AgencyInviteCreatorRequest(BaseModel):
 
 class CreatorPayoutItem(BaseModel):
     creator_id: str
+    creator_name: str = ""
+    creator_email: str = ""
     gross_amount: float
+    split_pct: float = 20.0   # agency commission %, sent inline from frontend
 
 class AgencyProcessPayoutRequest(BaseModel):
-    agency_id: str
+    agency_id: str = "demo"
     payouts: List[CreatorPayoutItem]
+    method: str = "ach"       # ach | instant | wire
 
 @app.post("/api/agency/onboard")
 def agency_onboard(req: AgencyOnboardRequest):
@@ -1812,74 +1818,144 @@ def agency_invite_creator(req: AgencyInviteCreatorRequest):
 
 @app.post("/api/agency/process-payout")
 def agency_process_payout(req: AgencyProcessPayoutRequest):
-    """Process payouts for creators under the agency. Calculates splits, applies 1.5% processing fee."""
-    if req.agency_id not in agency_store:
-        raise HTTPException(status_code=404, detail=f"Agency {req.agency_id} not found.")
-
+    """Process payouts for creators under the agency.
+    Accepts inline split_pct per creator (no agency_store lookup required).
+    Credits each creator's _creator_payouts ledger and optionally executes
+    Stripe Connect transfers when Stripe is configured.
+    """
     PROCESSING_FEE_RATE = 0.015
-    creators_map = {c["creator_id"]: c for c in agency_creators_store.get(req.agency_id, [])}
+    INSTANT_SURCHARGE   = 0.005   # +0.5% for instant payout method
+    WIRE_FLAT_FEE       = 25.00   # $25 flat per wire transfer
+
     payout_results = []
     total_gross = 0.0
     total_agency_cut = 0.0
     total_processing_fee = 0.0
     total_net_to_creators = 0.0
+    payout_id = f"payout_{uuid.uuid4().hex[:12]}"
+    ts = datetime.utcnow().isoformat() + "Z"
 
     for item in req.payouts:
-        creator = creators_map.get(item.creator_id)
-        if not creator:
-            payout_results.append({
-                "creator_id": item.creator_id,
-                "error": f"Creator {item.creator_id} not found in agency roster."
-            })
-            continue
-
-        split_pct = creator["split_percentage"]
+        # Use inline split_pct supplied by the frontend
+        split_pct = item.split_pct
         agency_cut = round(item.gross_amount * split_pct / 100, 2)
-        processing_fee = round(item.gross_amount * PROCESSING_FEE_RATE, 2)
+        base_fee   = round(item.gross_amount * PROCESSING_FEE_RATE, 2)
+
+        # Method surcharge
+        if req.method == "instant":
+            method_fee = round((item.gross_amount - agency_cut) * INSTANT_SURCHARGE, 2)
+        elif req.method == "wire":
+            method_fee = WIRE_FLAT_FEE
+        else:
+            method_fee = 0.0
+
+        processing_fee = round(base_fee + method_fee, 2)
         net_to_creator = round(item.gross_amount - agency_cut - processing_fee, 2)
 
-        total_gross += item.gross_amount
-        total_agency_cut += agency_cut
-        total_processing_fee += processing_fee
+        total_gross           += item.gross_amount
+        total_agency_cut      += agency_cut
+        total_processing_fee  += processing_fee
         total_net_to_creators += net_to_creator
 
-        # Update creator total volume
-        creator["total_volume"] = round(creator["total_volume"] + item.gross_amount, 2)
+        creator_record = {
+            "payout_id":       payout_id,
+            "agency_id":       req.agency_id,
+            "timestamp":       ts,
+            "creator_id":      item.creator_id,
+            "creator_name":    item.creator_name,
+            "gross_amount":    item.gross_amount,
+            "agency_cut":      agency_cut,
+            "split_pct":       split_pct,
+            "processing_fee":  processing_fee,
+            "net_to_creator":  net_to_creator,
+            "method":          req.method,
+            "status":          "pending_transfer",
+        }
 
-        payout_results.append({
-            "creator_id": item.creator_id,
-            "creator_name": creator["creator_name"],
-            "gross_amount": item.gross_amount,
-            "split_percentage": split_pct,
-            "agency_cut": agency_cut,
-            "processing_fee": processing_fee,
-            "net_to_creator": net_to_creator,
-        })
+        # Try live Stripe Connect transfer
+        if stripe.api_key and net_to_creator > 0:
+            try:
+                transfer = stripe.Transfer.create(
+                    amount=int(net_to_creator * 100),  # cents
+                    currency="usd",
+                    destination=item.creator_id,       # Stripe Connect acct ID
+                    description=f"Apexa payout {payout_id} — {item.creator_name}",
+                    metadata={"payout_id": payout_id, "creator_id": item.creator_id},
+                )
+                creator_record["stripe_transfer_id"] = transfer.id
+                creator_record["status"] = "transferred"
+            except Exception as e:
+                creator_record["stripe_error"] = str(e)
+                creator_record["status"] = "pending_transfer"
 
-    # Store payout record
+        # Credit creator's internal ledger (visible via /api/creator/received-payouts)
+        if item.creator_email:
+            _creator_payouts.setdefault(item.creator_email, []).append(creator_record)
+        else:
+            _creator_payouts.setdefault(item.creator_id, []).append(creator_record)
+
+        payout_results.append(creator_record)
+
+    # Also update agency roster volume if agency is in store
+    if req.agency_id in agency_store:
+        creators_map = {c["creator_id"]: c for c in agency_creators_store.get(req.agency_id, [])}
+        for item in req.payouts:
+            if item.creator_id in creators_map:
+                creators_map[item.creator_id]["total_volume"] = round(
+                    creators_map[item.creator_id].get("total_volume", 0) + item.gross_amount, 2
+                )
+
+    # Store payout record in agency history
     payout_record = {
-        "payout_id": f"payout_{uuid.uuid4().hex[:10]}",
-        "agency_id": req.agency_id,
-        "timestamp": datetime.utcnow().isoformat(),
-        "total_gross": round(total_gross, 2),
-        "total_agency_cut": round(total_agency_cut, 2),
+        "payout_id":            payout_id,
+        "agency_id":            req.agency_id,
+        "timestamp":            ts,
+        "method":               req.method,
+        "total_gross":          round(total_gross, 2),
+        "total_agency_cut":     round(total_agency_cut, 2),
         "total_processing_fee": round(total_processing_fee, 2),
-        "total_net_to_creators": round(total_net_to_creators, 2),
-        "creator_payouts": payout_results,
-        "status": "completed",
+        "total_net_to_creators":round(total_net_to_creators, 2),
+        "creator_payouts":      payout_results,
+        "status":               "processed",
     }
     agency_payouts_store.setdefault(req.agency_id, []).append(payout_record)
 
     return {
-        "payout_id": payout_record["payout_id"],
-        "total_gross": round(total_gross, 2),
-        "agency_cut": round(total_agency_cut, 2),
-        "processing_fee": round(total_processing_fee, 2),
+        "payout_id":       payout_id,
+        "total_gross":     round(total_gross, 2),
+        "agency_cut":      round(total_agency_cut, 2),
+        "processing_fee":  round(total_processing_fee, 2),
         "net_to_creators": round(total_net_to_creators, 2),
+        "creators_paid":   len([r for r in payout_results if "error" not in r]),
         "creator_payouts": payout_results,
-        "status": "completed",
-        "source": "sandbox",
-        "disclaimer": "This is sandbox/demo data. No real funds were transferred. Processing fee of 1.5% is simulated. In production, payouts would be executed via Stripe Connect transfers."
+        "method":          req.method,
+        "status":          "processed",
+        "source":          "live" if stripe.api_key else "sandbox",
+        "timestamp":       ts,
+    }
+
+
+@app.get("/api/creator/received-payouts")
+def creator_received_payouts(request: Request):
+    """Returns all payouts a creator has received from agencies.
+    Requires JWT auth — looks up by logged-in user's email.
+    Falls back to creator_id query param for API key access.
+    """
+    auth = _resolve_auth(request)
+    if auth:
+        email = auth["email"]
+    else:
+        email = request.query_params.get("creator_id", "")
+    if not email:
+        raise HTTPException(status_code=401, detail="Provide a Bearer token or creator_id param")
+
+    records = _creator_payouts.get(email, [])
+    total_received = sum(r.get("net_to_creator", 0) for r in records)
+    return {
+        "creator_email":   email,
+        "total_received":  round(total_received, 2),
+        "payout_count":    len(records),
+        "payouts":         sorted(records, key=lambda r: r.get("timestamp",""), reverse=True),
     }
 
 @app.get("/api/agency/roster")
