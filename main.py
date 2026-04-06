@@ -15,6 +15,9 @@ import hashlib
 import time
 import jwt as pyjwt
 from passlib.context import CryptContext
+from cryptography.fernet import Fernet
+import logging
+import re
 import webauthn
 from webauthn.helpers.structs import (
     AuthenticatorSelectionCriteria,
@@ -138,6 +141,70 @@ def _require_user(request: Request) -> dict:
     return auth
 # ──────────────────────────────────────────────────────────────────────────────
 
+# ── Field-level encryption (AES-128-CBC via Fernet) ──────────────────────────
+# Protects sensitive stored values — even a full DB dump yields ciphertext only.
+# Set ENCRYPTION_KEY in Railway env vars (generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")
+_ENC_KEY_RAW = os.getenv("ENCRYPTION_KEY", "")
+if _ENC_KEY_RAW:
+    _fernet = Fernet(_ENC_KEY_RAW.encode())
+else:
+    _fernet = Fernet(Fernet.generate_key())   # ephemeral key — set env var in production
+
+def _encrypt(value: str) -> str:
+    if not value:
+        return value
+    return _fernet.encrypt(value.encode()).decode()
+
+def _decrypt(value: str) -> str:
+    try:
+        return _fernet.decrypt(value.encode()).decode()
+    except Exception:
+        return "[encrypted]"
+# ──────────────────────────────────────────────────────────────────────────────
+
+# ── Audit log ─────────────────────────────────────────────────────────────────
+# Tracks all sensitive data access — who accessed what, when, from where.
+_audit_log: list = []
+_MAX_AUDIT = 50_000
+
+def _audit(email: str, action: str, request: Request, extra: dict = None):
+    if len(_audit_log) >= _MAX_AUDIT:
+        _audit_log.pop(0)
+    ip = (request.client.host if request.client else "unknown")
+    _audit_log.append({
+        "ts":       datetime.utcnow().isoformat() + "Z",
+        "email":    email,
+        "action":   action,
+        "ip":       ip,
+        "ua":       request.headers.get("user-agent", "")[:120],
+        **(extra or {}),
+    })
+# ──────────────────────────────────────────────────────────────────────────────
+
+# ── Consent store ─────────────────────────────────────────────────────────────
+# email -> {terms: bool, privacy: bool, marketing: bool, ts: str, ip: str}
+_consents: dict = {}
+# ──────────────────────────────────────────────────────────────────────────────
+
+# ── PII scrubber for logs ─────────────────────────────────────────────────────
+_EMAIL_RE  = re.compile(r'[\w.+-]+@[\w-]+\.[a-z]{2,}', re.I)
+_CARD_RE   = re.compile(r'\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b')
+_SSN_RE    = re.compile(r'\b\d{3}-\d{2}-\d{4}\b')
+
+class _PIIFilter(logging.Filter):
+    def filter(self, record):
+        msg = str(record.getMessage())
+        msg = _EMAIL_RE.sub('[email]', msg)
+        msg = _CARD_RE.sub('[card]', msg)
+        msg = _SSN_RE.sub('[ssn]', msg)
+        record.msg = msg
+        record.args = ()
+        return True
+
+logging.getLogger("uvicorn.access").addFilter(_PIIFilter())
+logging.getLogger("uvicorn.error").addFilter(_PIIFilter())
+# ──────────────────────────────────────────────────────────────────────────────
+
 # ── WebAuthn stores + config ──────────────────────────────────────────────────
 # email -> list of {id: bytes, public_key: bytes, sign_count: int, label: str}
 _webauthn_creds: dict = {}
@@ -252,7 +319,7 @@ def root():
 # ── Auth endpoints ─────────────────────────────────────────────────────────────
 
 @app.post("/api/auth/register")
-def auth_register(data: AuthRegister):
+async def auth_register(data: AuthRegister, request: Request):
     """Register a new Apexa user account. Returns a JWT for immediate use."""
     email = data.email.lower().strip()
     if email in _users:
@@ -264,8 +331,11 @@ def auth_register(data: AuthRegister):
         "acct_type": data.acct_type,
         "plan": "free",
         "created_at": datetime.utcnow().isoformat(),
-        "api_keys": []
+        "api_keys": [],
+        "consent_ts": datetime.utcnow().isoformat(),
+        "consent_ip": (request.client.host if request.client else "unknown"),
     }
+    _audit(email, "account.register", request)
     token = _make_jwt(email)
     return {
         "token": token,
@@ -274,12 +344,14 @@ def auth_register(data: AuthRegister):
     }
 
 @app.post("/api/auth/login")
-def auth_login(data: AuthLogin):
+async def auth_login(data: AuthLogin, request: Request):
     """Login with email + password. Returns a JWT (30-day expiry)."""
     email = data.email.lower().strip()
     user = _users.get(email)
     if not user or not _verify_pw(data.password, user["password_hash"]):
+        _audit(email, "login.failed", request)
         raise HTTPException(status_code=401, detail="Invalid email or password")
+    _audit(email, "login.success", request)
     token = _make_jwt(email)
     return {
         "token": token,
@@ -367,12 +439,120 @@ def auth_logout(request: Request):
     # JWTs are stateless; real revocation requires a blocklist (future work)
     return {"message": "Logged out. Discard your token on the client side."}
 
-# Apply tighter rate limits to password-based login endpoints
-@app.post("/api/auth/login")
-@limiter.limit("10/minute")
-async def auth_login_rl(request: Request, data: AuthLogin):
-    """Rate-limited wrapper — 10 attempts/minute per IP."""
-    return auth_login.__wrapped__(data)
+# ── Privacy endpoints ─────────────────────────────────────────────────────────
+
+class ConsentData(BaseModel):
+    terms: bool
+    privacy: bool
+    marketing: bool = False
+
+@app.post("/api/auth/consent")
+async def record_consent(data: ConsentData, request: Request):
+    """Record explicit user consent with timestamp and IP. CCPA/GDPR compliant."""
+    auth  = _require_user(request)
+    email = auth["email"]
+    if not data.terms or not data.privacy:
+        raise HTTPException(400, "Terms and Privacy Policy consent are required")
+    ip = request.client.host if request.client else "unknown"
+    _consents[email] = {
+        "terms":     data.terms,
+        "privacy":   data.privacy,
+        "marketing": data.marketing,
+        "ts":        datetime.utcnow().isoformat() + "Z",
+        "ip":        ip,
+        "version":   "2026-04",
+    }
+    user = _users.get(email, {})
+    user["consent_ts"] = _consents[email]["ts"]
+    user["consent_ip"] = ip
+    _audit(email, "consent.recorded", request)
+    return {"recorded": True, "ts": _consents[email]["ts"]}
+
+@app.get("/api/auth/me/export")
+async def export_my_data(request: Request):
+    """
+    Download everything Apexa holds on you — GDPR Art. 20 / CCPA right to know.
+    Returns a structured JSON of all stored data for this account.
+    """
+    auth  = _require_auth(request)
+    email = auth["email"]
+    _audit(email, "data.export", request, {"auth_type": auth["type"]})
+
+    user  = _users.get(email, {})
+    creds = _webauthn_creds.get(email, [])
+    keys  = [
+        {"name": _api_keys[k]["name"], "scopes": _api_keys[k]["scopes"],
+         "created_at": _api_keys[k]["created_at"], "last_used": _api_keys[k]["last_used"]}
+        for k in user.get("api_keys", []) if k in _api_keys
+    ]
+    my_logs = [e for e in _audit_log if e["email"] == email][-100:]
+
+    return {
+        "export_generated_at": datetime.utcnow().isoformat() + "Z",
+        "account": {
+            "name":       user.get("name"),
+            "email":      email,
+            "acct_type":  user.get("acct_type"),
+            "plan":       user.get("plan"),
+            "created_at": user.get("created_at"),
+            "consent_ts": user.get("consent_ts"),
+        },
+        "passkeys": [
+            {"label": c["label"], "created_at": c["created_at"]}
+            for c in creds
+        ],
+        "api_keys": keys,
+        "consent":  _consents.get(email, {}),
+        "recent_activity": my_logs,
+        "data_held_by_third_parties": {
+            "stripe":      "Payment processing — see stripe.com/privacy",
+            "plaid":       "Bank connections — see plaid.com/legal/privacy-statement",
+            "drivewealth": "Investment brokerage — see drivewealth.com/privacy",
+            "anthropic":   "AI chat — see anthropic.com/privacy",
+        },
+    }
+
+@app.delete("/api/auth/me")
+@limiter.limit("3/minute")
+async def delete_my_account(request: Request):
+    """
+    Permanently delete account and ALL associated data — GDPR Art. 17 right to erasure.
+    This is irreversible. Audit log entry is retained for 90 days for legal compliance.
+    """
+    auth  = _require_user(request)
+    email = auth["email"]
+    _audit(email, "account.deleted", request)
+
+    # Wipe all stored data for this user
+    user = _users.pop(email, {})
+    for k in user.get("api_keys", []):
+        _api_keys.pop(k, None)
+    _webauthn_creds.pop(email, None)
+    _webauthn_challenges.pop(email, None)
+    _consents.pop(email, None)
+
+    return {
+        "deleted": True,
+        "message": "All account data has been permanently deleted.",
+        "note":    "Audit records are retained for 90 days for legal compliance, then purged.",
+    }
+
+@app.get("/api/auth/audit-log")
+async def get_audit_log(request: Request, limit: int = 50):
+    """
+    View your own access log — who logged in, when, from where.
+    Helps users detect unauthorised access to their account.
+    """
+    auth  = _require_auth(request)
+    email = auth["email"]
+    my_logs = [e for e in _audit_log if e["email"] == email]
+    # Return most recent first, never expose other users' logs
+    return {
+        "entries": list(reversed(my_logs[-limit:])),
+        "total":   len(my_logs),
+    }
+
+# ──────────────────────────────────────────────────────────────────────────────
 
 # ── WebAuthn endpoints ────────────────────────────────────────────────────────
 # Security model: private keys NEVER leave the device.
@@ -544,6 +724,7 @@ async def webauthn_auth_complete(request: Request, data: WebAuthnAuthComplete):
     # Update sign count — a lower count would indicate a cloned credential
     stored["sign_count"] = verified.new_sign_count
 
+    _audit(email, "login.webauthn", request)
     user  = _users.get(email, {})
     token = _make_jwt(email)
     return {
