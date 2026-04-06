@@ -889,6 +889,41 @@ def get_income_sources():
         ]
     }
 
+
+# ── MANUAL INCOME LOG ────────────────────────────────────────────────────────
+_manual_income_log: list = []
+
+class ManualIncomeEntry(BaseModel):
+    platform: str
+    amount: float
+    note: str = ""
+
+@app.post("/api/income/log")
+def log_income_entry(entry: ManualIncomeEntry, request: Request):
+    """Log a manual income entry. Used by the + Log Payment button."""
+    tax_pct = 28.0
+    invest_pct = 10.0
+    tax = round(entry.amount * tax_pct / 100, 2)
+    invest = round(entry.amount * invest_pct / 100, 2)
+    spend = round(entry.amount - tax - invest, 2)
+    record = {
+        "id": f"manual_{int(__import__('time').time()*1000)}",
+        "platform": entry.platform,
+        "amount": entry.amount,
+        "note": entry.note or f"{entry.platform} payment",
+        "tax": tax,
+        "invest": invest,
+        "spend": spend,
+        "date": __import__('datetime').datetime.utcnow().isoformat()
+    }
+    _manual_income_log.insert(0, record)
+    return {"status": "logged", "entry": record, "split": {"tax": tax, "invest": invest, "spend": spend}}
+
+@app.get("/api/income/log")
+def get_income_log():
+    """Return recent manual income entries."""
+    return {"entries": _manual_income_log[:50]}
+
 @app.get("/api/user/profile")
 def get_profile():
     return {
