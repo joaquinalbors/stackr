@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List
@@ -7,6 +7,9 @@ import stripe
 import httpx
 from datetime import datetime
 import anthropic
+import pdfplumber
+import io
+import json
 import plaid
 from plaid.api import plaid_api
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
@@ -1238,6 +1241,129 @@ async def chat(req: ChatRequest):
 
         return {"reply": response.content[0].text}
 
+    except anthropic.APIError as e:
+        raise HTTPException(status_code=502, detail=f"AI error: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── SMART TAX SCAN ────────────────────────────────────────────────────────────
+
+TAX_EXTRACTION_PROMPT = """You are a tax document analyzer for Apexa, a creator finance app.
+A user has uploaded a tax document. Extract all relevant financial data and return a JSON object.
+
+Extract and return ONLY valid JSON with this exact structure:
+{
+  "doc_type": "1099-NEC | W-2 | 1099-K | 1099-MISC | 1099-INT | 1099-DIV | W-2G | unknown",
+  "tax_year": 2024,
+  "payer": "company name that issued the form",
+  "income": {
+    "total": 0.00,
+    "wages": 0.00,
+    "nonemployee_compensation": 0.00,
+    "other_income": 0.00
+  },
+  "withholding": {
+    "federal": 0.00,
+    "state": 0.00
+  },
+  "deductions_found": [
+    {"description": "deduction or expense found in doc", "amount": 0.00, "category": "equipment|travel|software|home_office|other"}
+  ],
+  "recommendations": {
+    "vault_pct": 28,
+    "q1_estimate": 0.00,
+    "q2_estimate": 0.00,
+    "q3_estimate": 0.00,
+    "q4_estimate": 0.00,
+    "annual_tax_estimate": 0.00,
+    "effective_rate": 0.00,
+    "self_employment_tax": 0.00
+  },
+  "insights": ["short actionable insight 1", "short actionable insight 2"],
+  "confidence": "high | medium | low"
+}
+
+Tax calculation rules for self-employed creators (1099 income):
+- Self-employment tax: 15.3% on net earnings (deduct half for AGI)
+- Federal income tax brackets 2024: 10% up to $11,600, 12% up to $47,150, 22% up to $100,525, 24% up to $191,950
+- Recommended vault % = (federal rate + SE tax rate) rounded up to nearest whole number
+- Quarterly estimates = annual_tax_estimate / 4 (Q1: Apr 15, Q2: Jun 17, Q3: Sep 16, Q4: Jan 15)
+- Standard deduction 2024: $14,600 single, $29,200 married
+
+Document text to analyze:
+"""
+
+@app.post("/api/tax/analyze-document")
+async def analyze_tax_document(file: UploadFile = File(...)):
+    """Upload a tax document (PDF or image) and get AI-powered analysis."""
+    if not ANTHROPIC_API_KEY:
+        raise HTTPException(status_code=503, detail="AI service not configured")
+
+    try:
+        contents = await file.read()
+        extracted_text = ""
+
+        # Extract text from PDF
+        if file.filename and file.filename.lower().endswith(".pdf"):
+            try:
+                with pdfplumber.open(io.BytesIO(contents)) as pdf:
+                    for page in pdf.pages:
+                        page_text = page.extract_text()
+                        if page_text:
+                            extracted_text += page_text + "\n"
+            except Exception:
+                extracted_text = ""
+
+        # If no text extracted (scanned PDF or image), use Claude vision
+        if not extracted_text.strip():
+            import base64
+            b64 = base64.standard_b64encode(contents).decode("utf-8")
+            media_type = file.content_type or "application/pdf"
+
+            client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+            response = client.messages.create(
+                model="claude-3-5-sonnet-20241022",
+                max_tokens=1024,
+                messages=[{
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {"type": "base64", "media_type": media_type, "data": b64}
+                        },
+                        {
+                            "type": "text",
+                            "text": TAX_EXTRACTION_PROMPT + "[Visual document — extract from image]"
+                        }
+                    ]
+                }]
+            )
+            raw = response.content[0].text
+        else:
+            # Text-based extraction via Claude
+            client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+            response = client.messages.create(
+                model="claude-3-5-haiku-20241022",
+                max_tokens=1024,
+                messages=[{
+                    "role": "user",
+                    "content": TAX_EXTRACTION_PROMPT + extracted_text[:8000]
+                }]
+            )
+            raw = response.content[0].text
+
+        # Parse JSON from response
+        start = raw.find("{")
+        end = raw.rfind("}") + 1
+        if start == -1 or end == 0:
+            raise HTTPException(status_code=422, detail="Could not parse tax data from document")
+
+        data = json.loads(raw[start:end])
+        return {"success": True, "data": data, "filename": file.filename}
+
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=422, detail="Document parsing failed — ensure it is a clear tax form")
     except anthropic.APIError as e:
         raise HTTPException(status_code=502, detail=f"AI error: {str(e)}")
     except Exception as e:
