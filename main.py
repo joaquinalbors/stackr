@@ -54,9 +54,23 @@ STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 # In-memory store for demo (replace with DB in production)
 user_access_tokens = {}
 
+AIRTABLE_API_KEY = os.getenv("AIRTABLE_API_KEY", "")
+AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_ID", "")
+AIRTABLE_TABLE = os.getenv("AIRTABLE_TABLE", "Signups")
+
 class PublicTokenRequest(BaseModel):
     public_token: str
     user_id: str = "default"
+
+class SignupData(BaseModel):
+    name: str
+    email: str = ""
+    acct_type: str = "creator"
+    platforms: str = ""
+    tax_pct: float = 0.0
+    invest_pct: float = 0.0
+    risk_profile: str = ""
+    plan: str = "free"
 
 class UserPreferences(BaseModel):
     user_id: str = "default"
@@ -1368,3 +1382,40 @@ async def analyze_tax_document(file: UploadFile = File(...)):
         raise HTTPException(status_code=502, detail=f"AI error: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# --- Signup CRM (Airtable) ---
+
+@app.post("/api/signup")
+async def capture_signup(data: SignupData):
+    """Log new signups to Airtable. Fails silently if Airtable not configured."""
+    record = {
+        "Name": data.name,
+        "Email": data.email,
+        "Account Type": data.acct_type.capitalize(),
+        "Platforms": data.platforms,
+        "Tax %": data.tax_pct,
+        "Invest %": data.invest_pct,
+        "Risk Profile": data.risk_profile,
+        "Plan": data.plan,
+        "Signed Up At": datetime.utcnow().isoformat() + "Z",
+    }
+    if AIRTABLE_API_KEY and AIRTABLE_BASE_ID:
+        try:
+            async with httpx.AsyncClient() as client:
+                r = await client.post(
+                    f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE}",
+                    headers={
+                        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+                        "Content-Type": "application/json",
+                    },
+                    json={"fields": record},
+                    timeout=8,
+                )
+                if r.status_code >= 400:
+                    return {"success": False, "detail": r.text}
+                return {"success": True, "airtable_id": r.json().get("id")}
+        except Exception as e:
+            return {"success": False, "detail": str(e)}
+    # Airtable not configured — log to console and return ok
+    print(f"[SIGNUP] {record}")
+    return {"success": True, "detail": "logged"}
