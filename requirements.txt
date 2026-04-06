@@ -2,6 +2,8 @@ fastapi==0.110.0
 uvicorn==0.29.0
 PyJWT==2.8.0
 passlib[bcrypt]==1.7.4
+webauthn==2.1.0
+slowapi==0.1.9
 stripe==8.9.0
 python-dotenv==1.0.1
 pydantic==2.6.4

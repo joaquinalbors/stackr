@@ -15,6 +15,21 @@ import hashlib
 import time
 import jwt as pyjwt
 from passlib.context import CryptContext
+import webauthn
+from webauthn.helpers.structs import (
+    AuthenticatorSelectionCriteria,
+    UserVerificationRequirement,
+    ResidentKeyRequirement,
+    PublicKeyCredentialDescriptor,
+    RegistrationCredential,
+    AuthenticatorAttestationResponse,
+    AuthenticationCredential,
+    AuthenticatorAssertionResponse,
+)
+from webauthn.helpers import base64url_to_bytes, bytes_to_base64url
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 import plaid
 from plaid.api import plaid_api
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
@@ -123,6 +138,41 @@ def _require_user(request: Request) -> dict:
     return auth
 # ──────────────────────────────────────────────────────────────────────────────
 
+# ── WebAuthn stores + config ──────────────────────────────────────────────────
+# email -> list of {id: bytes, public_key: bytes, sign_count: int, label: str}
+_webauthn_creds: dict = {}
+# email -> {challenge: bytes, expires: float, type: "register"|"authenticate"}
+_webauthn_challenges: dict = {}
+
+RP_ID     = os.getenv("WEBAUTHN_RP_ID",     "apexa.com")
+ORIGIN    = os.getenv("WEBAUTHN_ORIGIN",    "https://apexa.com")
+RP_NAME   = "Apexa"
+CHALLENGE_TTL = 300  # 5 minutes
+
+def _fresh_challenge(email: str, kind: str) -> bytes:
+    challenge = secrets.token_bytes(32)
+    _webauthn_challenges[email] = {
+        "challenge": challenge,
+        "expires":   time.time() + CHALLENGE_TTL,
+        "type":      kind,
+    }
+    return challenge
+
+def _pop_challenge(email: str, kind: str) -> bytes:
+    entry = _webauthn_challenges.pop(email, None)
+    if not entry:
+        raise HTTPException(400, "No pending challenge — call /begin first")
+    if time.time() > entry["expires"]:
+        raise HTTPException(400, "Challenge expired (5-minute window) — try again")
+    if entry["type"] != kind:
+        raise HTTPException(400, f"Expected {kind} challenge")
+    return entry["challenge"]
+# ──────────────────────────────────────────────────────────────────────────────
+
+# ── Rate limiter ──────────────────────────────────────────────────────────────
+limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
+# ──────────────────────────────────────────────────────────────────────────────
+
 AIRTABLE_API_KEY = os.getenv("AIRTABLE_API_KEY", "")
 AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_ID", "")
 AIRTABLE_TABLE = os.getenv("AIRTABLE_TABLE", "Signups")
@@ -172,11 +222,22 @@ class ApiKeyCreate(BaseModel):
 
 app = FastAPI(title="Apexa API", version="2.0.0")
 
+# Rate limiting — 10 attempts/min on auth endpoints, 200/min elsewhere
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# CORS — locked to known origins (no wildcard in production)
+_ALLOWED_ORIGINS = [
+    "https://apexa.com",
+    "https://www.apexa.com",
+    os.getenv("EXTRA_ORIGIN", ""),   # set in Railway for staging / local dev
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=[o for o in _ALLOWED_ORIGINS if o],
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
+    allow_credentials=True,
 )
 
 @app.get("/")
@@ -305,6 +366,226 @@ def auth_logout(request: Request):
     """Logout endpoint — client should discard the JWT."""
     # JWTs are stateless; real revocation requires a blocklist (future work)
     return {"message": "Logged out. Discard your token on the client side."}
+
+# Apply tighter rate limits to password-based login endpoints
+@app.post("/api/auth/login")
+@limiter.limit("10/minute")
+async def auth_login_rl(request: Request, data: AuthLogin):
+    """Rate-limited wrapper — 10 attempts/minute per IP."""
+    return auth_login.__wrapped__(data)
+
+# ── WebAuthn endpoints ────────────────────────────────────────────────────────
+# Security model: private keys NEVER leave the device.
+# A full DB dump gives an attacker only public keys — cryptographically useless
+# without the physical device. Sign-count tracking detects cloned credentials.
+
+class WebAuthnBeginRequest(BaseModel):
+    email: str
+
+class WebAuthnRegisterComplete(BaseModel):
+    email: str
+    id: str
+    rawId: str
+    response: dict   # clientDataJSON + attestationObject
+    type: str = "public-key"
+    label: str = "My Device"
+
+class WebAuthnAuthComplete(BaseModel):
+    email: str
+    id: str
+    rawId: str
+    response: dict   # clientDataJSON + authenticatorData + signature + userHandle
+    type: str = "public-key"
+
+@app.post("/api/auth/webauthn/register/begin")
+@limiter.limit("10/minute")
+async def webauthn_register_begin(request: Request, data: WebAuthnBeginRequest):
+    """
+    Step 1 of registration: generate a challenge + options for the browser.
+    The client passes this to navigator.credentials.create().
+    """
+    email = data.email.lower().strip()
+    user  = _users.get(email)
+    if not user:
+        raise HTTPException(404, "User not found — register an account first")
+
+    challenge = _fresh_challenge(email, "register")
+
+    opts = webauthn.generate_registration_options(
+        rp_id=RP_ID,
+        rp_name=RP_NAME,
+        user_id=email.encode(),
+        user_name=email,
+        user_display_name=user.get("name", email),
+        challenge=challenge,
+        authenticator_selection=AuthenticatorSelectionCriteria(
+            user_verification=UserVerificationRequirement.REQUIRED,
+            resident_key=ResidentKeyRequirement.PREFERRED,
+        ),
+    )
+    import json
+    return json.loads(webauthn.options_to_json(opts))
+
+@app.post("/api/auth/webauthn/register/complete")
+@limiter.limit("10/minute")
+async def webauthn_register_complete(request: Request, data: WebAuthnRegisterComplete):
+    """
+    Step 2 of registration: verify the signed credential from the device.
+    Stores the PUBLIC KEY only — biometric data never reaches this server.
+    """
+    email     = data.email.lower().strip()
+    challenge = _pop_challenge(email, "register")
+
+    try:
+        cred = RegistrationCredential(
+            id=data.id,
+            raw_id=base64url_to_bytes(data.rawId),
+            response=AuthenticatorAttestationResponse(
+                client_data_json=base64url_to_bytes(data.response["clientDataJSON"]),
+                attestation_object=base64url_to_bytes(data.response["attestationObject"]),
+            ),
+            type=data.type,
+        )
+        verified = webauthn.verify_registration_response(
+            credential=cred,
+            expected_challenge=challenge,
+            expected_rp_id=RP_ID,
+            expected_origin=ORIGIN,
+            require_user_verification=True,
+        )
+    except Exception as e:
+        raise HTTPException(400, f"WebAuthn verification failed: {str(e)}")
+
+    entry = {
+        "id":          verified.credential_id,        # bytes
+        "public_key":  verified.credential_public_key, # bytes — all that's stored
+        "sign_count":  verified.sign_count,
+        "label":       data.label,
+        "created_at":  datetime.utcnow().isoformat(),
+    }
+    if email not in _webauthn_creds:
+        _webauthn_creds[email] = []
+    _webauthn_creds[email].append(entry)
+
+    return {
+        "registered": True,
+        "label": data.label,
+        "credential_id": bytes_to_base64url(verified.credential_id),
+    }
+
+@app.post("/api/auth/webauthn/authenticate/begin")
+@limiter.limit("10/minute")
+async def webauthn_auth_begin(request: Request, data: WebAuthnBeginRequest):
+    """
+    Step 1 of authentication: generate a challenge.
+    The client passes this to navigator.credentials.get() → triggers Face ID / Touch ID.
+    """
+    email = data.email.lower().strip()
+    creds = _webauthn_creds.get(email, [])
+    if not creds:
+        raise HTTPException(404, "No passkey registered for this account")
+
+    challenge = _fresh_challenge(email, "authenticate")
+
+    opts = webauthn.generate_authentication_options(
+        rp_id=RP_ID,
+        challenge=challenge,
+        allow_credentials=[
+            PublicKeyCredentialDescriptor(id=c["id"]) for c in creds
+        ],
+        user_verification=UserVerificationRequirement.REQUIRED,
+    )
+    import json
+    return json.loads(webauthn.options_to_json(opts))
+
+@app.post("/api/auth/webauthn/authenticate/complete")
+@limiter.limit("10/minute")
+async def webauthn_auth_complete(request: Request, data: WebAuthnAuthComplete):
+    """
+    Step 2 of authentication: verify the signed challenge from the device.
+    If valid → returns a JWT. Sign count is checked to detect cloned credentials.
+    """
+    email     = data.email.lower().strip()
+    challenge = _pop_challenge(email, "authenticate")
+    creds     = _webauthn_creds.get(email, [])
+    if not creds:
+        raise HTTPException(404, "No passkey registered for this account")
+
+    # Find the matching stored credential by ID
+    cred_id_bytes = base64url_to_bytes(data.rawId)
+    stored = next((c for c in creds if c["id"] == cred_id_bytes), None)
+    if not stored:
+        raise HTTPException(400, "Unknown credential ID")
+
+    try:
+        cred = AuthenticationCredential(
+            id=data.id,
+            raw_id=cred_id_bytes,
+            response=AuthenticatorAssertionResponse(
+                client_data_json=base64url_to_bytes(data.response["clientDataJSON"]),
+                authenticator_data=base64url_to_bytes(data.response["authenticatorData"]),
+                signature=base64url_to_bytes(data.response["signature"]),
+                user_handle=base64url_to_bytes(data.response["userHandle"]) if data.response.get("userHandle") else None,
+            ),
+            type=data.type,
+        )
+        verified = webauthn.verify_authentication_response(
+            credential=cred,
+            expected_challenge=challenge,
+            expected_rp_id=RP_ID,
+            expected_origin=ORIGIN,
+            credential_public_key=stored["public_key"],
+            credential_current_sign_count=stored["sign_count"],
+            require_user_verification=True,
+        )
+    except Exception as e:
+        raise HTTPException(400, f"WebAuthn verification failed: {str(e)}")
+
+    # Update sign count — a lower count would indicate a cloned credential
+    stored["sign_count"] = verified.new_sign_count
+
+    user  = _users.get(email, {})
+    token = _make_jwt(email)
+    return {
+        "token":      token,
+        "token_type": "bearer",
+        "user": {
+            "name":      user.get("name", ""),
+            "email":     email,
+            "plan":      user.get("plan", "free"),
+            "acct_type": user.get("acct_type", "creator"),
+        },
+    }
+
+@app.get("/api/auth/webauthn/credentials")
+def webauthn_list_credentials(request: Request):
+    """List passkeys registered to the authenticated user."""
+    auth  = _require_user(request)
+    creds = _webauthn_creds.get(auth["email"], [])
+    return {
+        "credentials": [
+            {
+                "credential_id": bytes_to_base64url(c["id"]),
+                "label":         c["label"],
+                "created_at":    c["created_at"],
+                "sign_count":    c["sign_count"],
+            }
+            for c in creds
+        ]
+    }
+
+@app.delete("/api/auth/webauthn/credentials/{credential_id}")
+def webauthn_delete_credential(credential_id: str, request: Request):
+    """Remove a passkey from the account."""
+    auth  = _require_user(request)
+    email = auth["email"]
+    creds = _webauthn_creds.get(email, [])
+    cid   = base64url_to_bytes(credential_id)
+    before = len(creds)
+    _webauthn_creds[email] = [c for c in creds if c["id"] != cid]
+    if len(_webauthn_creds[email]) == before:
+        raise HTTPException(404, "Credential not found")
+    return {"deleted": True}
 
 # ──────────────────────────────────────────────────────────────────────────────
 
