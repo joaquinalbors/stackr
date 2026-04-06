@@ -1958,6 +1958,28 @@ def creator_received_payouts(request: Request):
         "payouts":         sorted(records, key=lambda r: r.get("timestamp",""), reverse=True),
     }
 
+class UpdateSplitRequest(BaseModel):
+    agency_id: str
+    creator_id: str
+    split_percentage: float
+
+@app.post("/api/agency/update-split")
+def agency_update_split(req: UpdateSplitRequest):
+    """Update a creator's agency commission split percentage."""
+    if req.split_percentage < 0 or req.split_percentage > 100:
+        raise HTTPException(status_code=400, detail="split_percentage must be 0–100")
+    if req.agency_id in agency_store:
+        for c in agency_creators_store.get(req.agency_id, []):
+            if c["creator_id"] == req.creator_id:
+                old = c["split_percentage"]
+                c["split_percentage"] = req.split_percentage
+                return {"status": "updated", "creator_id": req.creator_id,
+                        "old_split": old, "new_split": req.split_percentage}
+    # If agency/creator not in store (demo), just acknowledge
+    return {"status": "acknowledged", "creator_id": req.creator_id,
+            "new_split": req.split_percentage, "source": "demo"}
+
+
 @app.get("/api/agency/roster")
 def agency_roster(agency_id: str):
     """Returns the list of creators under the agency."""
