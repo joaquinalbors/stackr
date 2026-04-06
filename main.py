@@ -49,7 +49,14 @@ ALPACA_BASE_URL = os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets
 # Stripe subscription products
 STRIPE_PRICE_PRO = os.getenv("STRIPE_PRICE_PRO", "")
 STRIPE_PRICE_PREMIUM = os.getenv("STRIPE_PRICE_PREMIUM", "")
+STRIPE_PRICE_AG_STARTER = os.getenv("STRIPE_PRICE_AG_STARTER", "")
+STRIPE_PRICE_AG_GROWTH = os.getenv("STRIPE_PRICE_AG_GROWTH", "")
+STRIPE_PRICE_AG_ENTERPRISE = os.getenv("STRIPE_PRICE_AG_ENTERPRISE", "")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+APEXA_URL = os.getenv("APEXA_URL", "https://apexa.com")
+
+# Runtime-created price IDs (populated by /api/stripe/setup-products)
+_runtime_prices: dict = {}
 
 # In-memory store for demo (replace with DB in production)
 user_access_tokens = {}
@@ -774,28 +781,133 @@ async def alpaca_trading_status():
 
 # --- Stripe Subscriptions ---
 
+PLAN_PRICES = {
+    "pro":           ("STRIPE_PRICE_PRO",           4999,  "Apexa Pro — Creator Finance"),
+    "premium":       ("STRIPE_PRICE_PREMIUM",        9999,  "Apexa Premium — Full Co-Pilot"),
+    "ag_starter":    ("STRIPE_PRICE_AG_STARTER",    14999, "Apexa Agency Starter (up to 10 creators)"),
+    "ag_growth":     ("STRIPE_PRICE_AG_GROWTH",     29999, "Apexa Agency Growth (up to 50 creators)"),
+    "ag_enterprise": ("STRIPE_PRICE_AG_ENTERPRISE", 49999, "Apexa Agency Enterprise (unlimited)"),
+}
+
+def _get_price_id(plan: str) -> str:
+    """Return price ID from env var, runtime cache, or empty string."""
+    env_map = {
+        "pro": STRIPE_PRICE_PRO,
+        "premium": STRIPE_PRICE_PREMIUM,
+        "ag_starter": STRIPE_PRICE_AG_STARTER,
+        "ag_growth": STRIPE_PRICE_AG_GROWTH,
+        "ag_enterprise": STRIPE_PRICE_AG_ENTERPRISE,
+    }
+    return env_map.get(plan) or _runtime_prices.get(plan, "")
+
 class CheckoutRequest(BaseModel):
-    plan: str  # "pro" or "premium"
-    success_url: str = "https://joaquinalbors.github.io/stackr/"
-    cancel_url: str = "https://joaquinalbors.github.io/stackr/"
+    plan: str  # "pro", "premium", "ag_starter", "ag_growth", "ag_enterprise"
+    email: str = ""
 
 @app.post("/api/stripe/create-checkout")
 def create_checkout(req: CheckoutRequest):
     if not stripe.api_key:
-        return {"url": "#", "status": "demo", "message": "Stripe not configured. Demo mode."}
-    price_id = STRIPE_PRICE_PRO if req.plan == "pro" else STRIPE_PRICE_PREMIUM
+        return {"url": "#", "status": "demo", "message": "Stripe not configured."}
+    price_id = _get_price_id(req.plan)
     if not price_id:
-        return {"url": "#", "status": "demo", "message": f"No price ID set for {req.plan} plan."}
+        return {"url": "#", "status": "no_price", "message": f"Price ID not set for {req.plan}. Run /api/stripe/setup-products first."}
     try:
-        session = stripe.checkout.Session.create(
+        params = dict(
             mode="subscription",
             line_items=[{"price": price_id, "quantity": 1}],
-            success_url=req.success_url + "?session_id={CHECKOUT_SESSION_ID}",
-            cancel_url=req.cancel_url,
+            success_url=f"{APEXA_URL}/?session_id={{CHECKOUT_SESSION_ID}}&plan={req.plan}",
+            cancel_url=f"{APEXA_URL}/?checkout_cancelled=1",
+            allow_promotion_codes=True,
+            metadata={"plan": req.plan, "source": "apexa_app"},
         )
+        if req.email:
+            params["customer_email"] = req.email
+        session = stripe.checkout.Session.create(**params)
         return {"url": session.url, "session_id": session.id, "status": "live"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/stripe/verify-session")
+def verify_checkout_session(session_id: str):
+    """Called on return from Stripe to confirm payment and get plan."""
+    if not stripe.api_key or not session_id:
+        return {"valid": False, "plan": "free", "source": "demo"}
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+        if session.payment_status in ("paid", "no_payment_required") and session.status == "complete":
+            plan = session.metadata.get("plan", "pro") if session.metadata else "pro"
+            customer_id = session.customer or ""
+            return {"valid": True, "plan": plan, "customer_id": customer_id, "source": "live"}
+        return {"valid": False, "plan": "free", "status": session.status, "source": "live"}
+    except Exception as e:
+        return {"valid": False, "plan": "free", "error": str(e), "source": "error"}
+
+@app.post("/api/stripe/setup-products")
+def setup_stripe_products():
+    """Auto-create all Apexa subscription products and prices in Stripe.
+    Call once during setup — returns price IDs to put in Railway env vars."""
+    if not stripe.api_key:
+        return {"status": "error", "message": "Stripe not configured."}
+    results = {}
+    for plan, (env_var, unit_amount, description) in PLAN_PRICES.items():
+        try:
+            # Check if product already exists
+            existing = stripe.Product.search(query=f'metadata["apexa_plan"]:"{plan}"', limit=1)
+            if existing.data:
+                product = existing.data[0]
+            else:
+                product = stripe.Product.create(
+                    name=description,
+                    metadata={"apexa_plan": plan, "source": "apexa"},
+                )
+            # Check if price already exists for this product
+            prices = stripe.Price.list(product=product.id, active=True, limit=1)
+            if prices.data:
+                price = prices.data[0]
+            else:
+                price = stripe.Price.create(
+                    product=product.id,
+                    unit_amount=unit_amount,
+                    currency="usd",
+                    recurring={"interval": "month"},
+                    metadata={"apexa_plan": plan},
+                )
+            _runtime_prices[plan] = price.id
+            results[plan] = {"price_id": price.id, "product_id": product.id, "env_var": env_var, "amount": f"${unit_amount/100:.2f}/mo"}
+        except Exception as e:
+            results[plan] = {"error": str(e)}
+    return {"status": "done", "prices": results, "note": "Set these as Railway env vars to persist them across deploys."}
+
+from fastapi import Request as FastAPIRequest
+
+@app.post("/api/stripe/webhook")
+async def stripe_webhook(request: FastAPIRequest):
+    """Handle Stripe subscription lifecycle events."""
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature", "")
+    if STRIPE_WEBHOOK_SECRET:
+        try:
+            event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
+        except stripe.error.SignatureVerificationError:
+            raise HTTPException(status_code=400, detail="Invalid signature")
+    else:
+        try:
+            event = json.loads(payload)
+        except:
+            raise HTTPException(status_code=400, detail="Invalid payload")
+    etype = event.get("type", "")
+    data = event.get("data", {}).get("object", {})
+    if etype in ("customer.subscription.created", "customer.subscription.updated"):
+        price_id = data.get("items", {}).get("data", [{}])[0].get("price", {}).get("id", "")
+        plan = "free"
+        for p, pid in _runtime_prices.items():
+            if pid == price_id: plan = p; break
+        if not plan or plan == "free":
+            plan = "premium" if price_id == STRIPE_PRICE_PREMIUM else ("pro" if price_id == STRIPE_PRICE_PRO else "free")
+        print(f"[WEBHOOK] Subscription {etype}: customer={data.get('customer')} plan={plan} status={data.get('status')}")
+    elif etype == "customer.subscription.deleted":
+        print(f"[WEBHOOK] Subscription cancelled: customer={data.get('customer')}")
+    return {"received": True, "type": etype}
 
 @app.post("/api/stripe/create-portal")
 def create_billing_portal(customer_id: str = ""):
@@ -804,7 +916,7 @@ def create_billing_portal(customer_id: str = ""):
     try:
         session = stripe.billing_portal.Session.create(
             customer=customer_id,
-            return_url="https://joaquinalbors.github.io/stackr/",
+            return_url="https://apexa.com/",
         )
         return {"url": session.url, "status": "live"}
     except Exception as e:
@@ -859,8 +971,8 @@ def create_onboarding_link(account_id: str):
     try:
         link = stripe.AccountLink.create(
             account=account_id,
-            refresh_url="https://joaquinalbors.github.io/stackr/",
-            return_url="https://joaquinalbors.github.io/stackr/",
+            refresh_url="https://apexa.com/",
+            return_url="https://apexa.com/",
             type="account_onboarding",
         )
         return {"url": link.url, "status": "live"}
