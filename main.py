@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, File, UploadFile, Request
+from fastapi import FastAPI, HTTPException, File, UploadFile, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List
@@ -10,6 +10,11 @@ import anthropic
 import pdfplumber
 import io
 import json
+import secrets
+import hashlib
+import time
+import jwt as pyjwt
+from passlib.context import CryptContext
 import plaid
 from plaid.api import plaid_api
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
@@ -61,6 +66,63 @@ _runtime_prices: dict = {}
 # In-memory store for demo (replace with DB in production)
 user_access_tokens = {}
 
+# ── Auth stores ────────────────────────────────────────────────────────────────
+_users: dict = {}      # email -> {name, password_hash, acct_type, plan, api_keys:[]}
+_api_keys: dict = {}   # "apx_live_xxx" -> {user_email, name, scopes, created_at, last_used}
+
+JWT_SECRET = os.getenv("JWT_SECRET", secrets.token_hex(32))
+JWT_ALGO   = "HS256"
+JWT_TTL    = 86400 * 30   # 30 days
+
+_pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def _hash_pw(pw: str) -> str:
+    return _pwd_ctx.hash(pw)
+
+def _verify_pw(plain: str, hashed: str) -> bool:
+    return _pwd_ctx.verify(plain, hashed)
+
+def _make_jwt(email: str) -> str:
+    payload = {"sub": email, "iat": int(time.time()), "exp": int(time.time()) + JWT_TTL}
+    return pyjwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGO)
+
+def _decode_jwt(token: str) -> Optional[str]:
+    try:
+        data = pyjwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGO])
+        return data["sub"]
+    except Exception:
+        return None
+
+def _resolve_auth(request: Request) -> Optional[dict]:
+    """Accepts: Bearer <JWT>  or  Bearer apx_live_<key>"""
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        return None
+    token = auth[7:].strip()
+    if token.startswith("apx_"):
+        info = _api_keys.get(token)
+        if info:
+            _api_keys[token]["last_used"] = datetime.utcnow().isoformat()
+            return {"type": "apikey", "email": info["user_email"], **info}
+    else:
+        email = _decode_jwt(token)
+        if email:
+            return {"type": "user", "email": email}
+    return None
+
+def _require_auth(request: Request) -> dict:
+    auth = _resolve_auth(request)
+    if not auth:
+        raise HTTPException(status_code=401, detail="Unauthorized — provide a Bearer JWT or API key")
+    return auth
+
+def _require_user(request: Request) -> dict:
+    auth = _resolve_auth(request)
+    if not auth or auth["type"] != "user":
+        raise HTTPException(status_code=401, detail="JWT login required for this action")
+    return auth
+# ──────────────────────────────────────────────────────────────────────────────
+
 AIRTABLE_API_KEY = os.getenv("AIRTABLE_API_KEY", "")
 AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_ID", "")
 AIRTABLE_TABLE = os.getenv("AIRTABLE_TABLE", "Signups")
@@ -92,6 +154,22 @@ class UserPreferences(BaseModel):
     tos_accepted: bool = False
     tos_accepted_at: str = ""
 
+# ── Auth request models ────────────────────────────────────────────────────────
+class AuthRegister(BaseModel):
+    name: str
+    email: str
+    password: str
+    acct_type: str = "creator"
+
+class AuthLogin(BaseModel):
+    email: str
+    password: str
+
+class ApiKeyCreate(BaseModel):
+    name: str
+    scopes: List[str] = ["read"]
+# ──────────────────────────────────────────────────────────────────────────────
+
 app = FastAPI(title="Apexa API", version="2.0.0")
 
 app.add_middleware(
@@ -106,8 +184,129 @@ def root():
     return {
         "status": "Apexa API running ⚡",
         "version": "2.0.0",
-        "stripe": "connected" if stripe.api_key else "not configured"
+        "stripe": "connected" if stripe.api_key else "not configured",
+        "docs": "/docs"
     }
+
+# ── Auth endpoints ─────────────────────────────────────────────────────────────
+
+@app.post("/api/auth/register")
+def auth_register(data: AuthRegister):
+    """Register a new Apexa user account. Returns a JWT for immediate use."""
+    email = data.email.lower().strip()
+    if email in _users:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    _users[email] = {
+        "name": data.name,
+        "email": email,
+        "password_hash": _hash_pw(data.password),
+        "acct_type": data.acct_type,
+        "plan": "free",
+        "created_at": datetime.utcnow().isoformat(),
+        "api_keys": []
+    }
+    token = _make_jwt(email)
+    return {
+        "token": token,
+        "token_type": "bearer",
+        "user": {"name": data.name, "email": email, "plan": "free", "acct_type": data.acct_type}
+    }
+
+@app.post("/api/auth/login")
+def auth_login(data: AuthLogin):
+    """Login with email + password. Returns a JWT (30-day expiry)."""
+    email = data.email.lower().strip()
+    user = _users.get(email)
+    if not user or not _verify_pw(data.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    token = _make_jwt(email)
+    return {
+        "token": token,
+        "token_type": "bearer",
+        "user": {"name": user["name"], "email": email, "plan": user["plan"], "acct_type": user["acct_type"]}
+    }
+
+@app.get("/api/auth/me")
+def auth_me(request: Request):
+    """Returns the authenticated user's profile. Works with JWT or API key."""
+    auth = _require_auth(request)
+    email = auth["email"]
+    user = _users.get(email, {})
+    return {
+        "email": email,
+        "name": user.get("name", ""),
+        "plan": user.get("plan", "free"),
+        "acct_type": user.get("acct_type", "creator"),
+        "auth_type": auth["type"],
+        "api_key_name": auth.get("name") if auth["type"] == "apikey" else None
+    }
+
+@app.post("/api/auth/api-keys")
+def create_api_key(data: ApiKeyCreate, request: Request):
+    """Generate a new API key. Requires JWT login (not an existing API key)."""
+    auth = _require_user(request)
+    email = auth["email"]
+    key = "apx_live_" + secrets.token_hex(24)
+    created = datetime.utcnow().isoformat()
+    _api_keys[key] = {
+        "user_email": email,
+        "name": data.name,
+        "scopes": data.scopes,
+        "created_at": created,
+        "last_used": None
+    }
+    user = _users.get(email)
+    if user:
+        user["api_keys"].append(key)
+    return {
+        "key": key,          # shown ONCE — store it now
+        "name": data.name,
+        "scopes": data.scopes,
+        "created_at": created,
+        "warning": "Copy this key — it won't be shown again."
+    }
+
+@app.get("/api/auth/api-keys")
+def list_api_keys(request: Request):
+    """List all API keys for the authenticated user (keys are masked)."""
+    auth = _require_user(request)
+    email = auth["email"]
+    user = _users.get(email, {})
+    result = []
+    for k in user.get("api_keys", []):
+        if k in _api_keys:
+            info = _api_keys[k]
+            masked = k[:15] + "•••" + k[-6:]
+            result.append({
+                "key_masked": masked,
+                "key_suffix": k[-6:],
+                "name": info["name"],
+                "scopes": info["scopes"],
+                "created_at": info["created_at"],
+                "last_used": info["last_used"]
+            })
+    return {"api_keys": result, "count": len(result)}
+
+@app.delete("/api/auth/api-keys/{key_suffix}")
+def revoke_api_key(key_suffix: str, request: Request):
+    """Revoke an API key by its last-6-character suffix."""
+    auth = _require_user(request)
+    email = auth["email"]
+    user = _users.get(email, {})
+    for k in list(user.get("api_keys", [])):
+        if k.endswith(key_suffix):
+            _api_keys.pop(k, None)
+            user["api_keys"].remove(k)
+            return {"revoked": True, "key_suffix": key_suffix}
+    raise HTTPException(status_code=404, detail="API key not found")
+
+@app.post("/api/auth/logout")
+def auth_logout(request: Request):
+    """Logout endpoint — client should discard the JWT."""
+    # JWTs are stateless; real revocation requires a blocklist (future work)
+    return {"message": "Logged out. Discard your token on the client side."}
+
+# ──────────────────────────────────────────────────────────────────────────────
 
 @app.get("/api/dashboard/summary")
 def get_dashboard_summary():
