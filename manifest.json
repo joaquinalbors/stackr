@@ -2,7 +2,7 @@
   "name": "Apexa",
   "short_name": "Apexa",
   "description": "Creator Finance Platform — taxes, investing, and payments automated.",
-  "start_url": "/index.html",
+  "start_url": "/app",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#7c3aed",

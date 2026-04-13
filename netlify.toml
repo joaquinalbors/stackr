@@ -1,0 +1,35 @@
+[[redirects]]
+  from = "/app"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/creator-login"
+  to = "/creator-login.html"
+  status = 200
+
+[[redirects]]
+  from = "/agency-login"
+  to = "/agency-login.html"
+  status = 200
+
+[[redirects]]
+  from = "/features"
+  to = "/features.html"
+  status = 200
+
+[[redirects]]
+  from = "/agencies"
+  to = "/agencies.html"
+  status = 200
+
+[[redirects]]
+  from = "/pricing"
+  to = "/pricing.html"
+  status = 200
+
+[[redirects]]
+  from = "/"
+  to = "/landing.html"
+  status = 200
+  force = true

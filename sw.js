@@ -1,7 +1,9 @@
-const CACHE_NAME = 'apexa-v2';
+const CACHE_NAME = 'apexa-v4';
 const ASSETS = [
-  '/index.html',
+  '/app',
+  '/creator-login',
   '/landing.html',
+  '/creator-login.html',
   '/404.html',
   '/manifest.json',
   '/icon-192.png',
@@ -43,7 +45,7 @@ self.addEventListener('fetch', e => {
       return response;
     }).catch(() => {
       return caches.match(e.request).then(cached => {
-        return cached || caches.match('/index.html');
+        return cached || caches.match('/app');
       });
     })
   );

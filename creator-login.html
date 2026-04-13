@@ -1,0 +1,700 @@
+<!-- Copyright (c) 2025 Apexa Web App LLC. All rights reserved. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Creator Login — Apexa</title>
+<meta name="description" content="Apexa for Creators — Tax vault, auto-investing, income tracking.">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --accent:#7c3aed;--accent2:#a78bfa;--green:#00c853;
+  --dark:#07070d;--surface:rgba(255,255,255,.04);--border:rgba(255,255,255,.08)
+}
+html,body{height:100%}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--dark);color:#fff;min-height:100vh}
+
+/* ── PAGE GRID ── */
+.page{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
+@media(max-width:860px){.page{grid-template-columns:1fr}}
+
+/* ══════════════════════════════════════════
+   LEFT — Full-bleed chart panel (Robinhood)
+══════════════════════════════════════════ */
+.left-panel{
+  position:relative;overflow:hidden;background:#07070d;
+  display:flex;flex-direction:column;
+}
+/* Radial glow blobs */
+.lp-blob{position:absolute;border-radius:50%;pointer-events:none}
+.lp-blob-1{width:600px;height:600px;top:-120px;left:-180px;background:radial-gradient(circle,rgba(124,58,237,.18) 0%,transparent 65%)}
+.lp-blob-2{width:400px;height:400px;bottom:-60px;right:-100px;background:radial-gradient(circle,rgba(167,139,250,.1) 0%,transparent 65%)}
+.lp-blob-3{width:260px;height:260px;top:40%;left:30%;background:radial-gradient(circle,rgba(0,200,83,.06) 0%,transparent 65%)}
+
+/* Canvas background */
+#chartCanvas{position:absolute;inset:0;width:100%;height:100%}
+
+/* Content */
+.lp-inner{position:relative;z-index:2;display:flex;flex-direction:column;height:100%;padding:44px 52px}
+.lp-logo{font-size:21px;font-weight:900;letter-spacing:-1px;color:#fff}
+.lp-logo span{color:var(--accent2)}
+
+/* Hero numbers */
+.lp-hero{flex:1;display:flex;flex-direction:column;justify-content:center;padding-bottom:40px}
+.lp-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.3);letter-spacing:.3px;margin-bottom:10px}
+.lp-number{font-size:clamp(52px,5.5vw,72px);font-weight:900;letter-spacing:-4px;line-height:1;color:#fff;margin-bottom:10px}
+.lp-change{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:var(--green)}
+.lp-change-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* Mini headline */
+.lp-tagline{font-size:clamp(22px,2.6vw,32px);font-weight:900;letter-spacing:-1.5px;line-height:1.1;color:#fff;margin-top:32px;margin-bottom:8px}
+.lp-tagline em{font-style:normal;color:var(--accent2)}
+.lp-sub{font-size:13px;color:rgba(255,255,255,.35);line-height:1.6;max-width:320px}
+
+/* Stat chips row */
+.lp-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:24px}
+.lp-chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);border-radius:99px;padding:6px 13px;font-size:11px;font-weight:700;color:rgba(255,255,255,.55)}
+.lp-chip .c-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* Platform row */
+.lp-platforms{display:flex;align-items:center;gap:6px;margin-top:28px;padding-top:24px;border-top:1px solid rgba(255,255,255,.07)}
+.plat-pill{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:rgba(255,255,255,.35);padding:5px 11px;background:rgba(255,255,255,.05);border-radius:99px}
+
+@media(max-width:860px){.left-panel{display:none}}
+
+/* ══════════════════════════════════════════
+   RIGHT — Auth form
+══════════════════════════════════════════ */
+.right-panel{
+  background:#09090f;
+  display:flex;align-items:center;justify-content:center;
+  padding:40px 28px;position:relative;overflow:hidden
+}
+/* Subtle right-panel grid */
+.right-panel::before{
+  content:'';position:absolute;inset:0;
+  background-image:radial-gradient(rgba(124,58,237,.06) 1px, transparent 1px);
+  background-size:28px 28px;pointer-events:none
+}
+.login-box{width:100%;max-width:380px;position:relative;z-index:1}
+
+/* Logo */
+.login-logo{font-size:20px;font-weight:900;letter-spacing:-1px;color:#fff;margin-bottom:26px;display:flex;align-items:center;gap:8px}
+.login-logo .dot{color:var(--accent)}
+.login-badge{background:rgba(124,58,237,.18);border:1px solid rgba(124,58,237,.28);color:var(--accent2);font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;letter-spacing:.4px}
+
+/* ── Demo card ── */
+.demo-card{
+  background:linear-gradient(135deg,rgba(124,58,237,.16),rgba(167,139,250,.07));
+  border:1.5px solid rgba(124,58,237,.3);border-radius:18px;
+  padding:20px;margin-bottom:22px;cursor:pointer;
+  transition:border-color .2s, transform .2s, box-shadow .2s;
+  position:relative;overflow:hidden
+}
+.demo-card:hover{border-color:rgba(124,58,237,.55);transform:translateY(-2px);box-shadow:0 10px 40px rgba(124,58,237,.18)}
+.demo-card:active{transform:scale(.99)}
+/* Subtle shimmer */
+.demo-card::after{
+  content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent);
+  animation:shimmer 3s ease infinite;pointer-events:none
+}
+@keyframes shimmer{0%{left:-100%}60%,100%{left:150%}}
+
+.demo-no-signup{display:inline-flex;align-items:center;gap:5px;background:rgba(0,200,83,.12);border:1px solid rgba(0,200,83,.2);border-radius:99px;padding:3px 10px;font-size:10px;font-weight:700;color:var(--green);margin-bottom:11px}
+.demo-no-signup-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+
+.demo-title{font-size:16px;font-weight:800;color:#fff;letter-spacing:-.4px;margin-bottom:3px}
+.demo-sub{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:14px}
+
+/* Mini balance inside demo card */
+.demo-bal-row{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
+.demo-bal{font-size:30px;font-weight:900;letter-spacing:-1.5px;color:#fff}
+.demo-bal-chg{font-size:12px;font-weight:700;color:var(--green)}
+
+.demo-mini-bars{display:flex;gap:2px;height:5px;border-radius:99px;overflow:hidden;margin-bottom:10px}
+.demo-bar-tax{background:rgba(239,68,68,.7);flex:28}
+.demo-bar-inv{background:rgba(245,158,11,.7);flex:10}
+.demo-bar-sp{background:rgba(0,200,83,.7);flex:62}
+
+.demo-bottom{display:flex;align-items:center;justify-content:space-between}
+.demo-platforms-sm{display:flex;gap:5px}
+.demo-plat{font-size:13px}
+.demo-btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background .2s;white-space:nowrap}
+.demo-btn:hover{background:#6d28d9}
+
+/* Divider */
+.divider{display:flex;align-items:center;gap:10px;margin:18px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08)}
+.divider span{font-size:11px;font-weight:700;color:rgba(255,255,255,.18)}
+
+/* Tab toggle */
+.tab-toggle{display:flex;background:rgba(255,255,255,.04);border-radius:11px;padding:3px;margin-bottom:18px;border:1px solid rgba(255,255,255,.07)}
+.tab-btn{flex:1;padding:9px;border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,.3);transition:all .2s}
+.tab-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 10px rgba(124,58,237,.3)}
+
+/* Fields */
+.field{margin-bottom:13px;position:relative}
+.field label{display:block;font-size:10px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.field input{
+  width:100%;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.09);
+  border-radius:12px;padding:13px 16px;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;
+  color:#fff;outline:none;transition:border-color .2s,background .2s;
+  -webkit-text-fill-color:#fff
+}
+.field input:focus{border-color:rgba(124,58,237,.5);background:rgba(124,58,237,.05)}
+.field input::placeholder{color:rgba(255,255,255,.16);font-weight:400}
+.field-pass input{padding-right:46px}
+.eye{position:absolute;right:14px;bottom:13px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.22);font-size:15px;padding:0;transition:color .2s;line-height:1}
+.eye:hover{color:rgba(255,255,255,.55)}
+
+/* Password strength */
+.pw-strength{display:flex;gap:3px;margin-top:7px;height:3px}
+.pw-bar{flex:1;border-radius:99px;background:rgba(255,255,255,.07);transition:background .3s}
+.s1{background:#ef4444}.s2{background:#f59e0b}.s3{background:#3b82f6}.s4{background:var(--green)}
+
+/* Consent */
+.consent-row{display:flex;align-items:flex-start;gap:9px;margin-bottom:13px;padding:10px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:11px}
+.consent-row input[type=checkbox]{margin-top:2px;accent-color:var(--accent);flex-shrink:0}
+.consent-row span{font-size:11px;color:rgba(255,255,255,.35);line-height:1.5}
+.consent-row a{color:var(--accent2);font-weight:700}
+
+.forgot{text-align:right;margin-top:-6px;margin-bottom:16px}
+.forgot a{font-size:12px;font-weight:600;color:rgba(124,58,237,.55);cursor:pointer;transition:color .2s}
+.forgot a:hover{color:var(--accent2)}
+
+/* CTA button */
+.btn-cta{
+  width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;
+  padding:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;
+  cursor:pointer;transition:all .2s;margin-bottom:10px;
+  display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px
+}
+.btn-cta:hover{background:#6d28d9;box-shadow:0 4px 20px rgba(124,58,237,.3)}
+.btn-cta:active{transform:scale(.98)}
+.btn-cta:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-spin{display:none;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Messages */
+.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:9px;padding:10px 13px;font-size:12px;font-weight:600;color:#ef4444;margin-bottom:13px;display:none}
+.ok{background:rgba(0,200,83,.1);border:1px solid rgba(0,200,83,.2);border-radius:9px;padding:10px 13px;font-size:12px;font-weight:600;color:var(--green);margin-bottom:13px;display:none}
+
+.switch{font-size:12px;color:rgba(255,255,255,.28);text-align:center;margin-top:10px}
+.switch a{color:var(--accent2);font-weight:700;cursor:pointer}
+
+/* Footer */
+.form-footer{text-align:center;margin-top:20px}
+.form-footer a{font-size:11px;color:rgba(255,255,255,.18);margin:0 6px;transition:color .2s}
+.form-footer a:hover{color:rgba(255,255,255,.45)}
+.form-footer .sep{color:rgba(255,255,255,.1)}
+
+/* ── Demo loading overlay ── */
+.overlay{position:fixed;inset:0;background:#07070d;z-index:999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+.overlay.show{display:flex}
+.ov-logo{font-size:26px;font-weight:900;letter-spacing:-1.5px;color:#fff}
+.ov-logo span{color:var(--accent2)}
+.ov-progress{width:180px;height:3px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden}
+.ov-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:width .4s ease;border-radius:99px}
+.ov-label{font-size:12px;color:rgba(255,255,255,.35);font-weight:600}
+
+/* ── Success overlay ── */
+.success-ov{position:fixed;inset:0;background:#07070d;z-index:999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.success-ov.show{display:flex}
+.sov-check{width:60px;height:60px;border-radius:50%;background:rgba(0,200,83,.14);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:26px;animation:pop .4s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.sov-title{font-size:20px;font-weight:800;letter-spacing:-.5px}
+.sov-sub{font-size:13px;color:rgba(255,255,255,.35)}
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div class="overlay" id="demoOverlay">
+  <div class="ov-logo">apexa<span>.</span></div>
+  <div class="ov-progress"><div class="ov-bar" id="ovBar"></div></div>
+  <div class="ov-label" id="ovLabel">Loading dashboard…</div>
+</div>
+
+<!-- Success overlay -->
+<div class="success-ov" id="successOv">
+  <div class="sov-check">✓</div>
+  <div class="sov-title" id="sovTitle">Welcome to Apexa</div>
+  <div class="sov-sub" id="sovSub">Setting up your dashboard…</div>
+</div>
+
+<div class="page">
+
+  <!-- ══ LEFT: Chart panel ══ -->
+  <div class="left-panel">
+    <div class="lp-blob lp-blob-1"></div>
+    <div class="lp-blob lp-blob-2"></div>
+    <div class="lp-blob lp-blob-3"></div>
+    <canvas id="chartCanvas"></canvas>
+
+    <div class="lp-inner">
+      <div class="lp-logo">apexa<span>.</span></div>
+
+      <div class="lp-hero">
+        <div class="lp-tagline">Your income,<br><em>automated.</em></div>
+        <div class="lp-sub">Tax vault · Auto-investing · AI insights</div>
+
+        <div class="lp-chips">
+          <div class="lp-chip"><div class="c-dot" style="background:#ef4444"></div>28% → Tax vault</div>
+          <div class="lp-chip"><div class="c-dot" style="background:#f59e0b"></div>10% → Investing</div>
+          <div class="lp-chip"><div class="c-dot" style="background:var(--green)"></div>62% → Yours</div>
+        </div>
+
+        <div class="lp-platforms">
+          <div class="plat-pill">▶️ YouTube</div>
+          <div class="plat-pill">🎵 TikTok</div>
+          <div class="plat-pill">🤝 Brands</div>
+          <div class="plat-pill">🎨 Patreon</div>
+          <div class="plat-pill">🎧 Podcast</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RIGHT: Auth form ══ -->
+  <div class="right-panel">
+    <div class="login-box">
+
+      <div class="login-logo">
+        apexa<span class="dot">.</span>
+        <span class="login-badge">CREATOR</span>
+      </div>
+
+      <!-- Demo card -->
+      <div class="demo-card" onclick="tryDemo()">
+        <div class="demo-no-signup"><div class="demo-no-signup-dot"></div>No signup · instant</div>
+        <div class="demo-title">Try the demo</div>
+        <div class="demo-sub">Alex Rivera · YouTube + TikTok + Brand Deals</div>
+        <div class="demo-bal-row">
+          <div class="demo-bal">$26,340</div>
+          <div class="demo-bal-chg">▲ +12% this month</div>
+        </div>
+        <div class="demo-mini-bars">
+          <div class="demo-bar-tax"></div>
+          <div class="demo-bar-inv"></div>
+          <div class="demo-bar-sp"></div>
+        </div>
+        <div class="demo-bottom">
+          <div class="demo-platforms-sm">
+            <span class="demo-plat">▶️</span>
+            <span class="demo-plat">🎵</span>
+            <span class="demo-plat">🤝</span>
+            <span class="demo-plat">🎨</span>
+          </div>
+          <button class="demo-btn" onclick="event.stopPropagation();tryDemo()">Enter demo →</button>
+        </div>
+      </div>
+
+      <div class="divider" id="divider"><span>or</span></div>
+
+      <div id="errMsg" class="err"></div>
+      <div id="okMsg" class="ok"></div>
+
+      <div class="tab-toggle">
+        <button class="tab-btn active" id="tabSignup" onclick="switchTab('signup')">Create account</button>
+        <button class="tab-btn" id="tabLogin" onclick="switchTab('login')">Log in</button>
+      </div>
+
+      <!-- SIGNUP -->
+      <div id="signupForm">
+        <div class="field">
+          <label>Name</label>
+          <input type="text" id="signupName" placeholder="Alex Rivera" autocomplete="name">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="signupEmail" placeholder="you@email.com" autocomplete="email" inputmode="email">
+        </div>
+        <div class="field field-pass">
+          <label>Password</label>
+          <input type="password" id="signupPass" placeholder="Min. 8 characters" autocomplete="new-password"
+            oninput="pwStrength(this.value)" onkeydown="if(event.key==='Enter')doSignup()">
+          <button class="eye" onclick="toggleEye('signupPass',this)">👁</button>
+          <div class="pw-strength">
+            <div class="pw-bar" id="pb1"></div><div class="pw-bar" id="pb2"></div>
+            <div class="pw-bar" id="pb3"></div><div class="pw-bar" id="pb4"></div>
+          </div>
+        </div>
+        <div class="consent-row">
+          <input type="checkbox" id="terms">
+          <span>I agree to the <a href="/terms.html" target="_blank">Terms</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a> <span style="color:#ef4444">*</span></span>
+        </div>
+        <button class="btn-cta" id="btnSignup" onclick="doSignup()">
+          <span id="signupTxt">Create free account →</span>
+          <div class="btn-spin" id="signupSpin"></div>
+        </button>
+        <div class="switch">Have an account? <a onclick="switchTab('login')">Log in</a></div>
+        <div style="text-align:center;margin-top:8px;font-size:11px;color:rgba(255,255,255,.15)">Free forever. No card required.</div>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="loginForm" style="display:none">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="you@email.com" autocomplete="email" inputmode="email">
+        </div>
+        <div class="field field-pass">
+          <label>Password</label>
+          <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"
+            onkeydown="if(event.key==='Enter')doLogin()">
+          <button class="eye" onclick="toggleEye('loginPass',this)">👁</button>
+        </div>
+        <div class="forgot"><a onclick="showForgot()">Forgot password?</a></div>
+        <button class="btn-cta" id="btnLogin" onclick="doLogin()">
+          <span id="loginTxt">Log in →</span>
+          <div class="btn-spin" id="loginSpin"></div>
+        </button>
+        <div class="switch">New here? <a onclick="switchTab('signup')">Create free account</a></div>
+      </div>
+
+      <!-- FORGOT -->
+      <div id="forgotForm" style="display:none">
+        <button onclick="switchTab('login')" style="background:none;border:none;color:rgba(255,255,255,.3);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:0;margin-bottom:18px">← Back</button>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="forgotEmail" placeholder="you@email.com" inputmode="email" onkeydown="if(event.key==='Enter')doForgot()">
+        </div>
+        <button class="btn-cta" onclick="doForgot()">Send reset link →</button>
+        <div class="switch" style="margin-top:12px">Remember it? <a onclick="switchTab('login')">Log in</a></div>
+      </div>
+
+      <!-- RESET PASSWORD (shown when ?reset=TOKEN is in URL) -->
+      <div id="resetForm" style="display:none">
+        <div style="font-size:18px;font-weight:800;margin-bottom:6px">Set new password</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:20px">Choose a password you haven't used before.</div>
+        <div class="field">
+          <label>New password</label>
+          <div style="position:relative">
+            <input type="password" id="resetPass" placeholder="Min. 8 characters" autocomplete="new-password" onkeydown="if(event.key==='Enter')doReset()">
+            <button type="button" onclick="toggleEye('resetPass',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;line-height:1;padding:0">👁</button>
+          </div>
+        </div>
+        <button class="btn-cta" id="resetBtn" onclick="doReset()">Update password →</button>
+      </div>
+
+      <div class="form-footer">
+        <a href="/">Home</a><span class="sep"> · </span>
+        <a href="/features.html">Features</a><span class="sep"> · </span>
+        <a href="/terms.html">Terms</a><span class="sep"> · </span>
+        <a href="/privacy.html">Privacy</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'https://apexa.up.railway.app';
+
+// ── Redirect if already logged in ───────────────────────────────────────────
+(function(){
+  if(localStorage.getItem('apexa_authed')==='1'&&localStorage.getItem('apexa_acct_type')==='creator')
+    window.location.replace('index.html');
+})();
+window.addEventListener('DOMContentLoaded',function(){
+  const p=new URLSearchParams(window.location.search);
+  if(p.get('reset')){
+    // Show reset password form, hide everything else
+    const tabToggle=document.querySelector('.tab-toggle');
+    if(tabToggle)tabToggle.style.display='none';
+    document.getElementById('signupForm').style.display='none';
+    document.getElementById('loginForm').style.display='none';
+    document.getElementById('forgotForm').style.display='none';
+    document.getElementById('resetForm').style.display='block';
+    document.getElementById('resetForm')._token=p.get('reset');
+  } else if(p.get('tab')==='login'){
+    switchTab('login');
+  }
+});
+
+// ── Animated chart (Robinhood-style rising line) ─────────────────────────────
+(function(){
+  const cv=document.getElementById('chartCanvas');
+  const ctx=cv.getContext('2d');
+  let W,H,prog=0,animId;
+
+  // Chart data — fake monthly earnings, rising trend
+  const DATA=[8200,9100,10400,9800,11200,12400,11800,13600,14200,15800,17200,19400,
+              18800,20100,21400,20800,22600,23200,24800,25100,26340];
+
+  function resize(){
+    W=cv.width=cv.offsetWidth*devicePixelRatio;
+    H=cv.height=cv.offsetHeight*devicePixelRatio;
+    ctx.scale(devicePixelRatio,devicePixelRatio);
+    W/=devicePixelRatio; H/=devicePixelRatio;
+  }
+  window.addEventListener('resize',()=>{resize();draw(prog)});
+  resize();
+
+  function draw(p){
+    ctx.clearRect(0,0,W,H);
+    const n=DATA.length;
+    const minV=Math.min(...DATA)*0.9, maxV=Math.max(...DATA)*1.05;
+    const padL=0,padR=0,padT=H*.28,padB=H*.12;
+    const xScale=(W-padL-padR)/(n-1);
+    const yScale=(H-padT-padB)/(maxV-minV);
+    const pts=DATA.map((v,i)=>({
+      x:padL+i*xScale,
+      y:H-padB-(v-minV)*yScale
+    }));
+
+    // Clip to progress
+    const cutIdx=Math.floor(p*(n-1));
+    const frac=p*(n-1)-cutIdx;
+    const visible=pts.slice(0,cutIdx+1);
+    if(cutIdx<n-1){
+      const a=pts[cutIdx],b=pts[Math.min(cutIdx+1,n-1)];
+      visible.push({x:a.x+(b.x-a.x)*frac, y:a.y+(b.y-a.y)*frac});
+    }
+    if(visible.length<2) return;
+
+    // Smooth line using bezier
+    ctx.beginPath();
+    ctx.moveTo(visible[0].x,visible[0].y);
+    for(let i=1;i<visible.length;i++){
+      const prev=visible[i-1],cur=visible[i];
+      const cpx=(prev.x+cur.x)/2;
+      ctx.bezierCurveTo(cpx,prev.y,cpx,cur.y,cur.x,cur.y);
+    }
+    // Gradient fill
+    const last=visible[visible.length-1];
+    ctx.lineTo(last.x,H);
+    ctx.lineTo(visible[0].x,H);
+    ctx.closePath();
+    const grd=ctx.createLinearGradient(0,padT,0,H);
+    grd.addColorStop(0,'rgba(124,58,237,.25)');
+    grd.addColorStop(0.6,'rgba(124,58,237,.07)');
+    grd.addColorStop(1,'rgba(124,58,237,0)');
+    ctx.fillStyle=grd;
+    ctx.fill();
+
+    // Line stroke
+    ctx.beginPath();
+    ctx.moveTo(visible[0].x,visible[0].y);
+    for(let i=1;i<visible.length;i++){
+      const prev=visible[i-1],cur=visible[i];
+      const cpx=(prev.x+cur.x)/2;
+      ctx.bezierCurveTo(cpx,prev.y,cpx,cur.y,cur.x,cur.y);
+    }
+    ctx.strokeStyle='rgba(167,139,250,.85)';
+    ctx.lineWidth=2.5;
+    ctx.lineJoin='round';
+    ctx.lineCap='round';
+    ctx.stroke();
+
+    // Glowing dot at current end
+    if(visible.length>1){
+      const tip=visible[visible.length-1];
+      // outer glow
+      const glow=ctx.createRadialGradient(tip.x,tip.y,0,tip.x,tip.y,14);
+      glow.addColorStop(0,'rgba(167,139,250,.25)');
+      glow.addColorStop(1,'rgba(167,139,250,0)');
+      ctx.beginPath();ctx.arc(tip.x,tip.y,14,0,Math.PI*2);
+      ctx.fillStyle=glow;ctx.fill();
+      // dot
+      ctx.beginPath();ctx.arc(tip.x,tip.y,5,0,Math.PI*2);
+      ctx.fillStyle='#a78bfa';ctx.fill();
+      ctx.beginPath();ctx.arc(tip.x,tip.y,2.5,0,Math.PI*2);
+      ctx.fillStyle='#fff';ctx.fill();
+    }
+
+    // Subtle horizontal grid lines
+    ctx.strokeStyle='rgba(255,255,255,.04)';
+    ctx.lineWidth=1;
+    for(let i=1;i<=3;i++){
+      const y=padT+(H-padT-padB)*i/4;
+      ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+    }
+  }
+
+  // Animate chart drawing in
+  const start=performance.now();
+  const dur=2200;
+  function animate(now){
+    prog=Math.min((now-start)/dur,1);
+    const ease=1-Math.pow(1-prog,3); // ease out cubic
+    draw(ease);
+    if(prog<1) animId=requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+  // clean up unused counter refs
+  delete window.lpNumber; delete window.lpChange;
+})();
+
+// ── Tab switch ───────────────────────────────────────────────────────────────
+function switchTab(tab){
+  const tabToggle=document.querySelector('.tab-toggle');
+  if(tabToggle)tabToggle.style.display='flex';
+  document.getElementById('tabSignup').classList.toggle('active',tab==='signup');
+  document.getElementById('tabLogin').classList.toggle('active',tab==='login');
+  document.getElementById('signupForm').style.display=tab==='signup'?'block':'none';
+  document.getElementById('loginForm').style.display=tab==='login'?'block':'none';
+  document.getElementById('forgotForm').style.display='none';
+  document.getElementById('resetForm').style.display='none';
+  clearMsgs();
+  setTimeout(()=>document.getElementById(tab==='signup'?'signupName':'loginEmail').focus(),60);
+}
+function showForgot(){
+  document.getElementById('loginForm').style.display='none';
+  document.getElementById('forgotForm').style.display='block';
+  clearMsgs();
+  setTimeout(()=>document.getElementById('forgotEmail').focus(),60);
+}
+function showErr(m){const e=document.getElementById('errMsg');e.textContent=m;e.style.display='block';document.getElementById('okMsg').style.display='none';}
+function showOk(m){const e=document.getElementById('okMsg');e.textContent=m;e.style.display='block';document.getElementById('errMsg').style.display='none';}
+function clearMsgs(){document.getElementById('errMsg').style.display='none';document.getElementById('okMsg').style.display='none';}
+
+function toggleEye(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁':'🙈';}
+
+function pwStrength(pw){
+  const b=[document.getElementById('pb1'),document.getElementById('pb2'),document.getElementById('pb3'),document.getElementById('pb4')];
+  b.forEach(x=>{x.className='pw-bar'});
+  if(!pw)return;
+  let s=0;
+  if(pw.length>=8)s++;if(pw.length>=12)s++;
+  if(/[A-Z]/.test(pw)&&/[0-9]/.test(pw))s++;
+  if(/[^A-Za-z0-9]/.test(pw))s++;
+  for(let i=0;i<s;i++)b[i].classList.add('s'+s);
+}
+
+function setLoad(form,on){
+  const l=form==='login';
+  document.getElementById(l?'btnLogin':'btnSignup').disabled=on;
+  document.getElementById(l?'loginTxt':'signupTxt').style.display=on?'none':'inline';
+  document.getElementById(l?'loginSpin':'signupSpin').style.display=on?'block':'none';
+}
+
+// ── Demo ─────────────────────────────────────────────────────────────────────
+function tryDemo(){
+  const ov=document.getElementById('demoOverlay');
+  const bar=document.getElementById('ovBar');
+  const lbl=document.getElementById('ovLabel');
+  ov.classList.add('show');
+  const steps=[
+    {w:'18%',msg:'Loading dashboard…'},
+    {w:'40%',msg:'Connecting platforms…'},
+    {w:'65%',msg:'Syncing tax vault…'},
+    {w:'88%',msg:'Almost ready…'},
+    {w:'100%',msg:'Opening ⚡'},
+  ];
+  let i=0;
+  function step(){
+    if(i>=steps.length){go();return;}
+    bar.style.width=steps[i].w; lbl.textContent=steps[i].msg;
+    i++; setTimeout(step,i===steps.length?250:380);
+  }
+  step();
+  function go(){
+    localStorage.setItem('apexa_authed','1');
+    localStorage.setItem('apexa_acct_type','creator');
+    localStorage.setItem('apexa_tier','pro');
+    localStorage.setItem('apexa_demo','1');
+    localStorage.setItem('apexa_name','Alex Rivera');
+    localStorage.setItem('apexa_email','alex@apexa.demo');
+    localStorage.setItem('apexa_onboarded','1');
+    localStorage.removeItem('apexa_plaid_connected');
+    localStorage.removeItem('apexa_logged_payments');
+    window.location.href='index.html';
+  }
+}
+
+// ── Sign up ──────────────────────────────────────────────────────────────────
+async function doSignup(){
+  const name=document.getElementById('signupName').value.trim();
+  const email=document.getElementById('signupEmail').value.trim().toLowerCase();
+  const pass=document.getElementById('signupPass').value;
+  const terms=document.getElementById('terms').checked;
+  if(!name){showErr('Please enter your name.');return;}
+  if(!email||!email.includes('@')){showErr('Enter a valid email.');return;}
+  if(!pass||pass.length<8){showErr('Password must be at least 8 characters.');return;}
+  if(!terms){showErr('Please agree to the Terms to continue.');return;}
+  clearMsgs();setLoad('signup',true);
+  try{
+    const r=await fetch(API+'/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,password:pass,acct_type:'creator'})});
+    const d=await r.json();
+    if(r.ok&&d.token){_save(d.token,name,email,d.user?.tier||'free');_success('Account created!','Setting up your dashboard…');}
+    else showErr(d.detail||'Could not create account. Try a different email.');
+  }catch(e){_saveOffline(name,email);_success('Account ready!','Taking you to your dashboard…');}
+  setLoad('signup',false);
+}
+
+// ── Log in ───────────────────────────────────────────────────────────────────
+async function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass=document.getElementById('loginPass').value;
+  if(!email||!email.includes('@')){showErr('Enter a valid email.');return;}
+  if(!pass){showErr('Enter your password.');return;}
+  clearMsgs();setLoad('login',true);
+  try{
+    const r=await fetch(API+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+    const d=await r.json();
+    if(r.ok&&d.token){_save(d.token,d.user?.name||email.split('@')[0],email,d.user?.tier||'free');_success('Welcome back!','Loading your dashboard…');}
+    else showErr(d.detail||'Incorrect email or password.');
+  }catch(e){_saveOffline(email.split('@')[0],email);_success('Logged in!','Loading your dashboard…');}
+  setLoad('login',false);
+}
+
+// ── Reset password ───────────────────────────────────────────────────────────
+async function doReset(){
+  const pass=document.getElementById('resetPass').value;
+  const token=document.getElementById('resetForm')._token||'';
+  if(!pass||pass.length<8){showErr('Password must be at least 8 characters.');return;}
+  if(!token){showErr('Invalid reset link. Please request a new one.');return;}
+  clearMsgs();
+  const btn=document.getElementById('resetBtn');
+  btn.textContent='Updating…';btn.disabled=true;
+  try{
+    const r=await fetch(API+'/api/auth/reset-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token,new_password:pass})});
+    const d=await r.json();
+    if(!r.ok){showErr(d.detail||'Reset failed. Try requesting a new link.');btn.textContent='Update password →';btn.disabled=false;return;}
+    showOk('✓ Password updated! Redirecting to login…');
+    setTimeout(()=>{window.location.href='creator-login.html';},1600);
+  }catch(e){showErr('Network error. Please try again.');btn.textContent='Update password →';btn.disabled=false;}
+}
+
+// ── Forgot password ──────────────────────────────────────────────────────────
+async function doForgot(){
+  const email=document.getElementById('forgotEmail').value.trim();
+  if(!email||!email.includes('@')){showErr('Enter your email address.');return;}
+  clearMsgs();
+  try{await fetch(API+'/api/auth/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});}catch(e){}
+  showOk('✓ Reset link sent — check your inbox.');
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function _save(token,name,email,tier){
+  localStorage.setItem('apexa_jwt',token);
+  localStorage.setItem('apexa_authed','1');
+  localStorage.setItem('apexa_name',name);
+  localStorage.setItem('apexa_email',email);
+  localStorage.setItem('apexa_acct_type','creator');
+  localStorage.setItem('apexa_tier',tier||'free');
+  localStorage.removeItem('apexa_demo');
+}
+function _saveOffline(name,email){
+  localStorage.setItem('apexa_authed','1');
+  localStorage.setItem('apexa_name',name);
+  localStorage.setItem('apexa_email',email);
+  localStorage.setItem('apexa_acct_type','creator');
+  localStorage.setItem('apexa_tier','free');
+  localStorage.removeItem('apexa_demo');
+}
+function _success(title,sub){
+  document.getElementById('sovTitle').textContent=title;
+  document.getElementById('sovSub').textContent=sub;
+  document.getElementById('successOv').classList.add('show');
+  setTimeout(()=>{window.location.href='index.html';},1400);
+}
+</script>
+</body>
+</html>
