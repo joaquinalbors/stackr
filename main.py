@@ -1511,13 +1511,25 @@ def create_checkout(req: CheckoutRequest):
         params = dict(
             mode="subscription",
             line_items=[{"price": price_id, "quantity": 1}],
-            success_url=f"{APEXA_URL}/?session_id={{CHECKOUT_SESSION_ID}}&plan={req.plan}",
-            cancel_url=f"{APEXA_URL}/?checkout_cancelled=1",
+            success_url=f"{APEXA_URL}/app?session_id={{CHECKOUT_SESSION_ID}}&plan={req.plan}&upgraded=1",
+            cancel_url=f"{APEXA_URL}/app?checkout_cancelled=1",
             allow_promotion_codes=True,
+            billing_address_collection="auto",
             metadata={"plan": req.plan, "source": "apexa_app"},
+            subscription_data={"metadata": {"plan": req.plan, "apexa_email": (req.email or "").lower()}},
         )
+        # Reuse existing Stripe customer if we have one on file (avoids duplicates)
+        existing_customer_id = None
         if req.email:
+            user = _users.get(req.email.lower())
+            if user:
+                existing_customer_id = user.get("stripe_customer_id")
+        if existing_customer_id:
+            params["customer"] = existing_customer_id
+            # Don't pass customer_email when customer is specified
+        elif req.email:
             params["customer_email"] = req.email
+            params["metadata"]["apexa_email"] = req.email.lower()
         session = stripe.checkout.Session.create(**params)
         return {"url": session.url, "session_id": session.id, "status": "live"}
     except Exception as e:
@@ -1574,6 +1586,39 @@ def setup_stripe_products():
             results[plan] = {"error": str(e)}
     return {"status": "done", "prices": results, "note": "Set these as Railway env vars to persist them across deploys."}
 
+def _resolve_price_to_plan(price_id: str) -> str:
+    """Map a Stripe price_id back to our internal plan name."""
+    if not price_id:
+        return "free"
+    # Check runtime price cache first (set via setup-products)
+    for p, pid in _runtime_prices.items():
+        if pid == price_id:
+            return p
+    # Fall back to env var matching
+    env_map = {
+        STRIPE_PRICE_PRO: "pro",
+        STRIPE_PRICE_PREMIUM: "premium",
+        STRIPE_PRICE_AG_STARTER: "ag_starter",
+        STRIPE_PRICE_AG_GROWTH: "ag_growth",
+        STRIPE_PRICE_AG_ENTERPRISE: "ag_enterprise",
+    }
+    return env_map.get(price_id, "free")
+
+
+def _resolve_email_from_stripe(customer_id: str, fallback_email: str = "") -> str:
+    """Try to resolve an email for a Stripe customer via the API."""
+    if fallback_email:
+        return fallback_email.lower()
+    if not customer_id or not stripe.api_key:
+        return ""
+    try:
+        cust = stripe.Customer.retrieve(customer_id)
+        return (cust.get("email") or "").lower()
+    except Exception as e:
+        print(f"[WEBHOOK] customer lookup failed: {e}")
+        return ""
+
+
 @app.post("/api/stripe/webhook")
 async def stripe_webhook(request: Request):
     """Handle Stripe subscription lifecycle events."""
@@ -1591,42 +1636,142 @@ async def stripe_webhook(request: Request):
             raise HTTPException(status_code=400, detail="Invalid payload")
     etype = event.get("type", "")
     data = event.get("data", {}).get("object", {})
-    if etype in ("customer.subscription.created", "customer.subscription.updated"):
-        price_id = data.get("items", {}).get("data", [{}])[0].get("price", {}).get("id", "")
-        plan = "free"
-        for p, pid in _runtime_prices.items():
-            if pid == price_id: plan = p; break
-        if not plan or plan == "free":
-            plan = "premium" if price_id == STRIPE_PRICE_PREMIUM else ("pro" if price_id == STRIPE_PRICE_PRO else "free")
-        print(f"[WEBHOOK] Subscription {etype}: customer={data.get('customer')} plan={plan} status={data.get('status')}")
+
+    if etype == "checkout.session.completed":
+        session_id = data.get("id", "")
+        customer_id = data.get("customer", "") or ""
+        # Resolve email from session -> customer_details -> metadata -> Stripe customer lookup
+        email = (
+            data.get("customer_email")
+            or (data.get("customer_details") or {}).get("email")
+            or (data.get("metadata") or {}).get("apexa_email")
+            or ""
+        )
+        email = _resolve_email_from_stripe(customer_id, email)
+        # Resolve plan from metadata first, then from line items
+        plan = (data.get("metadata") or {}).get("plan", "")
+        if not plan:
+            try:
+                items = stripe.checkout.Session.list_line_items(session_id)
+                if items.data:
+                    plan = _resolve_price_to_plan(items.data[0].price.id)
+            except Exception as e:
+                print(f"[WEBHOOK] line_items lookup failed: {e}")
+        if email:
+            user = _users.get(email) or {}
+            user.update({"plan": plan or "pro", "tier": plan or "pro", "stripe_customer_id": customer_id})
+            _users[email] = user
+            print(f"[WEBHOOK] checkout.completed → {email} => {plan}, customer={customer_id}")
+        else:
+            print(f"[WEBHOOK] checkout.completed but no email resolved. session={session_id}, customer={customer_id}")
+
+    elif etype in ("customer.subscription.created", "customer.subscription.updated"):
+        customer_id = data.get("customer", "") or ""
+        status = data.get("status", "")
+        price_id = (data.get("items", {}).get("data") or [{}])[0].get("price", {}).get("id", "")
+        plan = _resolve_price_to_plan(price_id)
+        email = _resolve_email_from_stripe(customer_id)
+
+        if not email:
+            print(f"[WEBHOOK] {etype}: no email resolved for customer={customer_id}")
+            return {"received": True, "type": etype}
+
+        user = _users.get(email) or {}
+        if status in ("active", "trialing"):
+            user.update({"plan": plan, "tier": plan, "stripe_customer_id": customer_id})
+            _users[email] = user
+            print(f"[WEBHOOK] {etype} {status} → {email} => {plan}")
+        elif status in ("canceled", "unpaid", "past_due", "incomplete_expired"):
+            user.update({"plan": "free", "tier": "free"})
+            _users[email] = user
+            print(f"[WEBHOOK] {etype} {status} → {email} downgraded to free")
+
     elif etype == "customer.subscription.deleted":
-        print(f"[WEBHOOK] Subscription cancelled: customer={data.get('customer')}")
+        customer_id = data.get("customer", "") or ""
+        email = _resolve_email_from_stripe(customer_id)
+        if email:
+            user = _users.get(email) or {}
+            user.update({"plan": "free", "tier": "free"})
+            _users[email] = user
+            print(f"[WEBHOOK] subscription.deleted → {email} downgraded to free")
+
+    elif etype == "invoice.payment_failed":
+        customer_id = data.get("customer", "") or ""
+        email = _resolve_email_from_stripe(customer_id)
+        print(f"[WEBHOOK] invoice.payment_failed for {email or customer_id}")
+
     return {"received": True, "type": etype}
 
+class PortalRequest(BaseModel):
+    email: Optional[str] = None
+    customer_id: Optional[str] = None
+
 @app.post("/api/stripe/create-portal")
-def create_billing_portal(customer_id: str = ""):
-    if not stripe.api_key or not customer_id:
-        return {"url": "#", "status": "demo", "message": "Billing portal demo mode."}
+def create_billing_portal(request: Request, payload: Optional[PortalRequest] = None):
+    """Open the Stripe customer portal for the authenticated user.
+    Resolves customer_id via: JWT/API key auth -> request.email -> request.customer_id (legacy)."""
+    if not stripe.api_key:
+        return {"url": "#", "status": "demo", "message": "Stripe not configured."}
+    customer_id = None
+    # 1. Try JWT / API key auth
+    auth = _resolve_auth(request)
+    if auth:
+        user = _users.get((auth.get("email") or "").lower())
+        if user:
+            customer_id = user.get("stripe_customer_id")
+    # 2. Fall back to explicit email in body
+    if not customer_id and payload and payload.email:
+        user = _users.get(payload.email.lower())
+        if user:
+            customer_id = user.get("stripe_customer_id")
+    # 3. Legacy: accept raw customer_id in body
+    if not customer_id and payload and payload.customer_id:
+        customer_id = payload.customer_id
+    if not customer_id:
+        return {"url": "#", "status": "demo", "message": "No Stripe customer on file. Complete a checkout first."}
     try:
         session = stripe.billing_portal.Session.create(
             customer=customer_id,
-            return_url="https://apexa.com/",
+            return_url=f"{APEXA_URL}/app?billing=return",
         )
         return {"url": session.url, "status": "live"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/api/stripe/subscription-status")
-def get_subscription_status(customer_id: str = ""):
-    if not stripe.api_key or not customer_id:
+def get_subscription_status(request: Request, customer_id: str = "", email: str = ""):
+    """Check subscription status. Resolves customer_id via: JWT/API key -> ?email= -> ?customer_id= (legacy)."""
+    if not stripe.api_key:
+        return {"plan": "free", "status": "active", "source": "demo"}
+    # Resolve customer_id
+    if not customer_id:
+        auth = _resolve_auth(request)
+        if auth:
+            user = _users.get((auth.get("email") or "").lower())
+            if user:
+                customer_id = user.get("stripe_customer_id") or ""
+    if not customer_id and email:
+        user = _users.get(email.lower())
+        if user:
+            customer_id = user.get("stripe_customer_id") or ""
+    if not customer_id:
         return {"plan": "free", "status": "active", "source": "demo"}
     try:
-        subs = stripe.Subscription.list(customer=customer_id, limit=1)
+        subs = stripe.Subscription.list(customer=customer_id, limit=1, status="all")
         if subs.data:
             sub = subs.data[0]
             price_id = sub["items"]["data"][0]["price"]["id"]
-            plan = "premium" if price_id == STRIPE_PRICE_PREMIUM else "pro"
-            return {"plan": plan, "status": sub["status"], "current_period_end": sub["current_period_end"], "source": "live"}
+            plan = _resolve_price_to_plan(price_id)
+            # Non-active subs don't grant paid tier
+            if sub["status"] not in ("active", "trialing"):
+                plan = "free"
+            return {
+                "plan": plan,
+                "status": sub["status"],
+                "current_period_end": sub.get("current_period_end"),
+                "cancel_at_period_end": sub.get("cancel_at_period_end", False),
+                "source": "live",
+            }
         return {"plan": "free", "status": "active", "source": "live"}
     except Exception as e:
         return {"plan": "free", "status": "active", "source": "demo", "error": str(e)}
@@ -1665,8 +1810,8 @@ def create_onboarding_link(account_id: str):
     try:
         link = stripe.AccountLink.create(
             account=account_id,
-            refresh_url="https://apexa.com/",
-            return_url="https://apexa.com/",
+            refresh_url=f"{APEXA_URL}/app?connect=refresh&account={account_id}",
+            return_url=f"{APEXA_URL}/app?connect=complete&account={account_id}",
             type="account_onboarding",
         )
         return {"url": link.url, "status": "live"}

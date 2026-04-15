@@ -35,7 +35,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .app-shell{display:flex;min-height:100vh;flex-direction:column}
 /* ── SIDEBAR (hidden on mobile/tablet, 3-col layout on 1200px+) ── */
 .sidebar{display:none;width:220px;background:#0d0d0d;border-right:1px solid rgba(255,255,255,.07);flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:140;overflow-y:auto}
-.sidebar-logo{font-size:19px;font-weight:900;letter-spacing:-1px;color:#fff;padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sidebar-logo{font-size:19px;font-weight:900;letter-spacing:-1px;color:#fff;padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.06);transition:opacity .15s;user-select:none}
+.sidebar-logo:hover{opacity:.65}
+.sidebar-logo:active{opacity:.4}
 .sidebar-logo span{color:var(--accent)}
 .sidebar-nav{flex:1;padding:10px 8px;display:flex;flex-direction:column;gap:2px}
 .sidebar-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:600;color:rgba(255,255,255,.45);cursor:pointer;transition:all .15s;white-space:nowrap}
@@ -645,7 +647,7 @@ body.light-mode{--bg:#fff!important;--surface:#f7f7f5!important;--border:#ebebeb
 
 <!-- DESKTOP SIDEBAR -->
 <div class="sidebar" id="desktopSidebar">
-  <div class="sidebar-logo">apexa<span>.</span></div>
+  <div class="sidebar-logo" onclick="window.location.href='/landing.html'" style="cursor:pointer">apexa<span>.</span></div>
   <div class="sidebar-nav">
     <!-- Both account types -->
     <div class="sidebar-item active" onclick="showScreen('home')" id="sideHome"><span>🏠</span><span id="sideHomeLabel">Home</span></div>
@@ -1380,7 +1382,7 @@ body.light-mode{--bg:#fff!important;--surface:#f7f7f5!important;--border:#ebebeb
 <div class="screen" id="screen-home">
   <!-- Top bar -->
   <div id="homeTopBar" style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px 0">
-    <div style="font-size:18px;font-weight:800;letter-spacing:-.5px" id="homeLogo">apexa<span style="color:var(--accent)">.</span></div>
+    <div style="font-size:18px;font-weight:800;letter-spacing:-.5px;cursor:pointer" id="homeLogo" onclick="window.location.href='/landing.html'">apexa<span style="color:var(--accent)">.</span></div>
     <div style="display:flex;align-items:center;gap:12px">
       <div class="badge demo" id="apiBadge"><div class="bdot"></div><span id="apiTxt">Demo</span></div>
       <button onclick="toggleAppDark()" id="darkBtn" style="background:none;border:none;cursor:pointer;font-size:18px;padding:4px;line-height:1" title="Toggle dark mode">🌙</button>
@@ -1403,7 +1405,7 @@ body.light-mode{--bg:#fff!important;--surface:#f7f7f5!important;--border:#ebebeb
     <!-- Tax shortfall — subtle inline -->
     <div id="taxStatus" style="margin-top:14px;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="showScreen('taxes')">
       <div style="width:6px;height:6px;border-radius:50%;background:var(--tax);animation:pulse 2s infinite;flex-shrink:0"></div>
-      <span style="font-size:12px;font-weight:600;color:var(--tax)">Q1 shortfall · $1,380 — due in <span id="hTaxDays">20</span> days</span>
+      <span style="font-size:12px;font-weight:600;color:var(--tax)">Q1 shortfall · $1,380 — due in <span id="hTaxDays">20</span><span id="hTaxDaysLabel"> days</span></span>
       <span style="font-size:11px;color:var(--tax);font-weight:700;margin-left:auto">Fix →</span>
     </div>
   </div>
@@ -1570,7 +1572,7 @@ body.light-mode{--bg:#fff!important;--surface:#f7f7f5!important;--border:#ebebeb
     <div class="qa-btn" onclick="openModal('sendMod')"><div class="qa-ico">↗️</div><div class="qa-lbl">Send</div></div>
     <div class="qa-btn" onclick="openModal('recvMod')"><div class="qa-ico">↙️</div><div class="qa-lbl">Receive</div></div>
     <div class="qa-btn" onclick="openPlaidLink()"><div class="qa-ico">🏦</div><div class="qa-lbl">Link Bank</div></div>
-    <div class="qa-btn" onclick="showToast('Card frozen','Virtual card freeze coming soon.')"><div class="qa-ico">🔒</div><div class="qa-lbl">Freeze</div></div>
+    <div class="qa-btn" id="freezeBtn" onclick="toggleCardFreeze()"><div class="qa-ico" id="freezeIco">🔒</div><div class="qa-lbl" id="freezeLbl">Freeze</div></div>
   </div>
   <!-- Account Details -->
   <div style="padding:0 24px 16px">
@@ -2336,7 +2338,11 @@ body.light-mode{--bg:#fff!important;--surface:#f7f7f5!important;--border:#ebebeb
   <div style="padding:0 24px">
     <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:20px 0 4px">Settings</div>
     <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)" onclick="openModal('priceMod')">
-      <span style="font-size:13px;font-weight:600">Subscription Plan</span><span style="font-size:13px;color:var(--accent);font-weight:600">Change →</span>
+      <span style="font-size:13px;font-weight:600">Subscription Plan</span><span style="font-size:13px;color:var(--accent);font-weight:600" id="profilePlanLabel">Change →</span>
+    </div>
+    <div id="manageBillingRow" style="display:none;cursor:pointer;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)" onclick="openBillingPortal()">
+      <div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px">💳</span><span style="font-size:13px;font-weight:600">Manage Billing</span></div>
+      <span style="font-size:13px;color:var(--accent);font-weight:600">Stripe Portal →</span>
     </div>
     <div style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)" onclick="openModal('aboutMod')">
       <span style="font-size:13px;font-weight:600">About Apexa</span><span style="font-size:13px;color:var(--muted)">→</span>
@@ -2510,6 +2516,7 @@ body.light-mode{--bg:#fff!important;--surface:#f7f7f5!important;--border:#ebebeb
     <button class="ag-tab" id="agTabBtn1" onclick="agTab(1)">Roster</button>
     <button class="ag-tab" id="agTabBtn2" onclick="agTab(2)">Payouts</button>
     <button class="ag-tab" id="agTabBtn3" onclick="agTab(3)">Reports</button>
+    <button class="ag-tab" id="agTabBtn4" onclick="agTab(4)">My Finance</button>
   </div>
 
   <!-- ── PANE 0: Overview ── -->
@@ -2523,12 +2530,12 @@ body.light-mode{--bg:#fff!important;--surface:#f7f7f5!important;--border:#ebebeb
     <!-- Tier progress -->
     <div style="margin:16px 16px 0;background:var(--surface);border:1.5px solid rgba(124,58,237,.25);border-radius:var(--r);padding:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <div><div style="font-size:14px;font-weight:800;color:var(--accent2)">⭐ Growth Tier</div><div style="font-size:11px;color:var(--muted)">$100K – $500K/mo · 2.0% rate</div></div>
-        <div style="text-align:right"><div style="font-size:22px;font-weight:900;color:var(--accent)">2.0%</div><div style="font-size:10px;color:var(--green)">Active</div></div>
+        <div><div style="font-size:14px;font-weight:800;color:var(--accent2)" id="agTierName">⭐ Growth Tier</div><div style="font-size:11px;color:var(--muted)" id="agTierDesc">$100K – $500K/mo · 2.0% rate</div></div>
+        <div style="text-align:right"><div style="font-size:22px;font-weight:900;color:var(--accent)" id="agTierRate">2.0%</div><div style="font-size:10px;color:var(--green)">Active</div></div>
       </div>
-      <div style="background:var(--bg);border-radius:99px;height:7px;overflow:hidden"><div style="background:linear-gradient(90deg,var(--accent),var(--accent2));width:57%;height:100%;border-radius:99px"></div></div>
+      <div style="background:var(--bg);border-radius:99px;height:7px;overflow:hidden"><div id="agTierBar" style="background:linear-gradient(90deg,var(--accent),var(--accent2));width:57%;height:100%;border-radius:99px"></div></div>
       <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:10px;color:var(--muted)">
-        <span>$100K</span><span style="color:var(--accent);font-weight:700">$284K now</span><span>$500K → 1.5%</span>
+        <span>$0</span><span style="color:var(--accent);font-weight:700" id="agTierNow">—</span><span id="agTierNext">$500K → 1.5%</span>
       </div>
     </div>
     <!-- Recent payouts -->
@@ -2600,8 +2607,8 @@ body.light-mode{--bg:#fff!important;--surface:#f7f7f5!important;--border:#ebebeb
       </div>
       <div id="payoutCheckList" style="display:flex;flex-direction:column;gap:8px;padding:10px 0 16px"></div>
     </div>
-    <div class="sh"><div class="st">Payout History</div><div class="sa" onclick="showToast('Export','CSV download coming soon.')">Export CSV →</div></div>
-    <div class="al" style="padding-bottom:24px">
+    <div class="sh"><div class="st">Payout History</div><div class="sa" onclick="exportPayoutCSV()">Export CSV →</div></div>
+    <div class="al" id="agPayoutHistoryList" style="padding-bottom:24px">
       <div class="ai"><div class="aic">✅</div><div class="aii"><div class="ain">Apr 1 — 5 creators</div><div class="aid">$166,100 · Settled in 1 day</div></div><div class="air"><div class="aia cr">+$3,322</div></div></div>
       <div class="ai"><div class="aic">✅</div><div class="aii"><div class="ain">Mar 15 — 5 creators</div><div class="aid">$158,400 · Settled in 1 day</div></div><div class="air"><div class="aia cr">+$3,168</div></div></div>
       <div class="ai"><div class="aic">✅</div><div class="aii"><div class="ain">Mar 1 — 4 creators</div><div class="aid">$140,200 · Settled in 1 day</div></div><div class="air"><div class="aia cr">+$2,804</div></div></div>
@@ -2617,22 +2624,89 @@ body.light-mode{--bg:#fff!important;--surface:#f7f7f5!important;--border:#ebebeb
     </div>
     <div style="margin:16px;background:linear-gradient(135deg,#0d1117,#1a0a2e);border-radius:var(--r);padding:20px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-        <div><div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px">PROCESSING REVENUE</div><div style="font-size:24px;font-weight:800;color:var(--green)">$51,228</div><div style="font-size:10px;color:rgba(255,255,255,.3)">2.0% × $3.4M annual vol</div></div>
-        <div><div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px">SUBSCRIPTION REVENUE</div><div style="font-size:24px;font-weight:800;color:var(--accent2)">$7,199</div><div style="font-size:10px;color:rgba(255,255,255,.3)">5 × $49.99 × 12</div></div>
+        <div><div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px">PROCESSING REVENUE</div><div style="font-size:24px;font-weight:800;color:var(--green)" id="rpProcRev">—</div><div style="font-size:10px;color:rgba(255,255,255,.3)" id="rpProcRevSub">calculating…</div></div>
+        <div><div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px">SUBSCRIPTION REVENUE</div><div style="font-size:24px;font-weight:800;color:var(--accent2)" id="rpSubRev">—</div><div style="font-size:10px;color:rgba(255,255,255,.3)" id="rpSubRevSub">calculating…</div></div>
       </div>
       <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:12px;display:flex;justify-content:space-between;align-items:center">
-        <div><div style="font-size:10px;color:rgba(255,255,255,.4)">PROJECTED ANNUAL</div><div style="font-size:28px;font-weight:800;color:var(--accent2)">$58,427</div></div>
+        <div><div style="font-size:10px;color:rgba(255,255,255,.4)">PROJECTED ANNUAL</div><div style="font-size:28px;font-weight:800;color:var(--accent2)" id="rpProjAnnual">—</div></div>
         <div style="text-align:right"><div style="font-size:10px;color:rgba(255,255,255,.4)">GROSS MARGIN</div><div style="font-size:20px;font-weight:800;color:var(--green)">~94%</div></div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 16px;margin-bottom:16px">
-      <div style="background:var(--surface);border-radius:var(--rs);padding:12px;text-align:center"><div style="font-size:17px;font-weight:800;color:var(--accent)">$23.7K</div><div style="font-size:10px;color:var(--muted)">Avg Creator/Mo</div></div>
-      <div style="background:var(--surface);border-radius:var(--rs);padding:12px;text-align:center"><div style="font-size:17px;font-weight:800;color:var(--green)">$356</div><div style="font-size:10px;color:var(--muted)">Avg Fee/Creator</div></div>
-      <div style="background:var(--surface);border-radius:var(--rs);padding:12px;text-align:center"><div style="font-size:17px;font-weight:800;color:var(--accent2)">98%</div><div style="font-size:10px;color:var(--muted)">Retention</div></div>
+      <div style="background:var(--surface);border-radius:var(--rs);padding:12px;text-align:center"><div style="font-size:17px;font-weight:800;color:var(--accent)" id="rpAvgCreator">—</div><div style="font-size:10px;color:var(--muted)">Avg Creator/Mo</div></div>
+      <div style="background:var(--surface);border-radius:var(--rs);padding:12px;text-align:center"><div style="font-size:17px;font-weight:800;color:var(--green)" id="rpAvgFee">—</div><div style="font-size:10px;color:var(--muted)">Avg Fee/Creator</div></div>
+      <div style="background:var(--surface);border-radius:var(--rs);padding:12px;text-align:center"><div style="font-size:17px;font-weight:800;color:var(--accent2)" id="rpRetention">—%</div><div style="font-size:10px;color:var(--muted)">Retention</div></div>
     </div>
     <!-- 1099 tracker -->
     <div class="sh"><div class="st">1099-NEC Tracker</div><div class="sa" onclick="showToast('Coming soon','1099 generation at tax season.')">Generate All →</div></div>
     <div id="ag1099List" style="padding:0 16px 24px;display:flex;flex-direction:column;gap:6px"></div>
+  </div>
+
+  <!-- ── PANE 4: My Finance ── -->
+  <div class="ag-pane" id="agPane4">
+    <!-- Commission income hero -->
+    <div style="margin:16px;background:linear-gradient(160deg,#0a0a1a,#1a0a2e);border-radius:var(--r);padding:20px">
+      <div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:700;letter-spacing:.5px;margin-bottom:4px">YOUR COMMISSION INCOME · THIS MONTH</div>
+      <div style="font-size:34px;font-weight:900;color:var(--green);letter-spacing:-1.5px;line-height:1;margin-bottom:16px" id="agFinCommMo">—</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px">
+          <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px">TAX RESERVE (28%)</div>
+          <div style="font-size:20px;font-weight:800;color:#f59e0b" id="agFinTaxReserve">—</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:2px">auto-vaulted</div>
+        </div>
+        <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px">
+          <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px">NET TAKE-HOME</div>
+          <div style="font-size:20px;font-weight:800;color:#fff" id="agFinNetMo">—</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:2px">after tax set-aside</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Business finance tools -->
+    <div style="padding:0 16px">
+      <div style="font-size:13px;font-weight:800;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px">Your Business Tools</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+        <button onclick="showScreen('taxes')" style="display:flex;align-items:center;gap:14px;background:var(--surface);border:1.5px solid rgba(245,158,11,.2);border-radius:var(--r);padding:16px;text-align:left;cursor:pointer;font-family:inherit;width:100%;transition:border-color .2s">
+          <div style="width:44px;height:44px;background:rgba(245,158,11,.12);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🔒</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:800;color:var(--text)">Tax Vault</div>
+            <div style="font-size:12px;color:var(--muted)">Set aside 28% of commission income · quarterly estimates</div>
+          </div>
+          <span style="font-size:16px;color:var(--muted)">→</span>
+        </button>
+        <button onclick="showScreen('invest')" style="display:flex;align-items:center;gap:14px;background:var(--surface);border:1.5px solid rgba(124,58,237,.15);border-radius:var(--r);padding:16px;text-align:left;cursor:pointer;font-family:inherit;width:100%;transition:border-color .2s">
+          <div style="width:44px;height:44px;background:rgba(124,58,237,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">📈</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:800;color:var(--text)">Investing</div>
+            <div style="font-size:12px;color:var(--muted)">Grow idle agency cash with auto-investing</div>
+          </div>
+          <span style="font-size:16px;color:var(--muted)">→</span>
+        </button>
+        <button onclick="showScreen('banking')" style="display:flex;align-items:center;gap:14px;background:var(--surface);border:1.5px solid rgba(0,200,83,.15);border-radius:var(--r);padding:16px;text-align:left;cursor:pointer;font-family:inherit;width:100%;transition:border-color .2s">
+          <div style="width:44px;height:44px;background:rgba(0,200,83,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🏦</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:800;color:var(--text)">Banking</div>
+            <div style="font-size:12px;color:var(--muted)">Link your agency bank account via Plaid</div>
+          </div>
+          <span style="font-size:16px;color:var(--muted)">→</span>
+        </button>
+        <button onclick="showScreen('chat')" style="display:flex;align-items:center;gap:14px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:16px;text-align:left;cursor:pointer;font-family:inherit;width:100%;transition:border-color .2s">
+          <div style="width:44px;height:44px;background:var(--accent-light);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🤖</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:800;color:var(--text)">Apexa AI</div>
+            <div style="font-size:12px;color:var(--muted)">Ask about deductions, S-Corp election, quarterly taxes</div>
+          </div>
+          <span style="font-size:16px;color:var(--muted)">→</span>
+        </button>
+      </div>
+
+      <!-- Business tax tips -->
+      <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:var(--r);padding:16px;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:800;color:#f59e0b;margin-bottom:6px">💡 Business Tax Tips</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.65">Your agency commission income is self-employment income. Consider a <strong style="color:var(--text)">SEP-IRA</strong> (up to 25% of net, $69K max) or <strong style="color:var(--text)">S-Corp election</strong> to save ~7.65% on SE taxes once revenue exceeds $60K/year. Ask Apexa AI for personalized guidance.</div>
+      </div>
+      <div class="discl" style="margin:12px 0 24px">Commission income is 1099/SE income. Consult a CPA for entity structure advice.</div>
+    </div>
   </div>
 
   <div class="discl">Payment processing via Stripe Connect. Apexa does not hold funds. 1.5% processing fee on outbound transactions. Revenue projections are estimates.</div>
@@ -2809,21 +2883,40 @@ body.light-mode{--bg:#fff!important;--surface:#f7f7f5!important;--border:#ebebeb
         <option>YouTube</option><option>TikTok</option><option>Instagram</option><option>Twitch</option><option>OnlyFans</option><option>Patreon</option><option>Podcast</option><option>Multiple</option>
       </select>
     </div>
+    <div class="field"><label>Monthly income estimate</label>
+      <div style="position:relative">
+        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:700;color:var(--muted)">$</span>
+        <input type="number" id="newCreatorMonthly" placeholder="e.g. 15000" min="0" step="500"
+          style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px 14px 28px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;color:var(--text);outline:none"
+          oninput="updAddCreatorPreview()">
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">Used to calculate payout amounts. You can update this later.</div>
+    </div>
     <div class="field"><label>Agency split percentage</label>
       <div style="display:flex;align-items:center;gap:12px">
-        <input type="range" id="newCreatorSplit" min="5" max="50" value="20" oninput="document.getElementById('newSplitLbl').textContent=this.value+'%'" style="flex:1">
+        <input type="range" id="newCreatorSplit" min="5" max="50" value="20" oninput="updAddCreatorPreview()" style="flex:1">
         <span style="font-size:20px;font-weight:800;color:var(--accent2);min-width:50px;text-align:right" id="newSplitLbl">20%</span>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px"><span>5%</span><span>50%</span></div>
     </div>
-    <div style="background:var(--surface);border-radius:var(--rs);padding:14px;margin-bottom:16px">
-      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">HOW IT WORKS</div>
-      <div style="font-size:12px;color:var(--muted);line-height:1.8">
-        1. Creator receives invite email<br>
-        2. They connect their bank account — income sources are detected automatically<br>
-        3. Payouts auto-split: your cut goes to your account<br>
-        4. Creator's share auto-splits into tax/invest/spend
+    <!-- Live split preview -->
+    <div style="background:var(--surface);border-radius:var(--rs);padding:14px;margin-bottom:16px" id="addCreatorPreview">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">MONTHLY PAYOUT PREVIEW</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <div style="flex:1;background:var(--bg);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:15px;font-weight:800;color:var(--accent)" id="prevAgCut">$0</div>
+          <div style="font-size:10px;color:var(--muted)">Your cut</div>
+        </div>
+        <div style="flex:1;background:var(--bg);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:15px;font-weight:800;color:var(--green)" id="prevCreatorNet">$0</div>
+          <div style="font-size:10px;color:var(--muted)">To creator</div>
+        </div>
       </div>
+      <div style="display:flex;height:6px;border-radius:99px;overflow:hidden">
+        <div id="prevAgBar" style="background:var(--accent);width:20%"></div>
+        <div style="background:var(--green);opacity:.4;flex:1"></div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px;text-align:center" id="prevHowItWorks">Enter monthly estimate to see split breakdown</div>
     </div>
     <button class="btn btn-p" onclick="addCreator()">Send Invite →</button>
     <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:8px">Creator will receive an email with onboarding instructions.</div>
@@ -3734,6 +3827,11 @@ body.light-mode{--bg:#fff!important;--surface:#f7f7f5!important;--border:#ebebeb
         <button onclick="showScreen('taxes')" style="display:flex;align-items:center;gap:10px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;text-align:left"><span>🔒</span>Tax Management</button>
       </div>
     </div>
+    <!-- Top creator this month -->
+    <div style="background:var(--surface);border-radius:16px;padding:20px;margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;margin-bottom:12px">TOP CREATOR THIS MONTH</div>
+      <div id="rpAgTopCreator"><div style="font-size:13px;color:var(--muted)">No active creators yet.</div></div>
+    </div>
     <div style="background:var(--tax-light);border-radius:16px;padding:20px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--tax);animation:pulse 2s infinite"></div><span style="font-size:13px;font-weight:700;color:var(--tax)" id="rpAgNextQ">Q2 Taxes Due</span></div>
       <div style="font-size:26px;font-weight:800;color:var(--tax);margin-bottom:4px" id="rpAgTaxDays">— days</div>
@@ -3807,6 +3905,15 @@ function applyTier(){
     else if(pro){proBadge.textContent='Pro';proBadge.style.background='';proBadge.style.color=''}
     else{proBadge.textContent='Free';proBadge.style.background='var(--surface)';proBadge.style.color='var(--muted)'}
   }
+  // Subscription Plan row label + Manage Billing visibility (paid users only)
+  const planLabel=document.getElementById('profilePlanLabel');
+  if(planLabel){
+    if(prem)planLabel.textContent='Premium · Change →';
+    else if(pro)planLabel.textContent='Pro · Change →';
+    else planLabel.textContent='Free · Upgrade →';
+  }
+  const mbRow=document.getElementById('manageBillingRow');
+  if(mbRow)mbRow.style.display=paid?'flex':'none';
   // Show/hide premium-only features
   const expTracker=document.getElementById('homeExpenseTracker');
   if(expTracker){expTracker.style.display=prem?'block':'none';if(prem)renderExpenseTracker();}
@@ -4042,6 +4149,26 @@ function updRightPanel(){
     if(monthlyVol>=500000)rate='1.5%';
     else if(monthlyVol>=100000)rate='2.0%';
     if(e('rpAgRate'))e('rpAgRate').textContent=rate;
+    // Top creator this month
+    const tc=e('rpAgTopCreator');
+    if(tc&&active.length>0){
+      const top=[...active].sort((a,b)=>b.monthly-a.monthly)[0];
+      const cut=Math.round(top.monthly*(top.split/100));
+      tc.innerHTML=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,${top.g1},${top.g2});display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:800;flex-shrink:0">${top.initials}</div>
+        <div><div style="font-size:14px;font-weight:700">${top.name}</div><div style="font-size:11px;color:var(--muted)">${top.platforms[0]}</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:var(--bg);border-radius:10px;padding:10px">
+          <div style="font-size:13px;font-weight:800;color:var(--green)">${fmt(top.monthly)}</div>
+          <div style="font-size:10px;color:var(--muted)">gross/mo</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:10px">
+          <div style="font-size:13px;font-weight:800;color:var(--accent)">${fmt(cut)}</div>
+          <div style="font-size:10px;color:var(--muted)">your cut</div>
+        </div>
+      </div>`;
+    }else if(tc){tc.innerHTML='<div style="font-size:13px;color:var(--muted)">No active creators yet.</div>';}
   }
   // Quick Summary — real data for non-demo users, demo numbers otherwise
   const _demo=localStorage.getItem('apexa_demo')==='1';
@@ -4103,8 +4230,9 @@ function enterApp(){
   if(localStorage.getItem('apexa_plaid_connected')==='1'){plaidConnected=true;loadLinkedAccounts(true);}
   if(acctType==='agency'){
     showScreen('agency');
+    setTimeout(loadAgencyScreen,100);
     if(!currentAgencyId)agencyOnboard();
-    else{loadAgencyRoster();loadAgencyStats()}
+    else{loadAgencyRoster();loadAgencyStats();}
   }else{showScreen('home')}
   loadAll();loadLinkedAccounts();updHomeSplit();updTaxCountdown();updRightPanel();
   setTimeout(initNotifications,800);
@@ -4193,17 +4321,20 @@ function updTaxCountdown(){
   const el=document.getElementById('taxCountdown');
   if(el){el.textContent=days+'d left ·';el.style.color=urgentColor;}
   // Home screen tax card
+  const dayLabel=days===1?'day':'days';
   const hd=document.getElementById('hTaxDays');if(hd)hd.textContent=days;
+  // Update the word "days/day" next to the number in the inline badge
+  const hts=document.getElementById('hTaxDaysLabel');if(hts)hts.textContent=' '+dayLabel;
   const ts=document.getElementById('taxStatus');
   if(ts&&days<=0){ts.style.background='var(--green-light)';ts.innerHTML='<div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0"></div><span style="font-size:12px;font-weight:600;color:var(--green)">You\'re on track for taxes ✓</span>'}
   // Right panel — creator home
   const rpDays=document.getElementById('rpTaxDays');
-  if(rpDays){rpDays.textContent=days+' days';rpDays.style.color=urgentColor;}
+  if(rpDays){rpDays.textContent=days+' '+dayLabel;rpDays.style.color=urgentColor;}
   const rpDateEl=rpDays&&rpDays.nextElementSibling;
   if(rpDateEl)rpDateEl.textContent=next.dateStr;
   // Right panel — agency
   const agTaxDays=document.getElementById('rpAgTaxDays');
-  if(agTaxDays){agTaxDays.textContent=days+' days';agTaxDays.style.color=urgentColor;}
+  if(agTaxDays){agTaxDays.textContent=days+' '+dayLabel;agTaxDays.style.color=urgentColor;}
   const agNextQ=document.getElementById('rpAgNextQ');
   if(agNextQ)agNextQ.textContent=next.label;
 }
@@ -4228,7 +4359,9 @@ function showScreen(n){
   if(n==='earnings') renderEarningsScreen();
   if(n==='taxes') renderTaxScreen();
   if(n==='auto') renderAutoScreen();
-  if(n==='invest') setTimeout(()=>drawInvChart(currentInvPeriod||'1M'),150);
+  if(n==='agency') setTimeout(loadAgencyScreen,50);
+  if(n==='invest') setTimeout(()=>drawInvChart(currentInvPeriod||'1M'),300);
+  if(n==='home') setTimeout(()=>drawHomeChart(document.querySelector('#homeChartPeriods .period-active')?.textContent||'1M'),300);
   window.scrollTo(0,0);
   if(n==='chat'&&chatHist.length===0) initChat();
   if(n==='chat') setTimeout(updateChatMeta,100);
@@ -4291,6 +4424,8 @@ async function loadAll(){
         {platform:'Instagram',amount:980,date:'Feb 25',type:'credit'},
         {platform:'Podcast',amount:3600,date:'Feb 22',type:'credit'},
       ],'bnkAct',10);
+      // Show transactions header in demo mode
+      const _bth=document.getElementById('bnkTxHeader');if(_bth)_bth.style.display='block';
       renderH([{ticker:'SPY',name:'S&P 500 ETF',shares:12.4,value:5620,return_pct:8.2},{ticker:'QQQ',name:'Nasdaq 100 ETF',shares:8.2,value:3480,return_pct:9.1},{ticker:'JEPI',name:'JPM Income ETF',shares:18.6,value:1240,return_pct:2.4},{ticker:'IWM',name:'Russell 2000 ETF',shares:5.1,value:740,return_pct:-1.2}]);
       renderIS([{platform:'YouTube',amount:12400,pct:40},{platform:'TikTok',amount:8200,pct:26},{platform:'Brand Deals',amount:4500,pct:14},{platform:'Podcast',amount:3600,pct:12},{platform:'Patreon',amount:1240,pct:4},{platform:'Instagram',amount:980,pct:3}]);
     }else{
@@ -5631,6 +5766,28 @@ async function refreshPlaidData(){
   showToast('Synced','Accounts and transactions refreshed.');
 }
 
+let _cardFrozen=false;
+function toggleCardFreeze(){
+  _cardFrozen=!_cardFrozen;
+  const card=document.querySelector('.virtual-card');
+  const ico=document.getElementById('freezeIco');
+  const lbl=document.getElementById('freezeLbl');
+  const btn=document.getElementById('freezeBtn');
+  if(_cardFrozen){
+    if(card){card.style.filter='grayscale(1) brightness(.6)';card.style.transition='filter .4s';}
+    if(ico)ico.textContent='🔓';
+    if(lbl)lbl.textContent='Unfreeze';
+    if(btn)btn.style.color='var(--red)';
+    showToast('Card frozen','Your virtual card is now frozen. No new charges will be authorized.');
+  }else{
+    if(card){card.style.filter='';card.style.transition='filter .4s';}
+    if(ico)ico.textContent='🔒';
+    if(lbl)lbl.textContent='Freeze';
+    if(btn)btn.style.color='';
+    showToast('Card active','Your card is unfrozen and ready to use.');
+  }
+}
+
 function unlinkAccounts(){
   if(!confirm('Disconnect linked bank accounts?'))return;
   savePlaidState(false);
@@ -5957,8 +6114,49 @@ function _planLabel(p){
     const activePlan=plan||'pro';
     setTier(activePlan);
     setTimeout(()=>showToast('🎉 '+_planLabel(activePlan)+' activated!','Your subscription is now live. Welcome to Apexa '+_planLabel(activePlan)+'.'),800);
+    // Confirm with backend ~3s later — webhook should have updated user's tier by then
+    setTimeout(()=>syncSubscriptionStatus(),3000);
+  }
+  if(params.get('billing')==='return'){
+    // User returned from Stripe billing portal — re-sync in case they cancelled/changed plan
+    setTimeout(()=>syncSubscriptionStatus(),500);
   }
 })();
+
+// Open Stripe billing portal for current user
+async function openBillingPortal(){
+  const email=(localStorage.getItem('apexa_email')||'').toLowerCase();
+  const token=localStorage.getItem('apexa_token')||'';
+  if(!email&&!token){showToast('Sign in required','Please log in to manage your subscription.');return;}
+  showToast('Opening billing portal…','Redirecting to Stripe.');
+  try{
+    const headers={'Content-Type':'application/json'};
+    if(token)headers['Authorization']='Bearer '+token;
+    const res=await fetch(API+'/api/stripe/create-portal',{method:'POST',headers,body:JSON.stringify({email})});
+    const d=await res.json();
+    if(d.url&&d.url!=='#'){window.location.href=d.url;return;}
+    showToast('Billing portal unavailable',d.message||'No Stripe customer on file. Upgrade to a paid plan first.');
+  }catch(e){
+    showToast('Connection error','Could not reach billing portal.');
+  }
+}
+
+// Sync tier state with Stripe (call on app load + after checkout return)
+async function syncSubscriptionStatus(){
+  const email=(localStorage.getItem('apexa_email')||'').toLowerCase();
+  const token=localStorage.getItem('apexa_token')||'';
+  if(!email&&!token)return;
+  try{
+    const headers={};
+    if(token)headers['Authorization']='Bearer '+token;
+    const res=await fetch(API+'/api/stripe/subscription-status?email='+encodeURIComponent(email),{headers});
+    const d=await res.json();
+    if(d.source==='live'&&d.plan&&d.plan!==userTier){
+      setTier(d.plan);
+      if(d.plan!=='free')showToast('Subscription synced',_planLabel(d.plan)+' plan is active.');
+    }
+  }catch(e){/* silent */}
+}
 // HOME GREETING + DATE
 function initHomeGreeting(){
   const h=new Date().getHours();
@@ -6165,12 +6363,27 @@ const _rosterGradients=[
   ['#00c9ff','#92fe9d'],['#6a11cb','#2575fc'],['#fc5c7d','#6a82fb'],
   ['#43e97b','#38f9d7'],['#fa709a','#fee140'],['#a18cd1','#fbc2eb'],
 ];
-function _pushToRoster(id,name,email,platform,split,status){
+function _pushToRoster(id,name,email,platform,split,status,monthly=0){
   const idx=_agRoster.length;
   const [g1,g2]=_rosterGradients[idx%_rosterGradients.length];
   const initials=name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
-  _agRoster.push({id,name,email,initials,g1,g2,platforms:[platform],monthly:0,split,status,since:new Date().toLocaleDateString('en-US',{month:'short',year:'numeric'})});
+  _agRoster.push({id,name,email,initials,g1,g2,platforms:[platform],monthly,split,status,since:new Date().toLocaleDateString('en-US',{month:'short',year:'numeric'})});
   _addNotification('👤',`${name} added to roster`,`${platform} creator · ${split}% split · status: ${status}`,'accent');
+}
+
+function updAddCreatorPreview(){
+  const monthly=parseInt(document.getElementById('newCreatorMonthly')?.value)||0;
+  const split=parseInt(document.getElementById('newCreatorSplit')?.value)||20;
+  document.getElementById('newSplitLbl').textContent=split+'%';
+  const agCut=Math.round(monthly*(split/100));
+  const crNet=monthly-agCut;
+  const e=id=>document.getElementById(id);
+  if(e('prevAgCut'))e('prevAgCut').textContent=fmt(agCut);
+  if(e('prevCreatorNet'))e('prevCreatorNet').textContent=fmt(crNet);
+  if(e('prevAgBar'))e('prevAgBar').style.width=split+'%';
+  if(e('prevHowItWorks'))e('prevHowItWorks').textContent=monthly>0
+    ?`${fmt(agCut)} to you · ${fmt(crNet)} to creator · each month`
+    :'Enter monthly estimate to see split breakdown';
 }
 
 async function addCreator(){
@@ -6178,6 +6391,7 @@ async function addCreator(){
   const email=document.getElementById('newCreatorEmail').value.trim();
   if(!name||!email){showToast('Missing info','Enter creator name and email.');return;}
   const split=parseInt(document.getElementById('newCreatorSplit').value)||20;
+  const monthly=parseInt(document.getElementById('newCreatorMonthly')?.value)||0;
   const platform=document.getElementById('newCreatorPlatform').value;
   // Try live backend
   if(!currentAgencyId)await agencyOnboard();
@@ -6194,11 +6408,9 @@ async function addCreator(){
     showToast('Invite sent (demo)',`${name} added to roster.`);
   }
   // Add to local _agRoster so all UI refreshes immediately
-  _pushToRoster(creatorId,name,email,platform,split,'invited');
+  _pushToRoster(creatorId,name,email,platform,split,'invited',monthly);
   // Refresh all dependent UIs
-  renderAgRoster();
-  renderPayoutCheckList();
-  updRightPanel();
+  renderAgRoster();renderPayoutCheckList();loadAgencyScreen();
   // Navigate to Roster tab to show the new creator
   agTab(1);
   closeModal('addCreatorMod');
@@ -6206,6 +6418,7 @@ async function addCreator(){
   document.getElementById('newCreatorEmail').value='';
   document.getElementById('newCreatorSplit').value=20;
   document.getElementById('newSplitLbl').textContent='20%';
+  const nm=document.getElementById('newCreatorMonthly');if(nm)nm.value='';
 }
 
 // ── EDIT SPLIT ─────────────────────────────────────────────────────────────────
@@ -6246,6 +6459,94 @@ function saveEditSplit(){
     }
   }
   closeModal('editSplitMod');
+}
+// ── EDIT EARNINGS ──────────────────────────────────────────────────────────────
+function openEditEarnings(id){
+  const c=_agRoster.find(r=>r.id===id);
+  if(!c)return;
+  // Build/reuse modal
+  let mod=document.getElementById('editEarningsMod');
+  if(!mod){
+    mod=document.createElement('div');
+    mod.className='mo';mod.id='editEarningsMod';
+    mod.setAttribute('onclick',"closeBg(event,'editEarningsMod')");
+    document.body.appendChild(mod);
+  }
+  const agCut=Math.round(c.monthly*(c.split/100));
+  const crNet=c.monthly-agCut;
+  mod.innerHTML=`<div class="modal"><div class="mh"></div>
+    <div class="mt">Edit Earnings — ${c.name}</div>
+    <div class="ms">${c.platforms.join(' · ')} · ${c.split}% agency split</div>
+    <input type="hidden" id="eeCreatorId" value="${id}">
+    <div class="field">
+      <label>Monthly gross income</label>
+      <div style="position:relative">
+        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:700;color:var(--muted)">$</span>
+        <input type="number" id="eeMonthly" value="${c.monthly||''}" placeholder="e.g. 15000" min="0" step="500"
+          style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px 14px 28px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;color:var(--text);outline:none"
+          oninput="updEEPreview()">
+      </div>
+    </div>
+    <div style="background:var(--surface);border-radius:var(--rs);padding:14px;margin-bottom:16px" id="eePreview">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px">MONTHLY SPLIT PREVIEW</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <div style="flex:1;background:var(--bg);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:15px;font-weight:800;color:var(--accent)" id="eeAgCut">${fmt(agCut)}</div>
+          <div style="font-size:10px;color:var(--muted)">Your cut (${c.split}%)</div>
+        </div>
+        <div style="flex:1;background:var(--bg);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:15px;font-weight:800;color:var(--green)" id="eeCreatorNet">${fmt(crNet)}</div>
+          <div style="font-size:10px;color:var(--muted)">To creator</div>
+        </div>
+      </div>
+      <div style="display:flex;height:6px;border-radius:99px;overflow:hidden">
+        <div id="eeAgBar" style="background:var(--accent);width:${c.split}%"></div>
+        <div style="background:var(--green);opacity:.4;flex:1"></div>
+      </div>
+    </div>
+    <button class="btn btn-p" onclick="saveEditEarnings()" style="margin-bottom:8px">Save Earnings →</button>
+    <button class="btn btn-l" onclick="closeModal('editEarningsMod')">Cancel</button>
+  </div>`;
+  openModal('editEarningsMod');
+}
+
+function updEEPreview(){
+  const monthly=parseInt(document.getElementById('eeMonthly')?.value)||0;
+  const id=document.getElementById('eeCreatorId')?.value;
+  const c=_agRoster.find(r=>r.id===id);
+  if(!c)return;
+  const agCut=Math.round(monthly*(c.split/100));
+  const crNet=monthly-agCut;
+  const e=id=>document.getElementById(id);
+  if(e('eeAgCut'))e('eeAgCut').textContent=fmt(agCut);
+  if(e('eeCreatorNet'))e('eeCreatorNet').textContent=fmt(crNet);
+  if(e('eeAgBar'))e('eeAgBar').style.width=c.split+'%';
+}
+
+function saveEditEarnings(){
+  const id=document.getElementById('eeCreatorId')?.value;
+  const monthly=parseInt(document.getElementById('eeMonthly')?.value)||0;
+  const c=_agRoster.find(r=>r.id===id);
+  if(!c)return;
+  const old=c.monthly;c.monthly=monthly;
+  showToast('Earnings updated',`${c.name}: ${fmt(old)} → ${fmt(monthly)}/mo`);
+  renderAgRoster();renderPayoutCheckList();loadAgencyScreen();
+  closeModal('editEarningsMod');
+}
+
+function removeCreator(id,name){
+  if(!confirm(`Remove ${name} from your roster?\n\nThis will stop future payouts. You can re-invite them later.`))return;
+  const idx=_agRoster.findIndex(r=>r.id===id);
+  if(idx===-1)return;
+  _agRoster.splice(idx,1);
+  showToast('Creator removed',`${name} has been removed from your roster.`);
+  renderAgRoster();renderPayoutCheckList();loadAgencyScreen();
+  // Try backend
+  if(currentAgencyId){
+    fetch(API+'/api/agency/remove-creator',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({agency_id:currentAgencyId,creator_id:id})
+    }).catch(()=>{});
+  }
 }
 // ──────────────────────────────────────────────────────────────────────────────
 
@@ -6600,13 +6901,35 @@ function _showPayoutSuccess(result,count){
   showToast('💸 Payouts sent!',`${count} creator${count!==1?'s':''} paid · ${fmt(result.net_to_creators||0)} net`);
 }
 
+function exportPayoutCSV(){
+  if(!_payoutHistory.length){showToast('No payouts yet','Process your first payout batch to export history.');return;}
+  const rows=[['Date','Creators','Gross Total','Agency Cut','Processing Fee','Net to Creators','Payout ID']];
+  _payoutHistory.forEach(p=>{
+    const d=p.ts instanceof Date?p.ts.toLocaleDateString('en-US'):new Date(p.ts).toLocaleDateString('en-US');
+    rows.push([d,p.count||'',p.total_gross||0,p.agency_cut||0,p.processing_fee||0,(p.net_to_creators||0),p.payout_id||'']);
+  });
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='apexa-payout-history.csv';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+  showToast('CSV downloaded','apexa-payout-history.csv');
+}
+
 function renderRecentPayouts(){
-  const list=document.querySelector('#agPane0 .al');
-  if(!list||!_payoutHistory.length)return;
-  list.innerHTML=_payoutHistory.slice(0,5).map(p=>{
+  if(!_payoutHistory.length)return;
+  function _payoutRow(p,showSettle){
     const d=p.ts instanceof Date?p.ts.toLocaleDateString('en-US',{month:'short',day:'numeric'}):'Recent';
-    return `<div class="ai"><div class="aic">✅</div><div class="aii"><div class="ain">${d} — ${p.count} creator${p.count!==1?'s':''}</div><div class="aid">${fmt(p.total_gross||0)} batch · ${fmt(p.processing_fee||0)} fee</div></div><div class="air"><div class="aia cr">+${fmt(p.agency_cut||0)}</div><div style="font-size:10px;color:var(--muted)">Sent</div></div></div>`;
-  }).join('')+''+list.innerHTML.split('<div class="ai">').slice(1).slice(-3).map(s=>'<div class="ai">'+s).join('');
+    return `<div class="ai"><div class="aic">✅</div><div class="aii"><div class="ain">${d} — ${p.count} creator${p.count!==1?'s':''}</div><div class="aid">${fmt(p.total_gross||0)} batch${showSettle?' · Settled in 1 day':` · ${fmt(p.processing_fee||0)} fee`}</div></div><div class="air"><div class="aia cr">+${fmt(p.agency_cut||0)}</div>${showSettle?'':'<div style="font-size:10px;color:var(--muted)">Sent</div>'}</div></div>`;
+  }
+  // Overview tab — most recent 3
+  const overview=document.querySelector('#agPane0 .al');
+  if(overview)overview.innerHTML=_payoutHistory.slice(0,3).map(p=>_payoutRow(p,false)).join('');
+  // Payouts tab — all (up to 10)
+  const histList=document.getElementById('agPayoutHistoryList');
+  if(histList)histList.innerHTML=_payoutHistory.slice(0,10).map(p=>_payoutRow(p,true)).join('');
 }
 // ──────────────────────────────────────────────────────────────────────────────
 
@@ -7610,7 +7933,95 @@ function agTab(i){
   document.querySelectorAll('.ag-pane').forEach((p,j)=>p.classList.toggle('active',j===i));
   if(i===1) renderAgRoster();
   if(i===2) renderPayoutCheckList();
-  if(i===3){render1099List();setTimeout(drawAgRevChart,80);}
+  if(i===3){loadAgReports();render1099List();setTimeout(drawAgRevChart,80);}
+  if(i===4) loadAgFinance();
+}
+
+function loadAgFinance(){
+  const active=_agRoster.filter(c=>c.status==='active');
+  const agRevenue=active.reduce((s,c)=>s+Math.round(c.monthly*(c.split/100)),0);
+  const taxSet=Math.round(agRevenue*.28);
+  const e=id=>document.getElementById(id);
+  if(e('agFinCommMo'))e('agFinCommMo').textContent=fmt(agRevenue);
+  if(e('agFinTaxReserve'))e('agFinTaxReserve').textContent=fmt(taxSet);
+  if(e('agFinNetMo'))e('agFinNetMo').textContent=fmt(agRevenue-taxSet);
+}
+
+function loadAgReports(){
+  const active=_agRoster.filter(c=>c.status==='active');
+  const n=active.length;
+  if(!n){
+    const e=id=>document.getElementById(id);
+    ['rpProcRev','rpSubRev','rpProjAnnual','rpAvgCreator','rpAvgFee'].forEach(id=>{if(e(id))e(id).textContent='—';});
+    if(e('rpRetention'))e('rpRetention').textContent='—%';
+    if(e('rpProcRevSub'))e('rpProcRevSub').textContent='no active creators';
+    if(e('rpSubRevSub'))e('rpSubRevSub').textContent='no active creators';
+    return;
+  }
+  const monthlyVol=active.reduce((s,c)=>s+c.monthly,0);
+  const agRevenue=active.reduce((s,c)=>s+Math.round(c.monthly*(c.split/100)),0);
+  // Rate
+  const rate=monthlyVol>=500000?0.015:monthlyVol>=100000?0.02:0.025;
+  const rateLabel=monthlyVol>=500000?'1.5%':monthlyVol>=100000?'2.0%':'2.5%';
+  // Annual processing revenue (rate × monthly vol × 12)
+  const annualProcRev=Math.round(agRevenue*12);
+  // Subscription revenue: assume creators pay $49.99/mo
+  const annualSubRev=Math.round(n*49.99*12);
+  const projAnnual=annualProcRev+annualSubRev;
+  // Per-creator averages
+  const avgCreatorMo=Math.round(monthlyVol/n);
+  const avgFeeMo=Math.round(agRevenue/n);
+  // Retention — climb from 85% baseline, +1% per creator up to 99%
+  const retention=Math.min(99,85+n);
+  const e=id=>document.getElementById(id);
+  const fmtK=v=>v>=10000?'$'+(v/1000).toFixed(0)+'K':v>=1000?'$'+(v/1000).toFixed(1)+'K':'$'+v.toLocaleString();
+  if(e('rpProcRev'))e('rpProcRev').textContent=fmtK(annualProcRev);
+  if(e('rpProcRevSub'))e('rpProcRevSub').textContent=`${rateLabel} × ${fmtK(monthlyVol*12)} annual vol`;
+  if(e('rpSubRev'))e('rpSubRev').textContent=fmtK(annualSubRev);
+  if(e('rpSubRevSub'))e('rpSubRevSub').textContent=`${n} × $49.99 × 12`;
+  if(e('rpProjAnnual'))e('rpProjAnnual').textContent=fmtK(projAnnual);
+  if(e('rpAvgCreator'))e('rpAvgCreator').textContent=fmtK(avgCreatorMo);
+  if(e('rpAvgFee'))e('rpAvgFee').textContent=fmtK(avgFeeMo);
+  if(e('rpRetention'))e('rpRetention').textContent=retention+'%';
+}
+
+function loadAgencyScreen(){
+  const active=_agRoster.filter(c=>c.status==='active');
+  const monthlyVol=active.reduce((s,c)=>s+c.monthly,0);
+  const agRevenue=active.reduce((s,c)=>s+Math.round(c.monthly*(c.split/100)),0);
+  const paidOut=monthlyVol-agRevenue;
+  const e=id=>document.getElementById(id);
+  // Hero stats
+  if(e('agencyVol'))e('agencyVol').textContent=fmt(monthlyVol);
+  if(e('agencyVolSub'))e('agencyVolSub').textContent=active.length+' active creator'+(active.length!==1?'s':'');
+  if(e('agencyRev'))e('agencyRev').textContent=fmt(agRevenue);
+  if(e('agCreatorCount'))e('agCreatorCount').textContent=active.length;
+  if(e('agencyPayouts'))e('agencyPayouts').textContent=paidOut>=1000?'$'+Math.round(paidOut/1000)+'K':fmt(paidOut);
+  // Rate tier
+  let rate='2.5%';
+  if(monthlyVol>=500000)rate='1.5%';
+  else if(monthlyVol>=100000)rate='2.0%';
+  if(e('agMonthlyFees'))e('agMonthlyFees').textContent=rate;
+  // Tier progress bar
+  let tierName,tierDesc,tierPct,tierNextLbl;
+  if(monthlyVol<100000){
+    tierName='⭐ Starter Tier';tierDesc='< $100K/mo · 2.5% rate';
+    tierPct=Math.round((monthlyVol/100000)*100);tierNextLbl='$100K → 2.0%';
+  }else if(monthlyVol<500000){
+    tierName='🚀 Growth Tier';tierDesc='$100K – $500K/mo · 2.0% rate';
+    tierPct=Math.round(((monthlyVol-100000)/400000)*100);tierNextLbl='$500K → 1.5%';
+  }else{
+    tierName='💎 Scale Tier';tierDesc='$500K+/mo · 1.5% rate';
+    tierPct=100;tierNextLbl='Best rate unlocked';
+  }
+  if(e('agTierName'))e('agTierName').textContent=tierName;
+  if(e('agTierDesc'))e('agTierDesc').textContent=tierDesc;
+  if(e('agTierRate'))e('agTierRate').textContent=rate;
+  if(e('agTierBar'))e('agTierBar').style.width=Math.min(tierPct,100)+'%';
+  if(e('agTierNow'))e('agTierNow').textContent=monthlyVol>=1000?'$'+Math.round(monthlyVol/1000)+'K now':fmt(monthlyVol)+' now';
+  if(e('agTierNext'))e('agTierNext').textContent=tierNextLbl;
+  // Update right panel top creator
+  updRightPanel();
 }
 
 function renderAgRoster(){
@@ -7626,13 +8037,17 @@ function renderAgRoster(){
   if(!filtered.length){list.innerHTML='<div style="text-align:center;padding:32px;color:var(--muted);font-size:13px">No creators match your search.</div>';return;}
   list.innerHTML=filtered.map(c=>{
     const cut=c.monthly*(c.split/100);
-    const statusColors={active:'var(--green)',pending:'#f59e0b',invited:'var(--accent)'};
+    // Financial health score: based on monthly volume + platform diversity
+    const health=c.status!=='active'?null:c.monthly>=20000?{score:92,color:'var(--green)',label:'Excellent'}:c.monthly>=8000?{score:74,color:'#22c55e',label:'Good'}:c.monthly>=2000?{score:55,color:'#f59e0b',label:'Fair'}:{score:30,color:'var(--muted)',label:'Low'};
     return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden">
       <div style="display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer" onclick="toggleCreatorCard('${c.id}')">
-        <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,${c.g1},${c.g2});display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;flex-shrink:0">${c.initials}</div>
+        <div style="position:relative;flex-shrink:0">
+          <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,${c.g1},${c.g2});display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800">${c.initials}</div>
+          ${health?`<div style="position:absolute;bottom:-1px;right:-1px;width:14px;height:14px;border-radius:50%;background:${health.color};border:2px solid var(--surface)"></div>`:''}
+        </div>
         <div style="flex:1;min-width:0">
           <div style="font-size:14px;font-weight:700;margin-bottom:2px">${c.name}</div>
-          <div style="font-size:11px;color:var(--muted)">${c.platforms.join(' · ')} · ${c.split}% split</div>
+          <div style="font-size:11px;color:var(--muted)">${c.platforms.join(' · ')} · ${c.split}% split${health?` · <span style="color:${health.color};font-weight:700">${health.label}</span>`:''}</div>
         </div>
         <div style="text-align:right;flex-shrink:0">
           ${c.status==='active'?`<div style="font-size:14px;font-weight:800;color:var(--green)">$${(cut/1000).toFixed(1)}K</div><div style="font-size:10px;color:var(--muted)">your cut/mo</div>`:`<span class="ag-status ${c.status}">${c.status.charAt(0).toUpperCase()+c.status.slice(1)}</span>`}
@@ -7662,10 +8077,14 @@ function renderAgRoster(){
           <span style="color:var(--accent);font-weight:700">Agency ${c.split}%</span>
           <span style="color:var(--muted)">Creator ${100-c.split}%</span>
         </div>
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;gap:8px;margin-bottom:8px">
           <button onclick="agPayCreator('${c.id}')" style="flex:1;background:var(--accent);color:#fff;border:none;border-radius:var(--rs);padding:10px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">💸 Pay Now</button>
-          <button onclick="openEditSplit('${c.id}')" style="flex:1;background:var(--surface);color:var(--text);border:1.5px solid var(--border);border-radius:var(--rs);padding:10px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">⚙ Edit Split</button>
-          <button onclick="showToast('Message','Messaging coming soon.')" style="background:var(--surface);color:var(--text);border:1.5px solid var(--border);border-radius:var(--rs);padding:10px 14px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">✉</button>
+          <button onclick="openEditSplit('${c.id}')" style="flex:1;background:var(--surface);color:var(--text);border:1.5px solid var(--border);border-radius:var(--rs);padding:10px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">⚙ Split</button>
+          <button onclick="openEditEarnings('${c.id}')" style="flex:1;background:var(--surface);color:var(--text);border:1.5px solid var(--border);border-radius:var(--rs);padding:10px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">💰 Earnings</button>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button onclick="showToast('Message','Creator messaging coming soon.')" style="flex:1;background:var(--surface);color:var(--text);border:1.5px solid var(--border);border-radius:var(--rs);padding:9px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">✉ Message</button>
+          <button onclick="removeCreator('${c.id}','${c.name}')" style="background:var(--surface);color:var(--red);border:1.5px solid rgba(239,68,68,.2);border-radius:var(--rs);padding:9px 14px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">🗑</button>
         </div>
       </div>
     </div>`;
@@ -7929,9 +8348,30 @@ function drawAgRevChart(){
   if(!canvas)return;
   const ctx=canvas.getContext('2d');
   const W=canvas.offsetWidth||300;canvas.width=W;canvas.height=140;
-  const labels=['Oct','Nov','Dec','Jan','Feb','Mar','Apr'];
-  const vals=[1840,2120,2640,2980,3128,3322,3580];
-  const maxV=Math.max(...vals)*1.15;
+  // Build chart data: real processed payouts → projected months
+  const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now=new Date();
+  let labels,vals;
+  if(_payoutHistory.length>=2){
+    // Use actual processed payouts (last 7, oldest first)
+    const hist=[..._payoutHistory].reverse().slice(-7);
+    labels=hist.map(p=>{const d=p.ts instanceof Date?p.ts:new Date(p.ts);return MO[d.getMonth()];});
+    vals=hist.map(p=>p.agency_cut||0);
+  }else{
+    // Project based on current roster — show last 6 mo climbing + current
+    const active=_agRoster.filter(c=>c.status==='active');
+    const curRev=active.reduce((s,c)=>s+Math.round(c.monthly*(c.split/100)),0)||0;
+    // Simulate a 6-month ramp from 50% of current to current
+    vals=[];labels=[];
+    for(let i=6;i>=0;i--){
+      const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+      labels.push(MO[d.getMonth()]);
+      const factor=i===0?1:(0.5+(0.5*(6-i)/6));
+      vals.push(Math.round(curRev*factor));
+    }
+    if(!curRev)vals=[1840,2120,2640,2980,3128,3322,3580]; // fallback demo if no roster data
+  }
+  const maxV=Math.max(...vals,1)*1.15;
   const padL=44,padR=12,padT=10,padB=28;
   const bW=(W-padL-padR)/labels.length;
   ctx.clearRect(0,0,W,140);
