@@ -53,6 +53,18 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;height:58px;padding:0 40px;d
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 h1{font-size:clamp(44px,7.5vw,88px);font-weight:900;letter-spacing:-3px;line-height:.95;margin-bottom:28px;max-width:860px}
 h1 em{font-style:normal;color:var(--accent)}
+
+/* CYCLING HEADLINE ANIMATION */
+.cycle-row{display:block;overflow:hidden;padding:4px 0;position:relative}
+.cycle-box{position:relative;display:inline-block;vertical-align:top;min-height:1em;line-height:1}
+.cw-item{display:block;position:absolute;left:0;top:0;width:100%;text-align:center;opacity:0;transform:translateY(100%);transition:opacity .55s cubic-bezier(.4,0,.2,1),transform .65s cubic-bezier(.4,0,.2,1);color:var(--text);white-space:nowrap}
+.cw-item.on{opacity:1;transform:translateY(0)}
+.cw-item.out{opacity:0;transform:translateY(-100%)}
+/* The first item keeps flow so the box has a real height baseline */
+.cw-anchor{display:inline-block;visibility:hidden;white-space:nowrap}
+.cycle-sub{display:block;color:var(--text);margin-top:4px}
+.cycle-sub em{color:var(--accent);font-style:normal}
+@media(max-width:640px){.cw-item,.cw-anchor{white-space:normal}}
 .hero-sub{font-size:clamp(15px,1.8vw,19px);color:var(--muted);max-width:480px;line-height:1.72;margin-bottom:40px;font-weight:500}
 .hero-actions{display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
 .btn-main{background:var(--text);color:#fff;border:none;border-radius:99px;padding:15px 36px;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(0,0,0,.14)}
@@ -384,8 +396,20 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
     <button class="as-btn" id="as-agency" onclick="setAudience('agency')">For Agencies</button>
   </div>
   <div class="hero-content-wrap">
-    <h1 class="rev d1" id="hero-h1">Track deductions.<br>Optimize income.<br>File for <em>taxes.</em></h1>
-    <p class="hero-sub rev d2" id="hero-sub">Apexa automates every piece of creator finance — deductions found, income split, April handled.</p>
+    <h1 class="rev d1" id="hero-h1">
+      <span class="cycle-row">
+        <span class="cycle-box" aria-hidden="true">
+          <span class="cw-anchor">Wealth management.</span>
+          <span class="cw-item on" data-color="#00c853">Wealth management.</span>
+          <span class="cw-item" data-color="#f59e0b">Taxes.</span>
+          <span class="cw-item" data-color="#3b82f6">Banking.</span>
+          <span class="cw-item" data-color="#7c3aed">Investments.</span>
+          <span class="cw-item" data-color="#ec4899">Income.</span>
+        </span>
+      </span>
+      <span class="cycle-sub">All solved in <em>one.</em></span>
+    </h1>
+    <p class="hero-sub rev d2" id="hero-sub">Apexa is the first financial OS built for creators. Stop juggling five apps — let one run it all.</p>
     <div class="hero-actions rev d3">
       <button class="btn-main" id="hero-cta1" onclick="window.location.href='/creator-login'">Start Free — 90 Seconds →</button>
       <button class="btn-ghost" id="hero-cta2" onclick="setAudience('agency')">For Agencies</button>
@@ -394,43 +418,6 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
       <span>No credit card</span><span class="sep">·</span>
       <span>Free plan forever</span><span class="sep">·</span>
       <span><strong>500+</strong> creators automated</span>
-    </div>
-  </div>
-
-  <div class="mockup rev d4">
-    <div class="mf">
-      <div class="mbar">
-        <div class="mdot"></div><div class="mdot"></div><div class="mdot"></div>
-        <div class="murl">app.apexa.com</div>
-      </div>
-      <div class="mbody">
-        <div class="mside">
-          <div class="mnav on">🏠 &nbsp;Home</div>
-          <div class="mnav">💰 &nbsp;Earnings</div>
-          <div class="mnav">🧾 &nbsp;Tax Vault</div>
-          <div class="mnav">📈 &nbsp;Invest</div>
-          <div class="mnav">🏦 &nbsp;Banking</div>
-        </div>
-        <div class="mmain">
-          <div class="mlbl">Total Balance</div>
-          <div class="mbal">$24,830</div>
-          <div class="mup">+$8,340 this month ↑</div>
-          <div class="mgrid">
-            <div class="mtile"><div class="mtl">Tax Vault</div><div class="mtv" style="color:#f59e0b">$7,230</div></div>
-            <div class="mtile"><div class="mtl">Investments</div><div class="mtv" style="color:#7c3aed">$3,840</div></div>
-          </div>
-          <div class="mai">
-            <div class="mat">APEXA AI · INSIGHT</div>
-            <div class="mab">At this pace you'll earn $315K this year — entering the 32% bracket. Tax Vault is fully funded.</div>
-          </div>
-        </div>
-        <div class="mright">
-          <div class="mrhd">Upcoming Payouts</div>
-          <div class="mrrow"><div class="mrl"><div class="mrico" style="background:rgba(255,0,0,.08)">▶️</div><div><div>YouTube</div><div class="mrs">Apr 10</div></div></div><div class="mrv">~$12,400</div></div>
-          <div class="mrrow"><div class="mrl"><div class="mrico" style="background:rgba(0,0,0,.04)">🎵</div><div><div>TikTok</div><div class="mrs">Apr 15</div></div></div><div class="mrv">~$8,200</div></div>
-          <div class="mrrow"><div class="mrl"><div class="mrico" style="background:rgba(245,158,11,.08)">🤝</div><div><div>Brand Deal</div><div class="mrs">Apr 20</div></div></div><div class="mrv">~$4,500</div></div>
-        </div>
-      </div>
     </div>
   </div>
 </section>
@@ -590,40 +577,6 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
         <div class="how-title">Automate everything</div>
         <div class="how-body">Every payout splits automatically. Taxes set aside, investments made, deductions logged. April arrives — everything is ready.</div>
         <span class="how-time">🔁 Runs forever</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- PROOF -->
-<section class="proof">
-  <div class="proof-inner">
-    <div class="s-eyebrow rev">Creator Stories</div>
-    <h2 class="s-h2 rev d1" style="margin-bottom:0">Creators who stopped<br>dreading April.</h2>
-    <div class="proof-grid">
-      <div class="pc2 rev">
-        <div class="pstars">★★★★★</div>
-        <div class="pq">"I used to owe $18K in April because I never set money aside. With Apexa, every payout is already split — taxes, investing, spending. April is actually exciting now."</div>
-        <div class="pwho">
-          <div class="pav" style="background:rgba(255,0,0,.08)">▶️</div>
-          <div><div class="pname">Marcus T.</div><div class="prole">YouTube · 840K subscribers</div></div>
-        </div>
-      </div>
-      <div class="pc2 rev d1">
-        <div class="pstars">★★★★★</div>
-        <div class="pq">"The AI caught $4,200 in deductions I would have missed. Camera gear, internet, home office — just found them automatically. That's real money back."</div>
-        <div class="pwho">
-          <div class="pav" style="background:rgba(0,0,0,.05)">🎵</div>
-          <div><div class="pname">Priya K.</div><div class="prole">TikTok · 2.1M followers</div></div>
-        </div>
-      </div>
-      <div class="pc2 rev d2">
-        <div class="pstars">★★★★★</div>
-        <div class="pq">"Managing payouts for 12 creators was a nightmare. One click, everyone gets paid with their custom split. I got back 6 hours every single week."</div>
-        <div class="pwho">
-          <div class="pav" style="background:rgba(124,58,237,.08)">🏢</div>
-          <div><div class="pname">Diana R.</div><div class="prole">Agency Owner · 12 creators</div></div>
-        </div>
       </div>
     </div>
   </div>
@@ -906,8 +859,8 @@ if(localStorage.getItem('apexa_authed')==='1'){
 
 const _aud={
   creator:{
-    h1:'Track deductions.<br>Optimize income.<br>File for <em>taxes.</em>',
-    sub:'Apexa automates every piece of creator finance — deductions found, income split, April handled.',
+    h1:null, // creator uses the cycling animation (built into HTML)
+    sub:'Apexa is the first financial OS built for creators. Stop juggling five apps — let one run it all.',
     cta1:{label:'Start Free — 90 Seconds →',action:"window.location.href='/creator-login'"},
     cta2:{label:'For Agencies',action:"setAudience('agency')"},
     micro:'<span>No credit card</span><span class="sep">·</span><span>Free plan forever</span><span class="sep">·</span><span><strong>500+</strong> creators automated</span>',
@@ -923,12 +876,76 @@ const _aud={
   }
 };
 
+// Creator mode hero HTML (the cycling animation) — saved so we can restore it when toggling back
+const _creatorHeroHTML = `
+  <span class="cycle-row">
+    <span class="cycle-box" aria-hidden="true">
+      <span class="cw-anchor">Wealth management.</span>
+      <span class="cw-item on" data-color="#00c853">Wealth management.</span>
+      <span class="cw-item" data-color="#f59e0b">Taxes.</span>
+      <span class="cw-item" data-color="#3b82f6">Banking.</span>
+      <span class="cw-item" data-color="#7c3aed">Investments.</span>
+      <span class="cw-item" data-color="#ec4899">Income.</span>
+    </span>
+  </span>
+  <span class="cycle-sub">All solved in <em>one.</em></span>`;
+
+let _cycleInterval=null;
+function _startCycle(){
+  const items=document.querySelectorAll('.cw-item');
+  if(!items.length)return;
+  if(_cycleInterval)clearInterval(_cycleInterval);
+  // Size the anchor to the widest word (keeps layout stable)
+  const anchor=document.querySelector('.cw-anchor');
+  if(anchor){
+    // Find the widest word and set the anchor text to it (anchor is visibility:hidden so it reserves space)
+    let widest='', maxW=0;
+    items.forEach(el=>{
+      const clone=el.cloneNode(true);
+      clone.style.cssText='position:absolute;left:-9999px;top:0;opacity:1;transform:none;white-space:nowrap;visibility:hidden';
+      document.body.appendChild(clone);
+      const w=clone.getBoundingClientRect().width;
+      if(w>maxW){maxW=w;widest=el.textContent;}
+      clone.remove();
+    });
+    if(widest)anchor.textContent=widest;
+  }
+  items.forEach(el=>el.classList.remove('on','out'));
+  items[0].classList.add('on');
+  items[0].style.color=items[0].dataset.color||'';
+  let idx=0;
+  _cycleInterval=setInterval(()=>{
+    const curItems=document.querySelectorAll('.cw-item');
+    if(!curItems.length){clearInterval(_cycleInterval);return;}
+    const cur=curItems[idx];
+    const next=curItems[(idx+1)%curItems.length];
+    // Ensure next starts from the "below/hidden" state, no transition flash
+    next.classList.remove('on','out');
+    // Force reflow so the starting state is applied before 'on' triggers the transition
+    void next.offsetWidth;
+    // Now swap — both transitions run simultaneously (crossfade + slide)
+    cur.classList.remove('on');
+    cur.classList.add('out');
+    next.classList.add('on');
+    next.style.color=next.dataset.color||'';
+    idx=(idx+1)%curItems.length;
+  },2400);
+}
+
 function setAudience(type){
   const d=_aud[type];
   const wrap=document.querySelector('.hero-content-wrap');
   wrap.classList.add('switching');
   setTimeout(()=>{
-    document.getElementById('hero-h1').innerHTML=d.h1;
+    const h1=document.getElementById('hero-h1');
+    if(type==='creator'){
+      // Restore the cycling animation
+      h1.innerHTML=_creatorHeroHTML;
+      _startCycle();
+    }else{
+      if(_cycleInterval){clearInterval(_cycleInterval);_cycleInterval=null;}
+      h1.innerHTML=d.h1;
+    }
     document.getElementById('hero-sub').textContent=d.sub;
     const c1=document.getElementById('hero-cta1');
     c1.textContent=d.cta1.label;c1.setAttribute('onclick',d.cta1.action);
@@ -974,6 +991,24 @@ const cObs=new IntersectionObserver(e=>e.forEach(x=>{
   }
 }),{threshold:.5});
 document.querySelectorAll('.count').forEach(el=>cObs.observe(el));
+
+// Kick off the cycling headline on page load + re-size on viewport changes
+window.addEventListener('load',()=>{setTimeout(()=>_startCycle&&_startCycle(),60)});
+window.addEventListener('resize',()=>{
+  // Recalculate the box width on window resize
+  const items=document.querySelectorAll('.cw-item');
+  const box=document.querySelector('.cycle-box');
+  if(!items.length||!box)return;
+  let maxW=0;
+  items.forEach(el=>{
+    const clone=el.cloneNode(true);
+    clone.style.cssText='position:absolute;left:-9999px;top:0;opacity:1;transform:none;white-space:nowrap;visibility:hidden';
+    document.body.appendChild(clone);
+    maxW=Math.max(maxW,clone.getBoundingClientRect().width);
+    clone.remove();
+  });
+  box.style.minWidth=Math.ceil(maxW)+'px';
+});
 </script>
 </body>
 </html>
