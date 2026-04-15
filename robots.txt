@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Sitemap: https://getapexa.com/sitemap.xml
+
+# Allow search engine crawling of all public pages
+User-agent: Googlebot
+Allow: /
+
+# Block app internals from indexing
+Disallow: /app
+Disallow: /api/

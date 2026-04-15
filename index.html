@@ -3844,11 +3844,20 @@ body.light-mode{--bg:#fff!important;--surface:#f7f7f5!important;--border:#ebebeb
 </div><!-- /app-shell -->
 
 <script>
+// Analytics stub — replace with Mixpanel/PostHog/Amplitude when ready
+const _track = (event, props = {}) => {
+  if(window._analytics && typeof window._analytics.track === 'function') {
+    window._analytics.track(event, props);
+  }
+  // Console log in dev for debugging
+  if(localStorage.getItem('apexa_demo')==='1') console.log('[analytics]', event, props);
+};
+
 const API="https://apexa.up.railway.app";
 let obInc=8000,obRate=.28,obRateLbl='28%',chatHist=[],isTyping=false;
 // SUBSCRIPTION TIER: 'free','pro','premium'
 let userTier='free';
-function setTier(t){userTier=t;localStorage.setItem('apexa_tier',t);applyTier()}
+function setTier(t){userTier=t;localStorage.setItem('apexa_tier',t);applyTier();_track('tier_changed',{tier:t});}
 function applyTier(){
   const banner=document.getElementById('subBanner');
   if(!banner)return;
@@ -4363,6 +4372,7 @@ function showScreen(n){
   if(n==='invest') setTimeout(()=>drawInvChart(currentInvPeriod||'1M'),300);
   if(n==='home') setTimeout(()=>drawHomeChart(document.querySelector('#homeChartPeriods .period-active')?.textContent||'1M'),300);
   window.scrollTo(0,0);
+  _track('screen_viewed',{screen:n});
   if(n==='chat'&&chatHist.length===0) initChat();
   if(n==='chat') setTimeout(updateChatMeta,100);
   if(n==='profile'){updateFaceIdRowStatus();renderProfile();}
@@ -5577,6 +5587,7 @@ async function openPlaidLink(){
     const res=await fetch(API+'/api/plaid/create-link-token?user_id='+plaidUserId(),{method:'POST'});
     const data=await res.json();
     if(!data.link_token){showToast('Connection error','Could not reach Plaid — check backend env vars.');return;}
+    _track('plaid_link_opened');
     plaidHandler=Plaid.create({
       token:data.link_token,
       onSuccess:async(publicToken,metadata)=>{
@@ -6077,6 +6088,7 @@ function selectPlanCard(plan){
 }
 function subscribePlan(){
   if(selectedPlan==='free'){setTier('free');closeModal('priceMod');showToast('Free plan selected','You can upgrade any time.');return;}
+  _track('checkout_started',{plan:selectedPlan});
   const btn=document.getElementById('priceBtn');
   btn.textContent='Opening Stripe…';btn.disabled=true;
   const email=localStorage.getItem('apexa_email')||'';
@@ -6113,6 +6125,7 @@ function _planLabel(p){
   if(upgraded==='1'){
     const activePlan=plan||'pro';
     setTier(activePlan);
+    _track('checkout_completed',{plan:activePlan});
     setTimeout(()=>showToast('🎉 '+_planLabel(activePlan)+' activated!','Your subscription is now live. Welcome to Apexa '+_planLabel(activePlan)+'.'),800);
     // Confirm with backend ~3s later — webhook should have updated user's tier by then
     setTimeout(()=>syncSubscriptionStatus(),3000);
@@ -7134,6 +7147,7 @@ async function authLogin(){
     localStorage.setItem('apexa_acct_type',data.user.acct_type||'creator');
     localStorage.removeItem('apexa_demo');
     applyAcctType();
+    _track('login',{method:'email'});
     authEnterApp();
   }catch(e){
     authBtnLoad('btnLogin',false);
@@ -7169,6 +7183,7 @@ async function authSignup(){
     // Record consent server-side (CCPA/GDPR)
     fetch(API+'/api/auth/consent',{method:'POST',headers:_authHeaders(),body:JSON.stringify({terms:true,privacy:true,marketing:consentMarketing})}).catch(()=>{});
     applyAcctType();
+    _track('signup_completed',{acct_type:_authType});
     // New user → show onboarding
     localStorage.removeItem('apexa_onboarded');
     localStorage.removeItem('apexa_toured');
@@ -7450,6 +7465,7 @@ function authDemo(){
   localStorage.setItem('apexa_acct_type','creator');
   localStorage.setItem('apexa_demo','1');
   applyAcctType();
+  _track('demo_entered');
   authEnterApp();
 }
 function authSendReset(){

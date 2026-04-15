@@ -64,6 +64,19 @@ plaid_config = plaid.Configuration(
 )
 plaid_client = plaid_api.PlaidApi(plaid.ApiClient(plaid_config))
 
+# ── Supabase setup ────────────────────────────────────────────────────────────
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "")
+db = None
+if SUPABASE_URL and SUPABASE_SERVICE_KEY:
+    try:
+        from supabase import create_client
+        db = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+        print("[SUPABASE] Connected successfully")
+    except Exception as e:
+        print(f"[SUPABASE] Connection failed: {e}")
+# ──────────────────────────────────────────────────────────────────────────────
+
 # Alpaca setup
 ALPACA_API_KEY = os.getenv("ALPACA_API_KEY", "")
 ALPACA_SECRET_KEY = os.getenv("ALPACA_SECRET_KEY", "")
@@ -87,6 +100,117 @@ user_access_tokens = {}
 # ── Auth stores ────────────────────────────────────────────────────────────────
 _users: dict = {}      # email -> {name, password_hash, acct_type, plan, api_keys:[]}
 _api_keys: dict = {}   # "apx_live_xxx" -> {user_email, name, scopes, created_at, last_used}
+
+# ── DB helper functions (Supabase-first, in-memory fallback) ──────────────────
+
+def _db_get_user(email: str) -> Optional[dict]:
+    """Get user by email. Supabase first, fallback to in-memory."""
+    if db:
+        try:
+            r = db.table("users").select("*").eq("email", email).single().execute()
+            if r.data:
+                # Convert JSONB api_keys back to list
+                user = dict(r.data)
+                if isinstance(user.get("api_keys"), str):
+                    user["api_keys"] = json.loads(user["api_keys"])
+                # Cache in memory
+                _users[email] = user
+                return user
+        except Exception as e:
+            print(f"DB error (_db_get_user): {e}")
+    return _users.get(email)
+
+def _db_create_user(user: dict) -> dict:
+    """Create a new user. Saves to Supabase if available."""
+    email = user["email"]
+    _users[email] = user
+    if db:
+        try:
+            row = {k: v for k, v in user.items() if k in (
+                "email", "name", "password_hash", "acct_type", "plan",
+                "tier", "stripe_customer_id", "api_keys",
+            )}
+            if "api_keys" in row and isinstance(row["api_keys"], list):
+                row["api_keys"] = json.dumps(row["api_keys"])
+            db.table("users").insert(row).execute()
+        except Exception as e:
+            print(f"DB error (_db_create_user): {e}")
+    return user
+
+def _db_update_user(email: str, updates: dict):
+    """Update user fields. Supabase upsert if available."""
+    # Update in-memory
+    if email in _users:
+        _users[email].update(updates)
+    else:
+        _users[email] = updates
+    if db:
+        try:
+            row = {k: v for k, v in updates.items() if k in (
+                "name", "password_hash", "acct_type", "plan",
+                "tier", "stripe_customer_id", "api_keys",
+            )}
+            if "api_keys" in row and isinstance(row["api_keys"], list):
+                row["api_keys"] = json.dumps(row["api_keys"])
+            if row:
+                db.table("users").update(row).eq("email", email).execute()
+        except Exception as e:
+            print(f"DB error (_db_update_user): {e}")
+
+def _db_delete_user(email: str) -> dict:
+    """Delete a user. Removes from Supabase and in-memory."""
+    user = _users.pop(email, {})
+    if db:
+        try:
+            db.table("users").delete().eq("email", email).execute()
+        except Exception as e:
+            print(f"DB error (_db_delete_user): {e}")
+    return user
+
+def _db_user_exists(email: str) -> bool:
+    """Check if a user exists without loading the full record."""
+    if email in _users:
+        return True
+    if db:
+        try:
+            r = db.table("users").select("email").eq("email", email).execute()
+            return bool(r.data)
+        except Exception as e:
+            print(f"DB error (_db_user_exists): {e}")
+    return False
+
+# ── Plaid token helpers ───────────────────────────────────────────────────────
+
+def _save_plaid_token(user_id: str, access_token: str, item_id: str = ""):
+    """Save Plaid access token to Supabase and in-memory cache."""
+    user_access_tokens[user_id] = access_token
+    if db:
+        try:
+            db.table("plaid_tokens").upsert({
+                "user_id": user_id,
+                "access_token": access_token,
+                "item_id": item_id,
+            }).execute()
+        except Exception as e:
+            print(f"DB error (_save_plaid_token): {e}")
+
+def _get_plaid_token(user_id: str) -> Optional[str]:
+    """Get Plaid access token from cache or Supabase."""
+    token = user_access_tokens.get(user_id)
+    if token:
+        return token
+    if db:
+        try:
+            r = db.table("plaid_tokens").select("access_token").eq("user_id", user_id).single().execute()
+            if r.data:
+                token = r.data["access_token"]
+                user_access_tokens[user_id] = token  # cache
+                return token
+        except Exception as e:
+            print(f"DB error (_get_plaid_token): {e}")
+    return None
+
+# ──────────────────────────────────────────────────────────────────────────────
 
 JWT_SECRET = os.getenv("JWT_SECRET", secrets.token_hex(32))
 JWT_ALGO   = "HS256"
@@ -322,9 +446,9 @@ def root():
 async def auth_register(data: AuthRegister, request: Request):
     """Register a new Apexa user account. Returns a JWT for immediate use."""
     email = data.email.lower().strip()
-    if email in _users:
+    if _db_user_exists(email):
         raise HTTPException(status_code=400, detail="Email already registered")
-    _users[email] = {
+    _db_create_user({
         "name": data.name,
         "email": email,
         "password_hash": _hash_pw(data.password),
@@ -334,7 +458,7 @@ async def auth_register(data: AuthRegister, request: Request):
         "api_keys": [],
         "consent_ts": datetime.utcnow().isoformat(),
         "consent_ip": (request.client.host if request.client else "unknown"),
-    }
+    })
     _audit(email, "account.register", request)
     token = _make_jwt(email)
     return {
@@ -347,7 +471,7 @@ async def auth_register(data: AuthRegister, request: Request):
 async def auth_login(data: AuthLogin, request: Request):
     """Login with email + password. Returns a JWT (30-day expiry)."""
     email = data.email.lower().strip()
-    user = _users.get(email)
+    user = _db_get_user(email)
     if not user or not _verify_pw(data.password, user["password_hash"]):
         _audit(email, "login.failed", request)
         raise HTTPException(status_code=401, detail="Invalid email or password")
@@ -356,7 +480,7 @@ async def auth_login(data: AuthLogin, request: Request):
     return {
         "token": token,
         "token_type": "bearer",
-        "user": {"name": user["name"], "email": email, "plan": user["plan"], "acct_type": user["acct_type"]}
+        "user": {"name": user["name"], "email": email, "plan": user.get("plan", "free"), "acct_type": user.get("acct_type", "creator")}
     }
 
 @app.get("/api/auth/me")
@@ -364,7 +488,7 @@ def auth_me(request: Request):
     """Returns the authenticated user's profile. Works with JWT or API key."""
     auth = _require_auth(request)
     email = auth["email"]
-    user = _users.get(email, {})
+    user = _db_get_user(email) or {}
     return {
         "email": email,
         "name": user.get("name", ""),
@@ -388,9 +512,10 @@ def create_api_key(data: ApiKeyCreate, request: Request):
         "created_at": created,
         "last_used": None
     }
-    user = _users.get(email)
+    user = _db_get_user(email)
     if user:
-        user["api_keys"].append(key)
+        user.setdefault("api_keys", []).append(key)
+        _db_update_user(email, {"api_keys": user["api_keys"]})
     return {
         "key": key,          # shown ONCE — store it now
         "name": data.name,
@@ -404,7 +529,7 @@ def list_api_keys(request: Request):
     """List all API keys for the authenticated user (keys are masked)."""
     auth = _require_user(request)
     email = auth["email"]
-    user = _users.get(email, {})
+    user = _db_get_user(email) or {}
     result = []
     for k in user.get("api_keys", []):
         if k in _api_keys:
@@ -425,11 +550,12 @@ def revoke_api_key(key_suffix: str, request: Request):
     """Revoke an API key by its last-6-character suffix."""
     auth = _require_user(request)
     email = auth["email"]
-    user = _users.get(email, {})
+    user = _db_get_user(email) or {}
     for k in list(user.get("api_keys", [])):
         if k.endswith(key_suffix):
             _api_keys.pop(k, None)
             user["api_keys"].remove(k)
+            _db_update_user(email, {"api_keys": user["api_keys"]})
             return {"revoked": True, "key_suffix": key_suffix}
     raise HTTPException(status_code=404, detail="API key not found")
 
@@ -462,9 +588,10 @@ async def record_consent(data: ConsentData, request: Request):
         "ip":        ip,
         "version":   "2026-04",
     }
-    user = _users.get(email, {})
+    user = _db_get_user(email) or {}
     user["consent_ts"] = _consents[email]["ts"]
     user["consent_ip"] = ip
+    _db_update_user(email, {"consent_ts": user["consent_ts"], "consent_ip": ip})
     _audit(email, "consent.recorded", request)
     return {"recorded": True, "ts": _consents[email]["ts"]}
 
@@ -478,7 +605,7 @@ async def export_my_data(request: Request):
     email = auth["email"]
     _audit(email, "data.export", request, {"auth_type": auth["type"]})
 
-    user  = _users.get(email, {})
+    user  = _db_get_user(email) or {}
     creds = _webauthn_creds.get(email, [])
     keys  = [
         {"name": _api_keys[k]["name"], "scopes": _api_keys[k]["scopes"],
@@ -524,7 +651,7 @@ async def delete_my_account(request: Request):
     _audit(email, "account.deleted", request)
 
     # Wipe all stored data for this user
-    user = _users.pop(email, {})
+    user = _db_delete_user(email)
     for k in user.get("api_keys", []):
         _api_keys.pop(k, None)
     _webauthn_creds.pop(email, None)
@@ -585,7 +712,7 @@ async def webauthn_register_begin(request: Request, data: WebAuthnBeginRequest):
     The client passes this to navigator.credentials.create().
     """
     email = data.email.lower().strip()
-    user  = _users.get(email)
+    user  = _db_get_user(email)
     if not user:
         raise HTTPException(404, "User not found — register an account first")
 
@@ -725,7 +852,7 @@ async def webauthn_auth_complete(request: Request, data: WebAuthnAuthComplete):
     stored["sign_count"] = verified.new_sign_count
 
     _audit(email, "login.webauthn", request)
-    user  = _users.get(email, {})
+    user  = _db_get_user(email) or {}
     token = _make_jwt(email)
     return {
         "token":      token,
@@ -1201,14 +1328,14 @@ def exchange_public_token(req: PublicTokenRequest):
     try:
         exchange_request = ItemPublicTokenExchangeRequest(public_token=req.public_token)
         response = plaid_client.item_public_token_exchange(exchange_request)
-        user_access_tokens[req.user_id] = response.access_token
+        _save_plaid_token(req.user_id, response.access_token, response.item_id)
         return {"status": "connected", "item_id": response.item_id}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/api/plaid/accounts")
 def get_accounts(user_id: str = "default"):
-    access_token = user_access_tokens.get(user_id)
+    access_token = _get_plaid_token(user_id)
     if not access_token:
         return {
             "accounts": [
@@ -1266,7 +1393,7 @@ def categorize_expense(description: str) -> dict:
 
 @app.get("/api/plaid/transactions")
 def get_plaid_transactions(user_id: str = "default", days: int = 90):
-    access_token = user_access_tokens.get(user_id)
+    access_token = _get_plaid_token(user_id)
     if not access_token:
         # Demo data
         demo_txns = [
@@ -1521,7 +1648,7 @@ def create_checkout(req: CheckoutRequest):
         # Reuse existing Stripe customer if we have one on file (avoids duplicates)
         existing_customer_id = None
         if req.email:
-            user = _users.get(req.email.lower())
+            user = _db_get_user(req.email.lower())
             if user:
                 existing_customer_id = user.get("stripe_customer_id")
         if existing_customer_id:
@@ -1658,9 +1785,10 @@ async def stripe_webhook(request: Request):
             except Exception as e:
                 print(f"[WEBHOOK] line_items lookup failed: {e}")
         if email:
-            user = _users.get(email) or {}
-            user.update({"plan": plan or "pro", "tier": plan or "pro", "stripe_customer_id": customer_id})
-            _users[email] = user
+            user = _db_get_user(email) or {}
+            updates = {"plan": plan or "pro", "tier": plan or "pro", "stripe_customer_id": customer_id}
+            user.update(updates)
+            _db_update_user(email, updates)
             print(f"[WEBHOOK] checkout.completed → {email} => {plan}, customer={customer_id}")
         else:
             print(f"[WEBHOOK] checkout.completed but no email resolved. session={session_id}, customer={customer_id}")
@@ -1676,23 +1804,26 @@ async def stripe_webhook(request: Request):
             print(f"[WEBHOOK] {etype}: no email resolved for customer={customer_id}")
             return {"received": True, "type": etype}
 
-        user = _users.get(email) or {}
+        user = _db_get_user(email) or {}
         if status in ("active", "trialing"):
-            user.update({"plan": plan, "tier": plan, "stripe_customer_id": customer_id})
-            _users[email] = user
+            updates = {"plan": plan, "tier": plan, "stripe_customer_id": customer_id}
+            user.update(updates)
+            _db_update_user(email, updates)
             print(f"[WEBHOOK] {etype} {status} → {email} => {plan}")
         elif status in ("canceled", "unpaid", "past_due", "incomplete_expired"):
-            user.update({"plan": "free", "tier": "free"})
-            _users[email] = user
+            updates = {"plan": "free", "tier": "free"}
+            user.update(updates)
+            _db_update_user(email, updates)
             print(f"[WEBHOOK] {etype} {status} → {email} downgraded to free")
 
     elif etype == "customer.subscription.deleted":
         customer_id = data.get("customer", "") or ""
         email = _resolve_email_from_stripe(customer_id)
         if email:
-            user = _users.get(email) or {}
-            user.update({"plan": "free", "tier": "free"})
-            _users[email] = user
+            user = _db_get_user(email) or {}
+            updates = {"plan": "free", "tier": "free"}
+            user.update(updates)
+            _db_update_user(email, updates)
             print(f"[WEBHOOK] subscription.deleted → {email} downgraded to free")
 
     elif etype == "invoice.payment_failed":
@@ -1716,12 +1847,12 @@ def create_billing_portal(request: Request, payload: Optional[PortalRequest] = N
     # 1. Try JWT / API key auth
     auth = _resolve_auth(request)
     if auth:
-        user = _users.get((auth.get("email") or "").lower())
+        user = _db_get_user((auth.get("email") or "").lower())
         if user:
             customer_id = user.get("stripe_customer_id")
     # 2. Fall back to explicit email in body
     if not customer_id and payload and payload.email:
-        user = _users.get(payload.email.lower())
+        user = _db_get_user(payload.email.lower())
         if user:
             customer_id = user.get("stripe_customer_id")
     # 3. Legacy: accept raw customer_id in body
@@ -1747,11 +1878,11 @@ def get_subscription_status(request: Request, customer_id: str = "", email: str 
     if not customer_id:
         auth = _resolve_auth(request)
         if auth:
-            user = _users.get((auth.get("email") or "").lower())
+            user = _db_get_user((auth.get("email") or "").lower())
             if user:
                 customer_id = user.get("stripe_customer_id") or ""
     if not customer_id and email:
-        user = _users.get(email.lower())
+        user = _db_get_user(email.lower())
         if user:
             customer_id = user.get("stripe_customer_id") or ""
     if not customer_id:
