@@ -28,12 +28,22 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;height:58px;padding:0 40px;d
 .nav-r{display:flex;align-items:center;gap:8px}
 .nav-link{font-size:13px;font-weight:600;color:var(--muted);padding:7px 14px;border-radius:8px;transition:color .15s}
 .nav-link:hover{color:var(--text)}
-.nav-btn{font-size:13px;font-weight:700;font-family:inherit;padding:8px 18px;border-radius:99px;cursor:pointer;transition:all .15s;border:none}
+.nav-btn{font-size:13px;font-weight:700;font-family:inherit;padding:8px 18px;border-radius:99px;cursor:pointer;transition:all .15s;border:none;white-space:nowrap}
 .nav-ghost{background:transparent;color:var(--text);border:1.5px solid var(--border)}
 .nav-ghost:hover{border-color:var(--accent);color:var(--accent)}
 .nav-fill{background:var(--text);color:#fff}
 .nav-fill:hover{background:var(--accent)}
-@media(max-width:640px){nav{padding:0 20px}.nav-link,.nav-ghost{display:none}}
+/* Compact audience switcher in nav */
+.nav-aud{display:inline-flex;background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:3px;gap:2px;margin-right:4px}
+.nav-aud-btn{padding:6px 14px;border-radius:99px;font-size:12px;font-weight:700;cursor:pointer;background:none;border:none;font-family:inherit;color:var(--muted);transition:all .15s;white-space:nowrap;letter-spacing:-.1px}
+.nav-aud-btn:hover{color:var(--text)}
+.nav-aud-btn.on{color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+#nav-as-creator.on{background:var(--text)}
+#nav-as-agency.on{background:#3b82f6}
+@media(max-width:960px){.nav-link{display:none}.nav-aud-btn{padding:6px 12px}}
+@media(max-width:820px){.nav-aud-btn{padding:5px 10px;font-size:11px}.nav-btn{padding:7px 14px;font-size:12px}}
+@media(max-width:640px){nav{padding:0 20px}.nav-ghost{display:none}.nav-aud{margin-right:2px}}
+@media(max-width:460px){.nav-aud{display:none}}
 
 /* HERO */
 .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:130px 24px 88px;position:relative;overflow:hidden}
@@ -341,6 +351,9 @@ html[data-theme="dark"] .nav-ghost{border-color:rgba(255,255,255,.12);color:var(
 html[data-theme="dark"] .nav-ghost:hover{border-color:var(--accent);color:var(--accent2)}
 html[data-theme="dark"] .badge{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08)}
 html[data-theme="dark"] .aud-switch{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);box-shadow:none}
+html[data-theme="dark"] .nav-aud{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.08)}
+html[data-theme="dark"] #nav-as-creator.on{background:rgba(255,255,255,.12);color:#fff}
+html[data-theme="dark"] #nav-as-agency.on{background:#3b82f6;color:#fff}
 html[data-theme="dark"] .ptwrap{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1)}
 html[data-theme="dark"] .pbtn-s{background:var(--surface);border-color:var(--border)}
 html[data-theme="dark"] .pbtn-s:hover{border-color:var(--accent);color:var(--accent2)}
@@ -352,6 +365,10 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
 
 <nav>
   <div class="logo" onclick="window.location.href='/landing.html'">apexa<span>.</span></div>
+  <div class="nav-aud">
+    <button class="nav-aud-btn on" id="nav-as-creator" onclick="setAudience('creator')">Creators</button>
+    <button class="nav-aud-btn" id="nav-as-agency" onclick="setAudience('agency')">Agencies</button>
+  </div>
   <div class="nav-r">
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light mode">🌙</button>
     <a href="#pricing" class="nav-link">Pricing</a>
@@ -920,6 +937,10 @@ function setAudience(type){
     document.getElementById('hero-micro').innerHTML=d.micro;
     document.getElementById('as-creator').classList.toggle('on',type==='creator');
     document.getElementById('as-agency').classList.toggle('on',type==='agency');
+    const navC=document.getElementById('nav-as-creator');
+    const navA=document.getElementById('nav-as-agency');
+    if(navC)navC.classList.toggle('on',type==='creator');
+    if(navA)navA.classList.toggle('on',type==='agency');
     setPt(d.pricing);
     wrap.classList.remove('switching');
   },160);
