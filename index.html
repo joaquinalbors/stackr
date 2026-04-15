@@ -647,7 +647,7 @@ body.light-mode{--bg:#fff!important;--surface:#f7f7f5!important;--border:#ebebeb
 
 <!-- DESKTOP SIDEBAR -->
 <div class="sidebar" id="desktopSidebar">
-  <div class="sidebar-logo" onclick="window.location.href='/landing.html'" style="cursor:pointer">apexa<span>.</span></div>
+  <div class="sidebar-logo" onclick="showScreen('home')" style="cursor:pointer">apexa<span>.</span></div>
   <div class="sidebar-nav">
     <!-- Both account types -->
     <div class="sidebar-item active" onclick="showScreen('home')" id="sideHome"><span>🏠</span><span id="sideHomeLabel">Home</span></div>
@@ -672,7 +672,7 @@ body.light-mode{--bg:#fff!important;--surface:#f7f7f5!important;--border:#ebebeb
 </div>
 
 <div class="app-topnav">
-  <div class="app-topnav-logo">apexa<span>.</span></div>
+  <div class="app-topnav-logo" onclick="showScreen('home')" style="cursor:pointer">apexa<span>.</span></div>
 </div>
 <div class="app-shell">
 <div class="main-content">
@@ -1382,7 +1382,7 @@ body.light-mode{--bg:#fff!important;--surface:#f7f7f5!important;--border:#ebebeb
 <div class="screen" id="screen-home">
   <!-- Top bar -->
   <div id="homeTopBar" style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px 0">
-    <div style="font-size:18px;font-weight:800;letter-spacing:-.5px;cursor:pointer" id="homeLogo" onclick="window.location.href='/landing.html'">apexa<span style="color:var(--accent)">.</span></div>
+    <div style="font-size:18px;font-weight:800;letter-spacing:-.5px;cursor:pointer" id="homeLogo" onclick="showScreen('home');window.scrollTo(0,0)">apexa<span style="color:var(--accent)">.</span></div>
     <div style="display:flex;align-items:center;gap:12px">
       <div class="badge demo" id="apiBadge"><div class="bdot"></div><span id="apiTxt">Demo</span></div>
       <button onclick="toggleAppDark()" id="darkBtn" style="background:none;border:none;cursor:pointer;font-size:18px;padding:4px;line-height:1" title="Toggle dark mode">🌙</button>
