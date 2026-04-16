@@ -4368,7 +4368,7 @@ function showScreen(n){
   if(n==='earnings') renderEarningsScreen();
   if(n==='taxes') renderTaxScreen();
   if(n==='auto') renderAutoScreen();
-  if(n==='agency') setTimeout(loadAgencyScreen,50);
+  if(n==='agency'){loadAgencyData();setTimeout(loadAgencyScreen,50);}
   if(n==='invest') setTimeout(()=>drawInvChart(currentInvPeriod||'1M'),300);
   if(n==='home') setTimeout(()=>drawHomeChart(document.querySelector('#homeChartPeriods .period-active')?.textContent||'1M'),300);
   window.scrollTo(0,0);
@@ -6409,19 +6409,24 @@ async function addCreator(){
   // Try live backend
   if(!currentAgencyId)await agencyOnboard();
   let creatorId='creator_'+Date.now().toString(36);
+  let creatorStatus='invited';
   try{
+    const headers={'Content-Type':'application/json'};
+    const token=localStorage.getItem('apexa_token');
+    if(token)headers['Authorization']='Bearer '+token;
     const r=await fetch(API+'/api/agency/invite-creator',{
-      method:'POST',headers:{'Content-Type':'application/json'},
+      method:'POST',headers,
       body:JSON.stringify({agency_id:currentAgencyId,creator_name:name,creator_email:email,platform,split_percentage:split})
     });
     const d=await r.json();
     if(d.creator_id)creatorId=d.creator_id;
+    if(d.status)creatorStatus=d.status;
     showToast('Invite sent!',`${name} will receive an onboarding email at ${email}.`);
   }catch(e){
     showToast('Invite sent (demo)',`${name} added to roster.`);
   }
   // Add to local _agRoster so all UI refreshes immediately
-  _pushToRoster(creatorId,name,email,platform,split,'invited',monthly);
+  _pushToRoster(creatorId,name,email,platform,split,creatorStatus,monthly);
   // Refresh all dependent UIs
   renderAgRoster();renderPayoutCheckList();loadAgencyScreen();
   // Navigate to Roster tab to show the new creator
@@ -6466,7 +6471,10 @@ function saveEditSplit(){
     renderAgRoster();renderPayoutCheckList();updRightPanel();
     // Try to persist to backend
     if(currentAgencyId){
-      fetch(API+'/api/agency/update-split',{method:'POST',headers:{'Content-Type':'application/json'},
+      const hdrs={'Content-Type':'application/json'};
+      const tok=localStorage.getItem('apexa_token');
+      if(tok)hdrs['Authorization']='Bearer '+tok;
+      fetch(API+'/api/agency/update-split',{method:'POST',headers:hdrs,
         body:JSON.stringify({agency_id:currentAgencyId,creator_id:id,split_percentage:newSplit})
       }).catch(()=>{});
     }
@@ -6547,6 +6555,34 @@ function saveEditEarnings(){
   closeModal('editEarningsMod');
 }
 
+function activateCreator(id){
+  const c=_agRoster.find(r=>r.id===id);
+  if(!c)return;
+  c.status='active';
+  showToast('Creator activated',c.name+' is now active and eligible for payouts.');
+  renderAgRoster();renderPayoutCheckList();loadAgencyScreen();
+  const agencyId=localStorage.getItem('apexa_agency_id');
+  if(agencyId&&c.id){
+    const headers={'Content-Type':'application/json'};
+    const token=localStorage.getItem('apexa_token');
+    if(token)headers['Authorization']='Bearer '+token;
+    fetch(API+'/api/agency/update-creator-status?creator_id='+c.id+'&agency_id='+agencyId+'&status=active',{method:'POST',headers}).catch(()=>{});
+  }
+}
+function pauseCreator(id){
+  const c=_agRoster.find(r=>r.id===id);
+  if(!c)return;
+  c.status='paused';
+  showToast('Creator paused',c.name+' payouts are paused.');
+  renderAgRoster();renderPayoutCheckList();loadAgencyScreen();
+  const agencyId=localStorage.getItem('apexa_agency_id');
+  if(agencyId&&c.id){
+    const headers={'Content-Type':'application/json'};
+    const token=localStorage.getItem('apexa_token');
+    if(token)headers['Authorization']='Bearer '+token;
+    fetch(API+'/api/agency/update-creator-status?creator_id='+c.id+'&agency_id='+agencyId+'&status=paused',{method:'POST',headers}).catch(()=>{});
+  }
+}
 function removeCreator(id,name){
   if(!confirm(`Remove ${name} from your roster?\n\nThis will stop future payouts. You can re-invite them later.`))return;
   const idx=_agRoster.findIndex(r=>r.id===id);
@@ -6556,9 +6592,10 @@ function removeCreator(id,name){
   renderAgRoster();renderPayoutCheckList();loadAgencyScreen();
   // Try backend
   if(currentAgencyId){
-    fetch(API+'/api/agency/remove-creator',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({agency_id:currentAgencyId,creator_id:id})
-    }).catch(()=>{});
+    const headers={'Content-Type':'application/json'};
+    const token=localStorage.getItem('apexa_token');
+    if(token)headers['Authorization']='Bearer '+token;
+    fetch(API+'/api/agency/remove-creator?creator_id='+id+'&agency_id='+currentAgencyId,{method:'DELETE',headers}).catch(()=>{});
   }
 }
 // ──────────────────────────────────────────────────────────────────────────────
@@ -6689,7 +6726,10 @@ function _relTime(date){
 async function loadAgencyRoster(){
   if(!currentAgencyId)return;
   try{
-    const r=await fetch(API+'/api/agency/roster?agency_id='+currentAgencyId);
+    const headers={};
+    const token=localStorage.getItem('apexa_token');
+    if(token)headers['Authorization']='Bearer '+token;
+    const r=await fetch(API+'/api/agency/roster?agency_id='+currentAgencyId,{headers});
     const d=await r.json();
     if(d.creators&&d.creators.length>0){
       const roster=document.getElementById('agencyRoster');
@@ -6709,10 +6749,51 @@ async function loadAgencyRoster(){
     }
   }catch(e){console.log('Roster load error:',e)}
 }
+async function loadAgencyData(){
+  const agencyId=localStorage.getItem('apexa_agency_id');
+  if(!agencyId)return;
+  try{
+    const headers={};
+    const token=localStorage.getItem('apexa_token');
+    if(token)headers['Authorization']='Bearer '+token;
+    const rRes=await fetch(API+'/api/agency/roster?agency_id='+agencyId,{headers});
+    const rData=await rRes.json();
+    if(rData.creators&&rData.creators.length>0){
+      // Map API response fields to local _agRoster format
+      const colors=['#ff6b9d,#c44dff','#4deeea,#7b2ff7','#f7971e,#ffd200','#00c9ff,#92fe9d','#6a11cb,#2575fc','#fc5c7d,#6a82fb','#f953c6,#b91d73','#43e97b,#38f9d7'];
+      _agRoster=rData.creators.map((c,i)=>{
+        const [g1,g2]=(colors[i%colors.length]).split(',');
+        const name=c.creator_name||c.name||'Unknown';
+        const initials=name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+        return {
+          id:c.creator_id||c.id||('api_'+i),
+          name:name,
+          email:c.creator_email||c.email||'',
+          initials:initials,
+          g1:g1,g2:g2,
+          platforms:c.platforms||[c.platform||'Unknown'],
+          monthly:c.monthly||c.total_volume||0,
+          split:c.split_percentage||c.split||20,
+          status:c.status||'active',
+          since:c.since||c.created_at||'',
+          stripe_account_id:c.stripe_account_id||null
+        };
+      });
+    }
+    // else keep the demo data as fallback
+    renderAgRoster();renderPayoutCheckList();loadAgencyScreen();
+  }catch(e){
+    console.log('[agency] API load failed, using local data:',e);
+    renderAgRoster();renderPayoutCheckList();loadAgencyScreen();
+  }
+}
 async function loadAgencyStats(){
   if(!currentAgencyId)return;
   try{
-    const r=await fetch(API+'/api/agency/stats?agency_id='+currentAgencyId);
+    const headers={};
+    const token=localStorage.getItem('apexa_token');
+    if(token)headers['Authorization']='Bearer '+token;
+    const r=await fetch(API+'/api/agency/stats?agency_id='+currentAgencyId,{headers});
     const d=await r.json();
     const vol=document.getElementById('agTotalVolume');if(vol)vol.textContent=fmt(d.total_volume||0);
     const rev=document.getElementById('agTotalRevenue');if(rev)rev.textContent=fmt(d.total_revenue||0);
@@ -8301,37 +8382,65 @@ setTimeout(()=>{
 }, 500);
 
 // ── AGENCY 1099 EXPORT ───────────────────────────────────────────────────────
-function export1099CSV(){
+async function export1099CSV(){
   const year = new Date().getFullYear() - 1; // 1099s are for prior tax year
   const creators = _agRoster.filter(c=>c.status==='active');
   if(creators.length === 0){ showToast('No creators','Add creators to your roster first.'); return; }
-  
+
+  // Try to fetch real payout data from API
+  let payoutTotals={}; // keyed by creator id
+  let usedRealData=false;
+  const agencyId=localStorage.getItem('apexa_agency_id');
+  if(agencyId){
+    try{
+      const headers={};
+      const token=localStorage.getItem('apexa_token');
+      if(token)headers['Authorization']='Bearer '+token;
+      const pRes=await fetch(API+'/api/agency/payouts?agency_id='+agencyId,{headers});
+      const pData=await pRes.json();
+      if(pData.payouts&&pData.payouts.length>0){
+        pData.payouts.forEach(p=>{
+          const cid=p.creator_id||p.id;
+          if(!payoutTotals[cid])payoutTotals[cid]=0;
+          payoutTotals[cid]+=(p.amount||p.gross||0);
+        });
+        usedRealData=true;
+      }
+    }catch(e){console.log('[1099] Payout fetch failed, using estimates:',e);}
+  }
+
   let csv = [];
-  csv.push([`Apexa Agency 1099-NEC Export · Tax Year ${year}`, '', '', '', '']);
-  csv.push([`Generated ${new Date().toLocaleDateString()}`, '', '', '', '']);
-  csv.push(['', '', '', '', '']);
-  csv.push(['Creator Name', 'Email', 'Annual Payments', '1099 Required', 'Status']);
-  
+  csv.push([`Apexa Agency 1099-NEC Export · Tax Year ${year}`, '', '', '', '', '']);
+  csv.push([`Generated ${new Date().toLocaleDateString()}`, '', '', '', '', '']);
+  csv.push(['', '', '', '', '', '']);
+  csv.push(['Creator Name', 'Email', 'Annual Payments', '1099 Required', 'Status', 'Data Source']);
+
   let totalVolume = 0;
   let count1099 = 0;
-  
+
   creators.forEach(c => {
-    const annual = c.monthly * 12;
+    const realTotal=payoutTotals[c.id];
+    const annual = usedRealData&&realTotal!=null ? realTotal : c.monthly * 12;
+    const source = usedRealData&&realTotal!=null ? 'Actual payouts' : 'Estimated (monthly x 12)';
     totalVolume += annual;
     const needs1099 = annual >= 600;
     if(needs1099) count1099++;
-    csv.push([c.name, c.email, annual.toFixed(2), needs1099 ? 'Yes' : 'No ($600 threshold)', c.status]);
+    csv.push([c.name, c.email, annual.toFixed(2), needs1099 ? 'Yes' : 'No ($600 threshold)', c.status, source]);
   });
-  
-  csv.push(['', '', '', '', '']);
-  csv.push(['TOTAL PAYMENTS', '', totalVolume.toFixed(2), '', '']);
-  csv.push(['CREATORS REQUIRING 1099', '', count1099, '', '']);
-  csv.push(['', '', '', '', '']);
-  csv.push([`NOTE: 1099-NEC forms due to recipients by January 31, ${year+1}.`, '', '', '', '']);
-  csv.push([`File with IRS by February 28 (paper) or March 31 (e-file), ${year+1}.`, '', '', '', '']);
-  csv.push(['', '', '', '', '']);
-  csv.push(['Generated by Apexa (apexa.com) · Consult your CPA for filing requirements.', '', '', '', '']);
-  
+
+  csv.push(['', '', '', '', '', '']);
+  csv.push(['TOTAL PAYMENTS', '', totalVolume.toFixed(2), '', '', '']);
+  csv.push(['CREATORS REQUIRING 1099', '', count1099, '', '', '']);
+  if(!usedRealData){
+    csv.push(['', '', '', '', '', '']);
+    csv.push(['NOTE: Amounts are ESTIMATES based on monthly volume x 12. Verify with actual payout records before filing.', '', '', '', '', '']);
+  }
+  csv.push(['', '', '', '', '', '']);
+  csv.push([`NOTE: 1099-NEC forms due to recipients by January 31, ${year+1}.`, '', '', '', '', '']);
+  csv.push([`File with IRS by February 28 (paper) or March 31 (e-file), ${year+1}.`, '', '', '', '', '']);
+  csv.push(['', '', '', '', '', '']);
+  csv.push(['Generated by Apexa (apexa.com) · Consult your CPA for filing requirements.', '', '', '', '', '']);
+
   const csvStr = csv.map(row=>row.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
   const blob = new Blob([csvStr], {type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
@@ -8340,7 +8449,8 @@ function export1099CSV(){
   a.download = `Apexa_1099_Export_${year}.csv`;
   a.click();
   URL.revokeObjectURL(url);
-  showToast('📥 1099 export ready!', `${count1099} creators need 1099-NEC for tax year ${year}.`);
+  const note=usedRealData?'':'  (estimated — verify with payout records)';
+  showToast('📥 1099 export ready!', `${count1099} creators need 1099-NEC for tax year ${year}.${note}`);
 }
 
 function render1099List(){

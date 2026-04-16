@@ -210,6 +210,118 @@ def _get_plaid_token(user_id: str) -> Optional[str]:
             print(f"DB error (_get_plaid_token): {e}")
     return None
 
+# ── Agency DB Helpers ────────────────────────────────────────────────────────
+
+agency_store = {}
+agency_creators_store = {}
+agency_payouts_store = {}
+_creator_payouts: dict = {}
+
+def _db_get_agency(agency_id: str) -> Optional[dict]:
+    if db:
+        try:
+            r = db.table("agencies").select("*").eq("agency_id", agency_id).single().execute()
+            if r.data:
+                agency_store[agency_id] = r.data
+                return r.data
+        except:
+            pass
+    return agency_store.get(agency_id)
+
+def _db_create_agency(data: dict) -> dict:
+    agency_id = data.get("agency_id", "")
+    if db:
+        try:
+            r = db.table("agencies").insert(data).execute()
+            if r.data:
+                agency_store[agency_id] = r.data[0]
+                return r.data[0]
+        except Exception as e:
+            print(f"DB create_agency error: {e}")
+    agency_store[agency_id] = data
+    return data
+
+def _db_update_agency(agency_id: str, updates: dict):
+    if db:
+        try:
+            db.table("agencies").update(updates).eq("agency_id", agency_id).execute()
+        except Exception as e:
+            print(f"DB update_agency error: {e}")
+    if agency_id in agency_store:
+        agency_store[agency_id].update(updates)
+
+def _db_get_roster(agency_id: str) -> list:
+    if db:
+        try:
+            r = db.table("agency_creators").select("*").eq("agency_id", agency_id).execute()
+            if r.data is not None:
+                agency_creators_store[agency_id] = r.data
+                return r.data
+        except Exception as e:
+            print(f"DB get_roster error: {e}")
+    return agency_creators_store.get(agency_id, [])
+
+def _db_add_creator(data: dict) -> dict:
+    agency_id = data.get("agency_id", "")
+    if db:
+        try:
+            r = db.table("agency_creators").insert(data).execute()
+            if r.data:
+                agency_creators_store.setdefault(agency_id, []).append(r.data[0])
+                return r.data[0]
+        except Exception as e:
+            print(f"DB add_creator error: {e}")
+    agency_creators_store.setdefault(agency_id, []).append(data)
+    return data
+
+def _db_update_creator(creator_id: str, agency_id: str, updates: dict):
+    if db:
+        try:
+            db.table("agency_creators").update(updates).eq("id", creator_id).execute()
+        except Exception as e:
+            print(f"DB update_creator error: {e}")
+    for c in agency_creators_store.get(agency_id, []):
+        if c.get("id") == creator_id:
+            c.update(updates)
+            break
+
+def _db_remove_creator(creator_id: str, agency_id: str):
+    if db:
+        try:
+            db.table("agency_creators").delete().eq("id", creator_id).execute()
+        except Exception as e:
+            print(f"DB remove_creator error: {e}")
+    roster = agency_creators_store.get(agency_id, [])
+    agency_creators_store[agency_id] = [c for c in roster if c.get("id") != creator_id]
+
+def _db_save_payout(data: dict):
+    agency_id = data.get("agency_id", "")
+    if db:
+        try:
+            db.table("agency_payouts").insert(data).execute()
+        except Exception as e:
+            print(f"DB save_payout error: {e}")
+    agency_payouts_store.setdefault(agency_id, []).insert(0, data)
+
+def _db_get_payouts(agency_id: str) -> list:
+    if db:
+        try:
+            r = db.table("agency_payouts").select("*").eq("agency_id", agency_id).order("timestamp", desc=True).execute()
+            if r.data is not None:
+                agency_payouts_store[agency_id] = r.data
+                return r.data
+        except Exception as e:
+            print(f"DB get_payouts error: {e}")
+    return agency_payouts_store.get(agency_id, [])
+
+def _get_processing_fee_rate(monthly_volume: float) -> float:
+    """Tiered processing fee: <$50K=2.5%, $50K-$200K=2.0%, $200K+=1.5%"""
+    if monthly_volume >= 200000:
+        return 0.015
+    elif monthly_volume >= 50000:
+        return 0.02
+    return 0.025
+
 # ──────────────────────────────────────────────────────────────────────────────
 
 JWT_SECRET = os.getenv("JWT_SECRET", secrets.token_hex(32))
@@ -2034,16 +2146,9 @@ def simulate_income_event(amount: float = 5000, platform: str = "YouTube", user_
         "disclaimer": "Funds held by Stripe Treasury. Investments managed by DriveWealth. Apexa does not hold or manage funds."
     }
 
-# --- Agency Management (Sandbox) ---
+# --- Agency Management ---
 
 import uuid
-
-# In-memory stores for agency sandbox data
-agency_store = {}
-agency_creators_store = {}
-agency_payouts_store = {}
-# creator_email -> list of payouts received from agencies
-_creator_payouts: dict = {}
 
 class AgencyOnboardRequest(BaseModel):
     name: str
@@ -2072,60 +2177,99 @@ class AgencyProcessPayoutRequest(BaseModel):
     method: str = "ach"       # ach | instant | wire
 
 @app.post("/api/agency/onboard")
-def agency_onboard(req: AgencyOnboardRequest):
-    """Create an agency profile. Sandbox mode simulates Stripe Connect account creation."""
+def agency_onboard(req: AgencyOnboardRequest, request: Request):
+    """Create an agency profile with Stripe Connect account."""
+    auth = _resolve_auth(request)
+    owner_email = auth["email"] if auth else req.contact_email
     agency_id = f"agency_{uuid.uuid4().hex[:12]}"
-    simulated_stripe_account = f"acct_sandbox_{uuid.uuid4().hex[:10]}"
-    agency_store[agency_id] = {
-        "agency_id": agency_id,
-        "name": req.name,
-        "ein": req.ein,
-        "contact_email": req.contact_email,
-        "platforms": req.platforms,
-        "estimated_volume": req.estimated_volume,
-        "stripe_connect_account": simulated_stripe_account,
-        "created_at": datetime.utcnow().isoformat(),
-        "status": "active",
+    # Create real Stripe Connect account if configured, else sandbox
+    stripe_acct = f"acct_sandbox_{uuid.uuid4().hex[:10]}"
+    source = "sandbox"
+    if stripe.api_key:
+        try:
+            acct = stripe.Account.create(
+                type="express", country="US", email=req.contact_email,
+                capabilities={"transfers": {"requested": True}},
+                business_type="company",
+                metadata={"platform": "apexa", "type": "agency", "agency_id": agency_id},
+            )
+            stripe_acct = acct.id
+            source = "live"
+        except Exception as e:
+            print(f"Stripe Connect agency create failed: {e}")
+    data = {
+        "agency_id": agency_id, "name": req.name, "ein": req.ein,
+        "contact_email": req.contact_email, "owner_email": owner_email,
+        "platforms": req.platforms, "estimated_volume": str(req.estimated_volume),
+        "stripe_connect_account": stripe_acct, "status": "active",
     }
-    agency_creators_store[agency_id] = []
-    agency_payouts_store[agency_id] = []
-    return {
-        "agency_id": agency_id,
-        "stripe_connect_account": simulated_stripe_account,
-        "status": "active",
-        "source": "sandbox",
-        "disclaimer": "This is sandbox/demo data. No real Stripe Connect account was created. For production use, integrate with Stripe Connect onboarding."
-    }
+    _db_create_agency(data)
+    return {"agency_id": agency_id, "stripe_connect_account": stripe_acct, "status": "active", "source": source}
 
 @app.post("/api/agency/invite-creator")
-def agency_invite_creator(req: AgencyInviteCreatorRequest):
-    """Invite a creator to join the agency roster."""
-    if req.agency_id not in agency_store:
+def agency_invite_creator(req: AgencyInviteCreatorRequest, request: Request):
+    """Invite a creator to join the agency roster. Creates Stripe Connect account if configured."""
+    auth = _resolve_auth(request)
+    agency = _db_get_agency(req.agency_id)
+    if not agency:
         raise HTTPException(status_code=404, detail=f"Agency {req.agency_id} not found.")
     if req.split_percentage < 0 or req.split_percentage > 100:
         raise HTTPException(status_code=400, detail="split_percentage must be between 0 and 100.")
     creator_id = f"creator_{uuid.uuid4().hex[:10]}"
+    # Create Stripe Connect Express account for the creator if configured
+    stripe_account_id = ""
+    onboarding_url = ""
+    if stripe.api_key:
+        try:
+            acct = stripe.Account.create(
+                type="express", country="US", email=req.creator_email,
+                capabilities={"transfers": {"requested": True}},
+                business_type="individual",
+                individual={"first_name": req.creator_name.split()[0] if req.creator_name else "",
+                            "last_name": req.creator_name.split()[-1] if req.creator_name and len(req.creator_name.split()) > 1 else "",
+                            "email": req.creator_email},
+                metadata={"platform": "apexa", "type": "creator", "agency_id": req.agency_id},
+            )
+            stripe_account_id = acct.id
+            # Generate onboarding link
+            link = stripe.AccountLink.create(
+                account=acct.id, type="account_onboarding",
+                refresh_url=f"{APEXA_URL}/app?connect=refresh&account={acct.id}",
+                return_url=f"{APEXA_URL}/app?connect=complete&account={acct.id}",
+            )
+            onboarding_url = link.url
+        except Exception as e:
+            print(f"Stripe Connect creator create failed: {e}")
     invite = {
-        "creator_id": creator_id,
-        "creator_name": req.creator_name,
-        "creator_email": req.creator_email,
-        "platform": req.platform,
-        "split_percentage": req.split_percentage,
-        "status": "invited",
-        "invited_at": datetime.utcnow().isoformat(),
-        "total_volume": 0.0,
+        "id": creator_id, "agency_id": req.agency_id,
+        "creator_name": req.creator_name, "creator_email": req.creator_email,
+        "platform": req.platform, "split_percentage": float(req.split_percentage),
+        "status": "invited", "stripe_account_id": stripe_account_id,
+        "monthly_volume": 0, "total_volume": 0,
     }
-    agency_creators_store.setdefault(req.agency_id, []).append(invite)
-    return {
-        "creator_id": creator_id,
-        "invite_status": "invited",
-        "creator_name": req.creator_name,
-        "creator_email": req.creator_email,
-        "platform": req.platform,
-        "split_percentage": req.split_percentage,
-        "source": "sandbox",
-        "disclaimer": "This is sandbox/demo data. No real invitation email was sent. In production, an email invite would be dispatched to the creator."
-    }
+    _db_add_creator(invite)
+    result = {"creator_id": creator_id, "status": "invited",
+              "creator_name": req.creator_name, "stripe_account_id": stripe_account_id}
+    if onboarding_url:
+        result["onboarding_url"] = onboarding_url
+    return result
+
+@app.delete("/api/agency/remove-creator")
+def agency_remove_creator(creator_id: str, agency_id: str, request: Request):
+    """Remove a creator from the agency roster."""
+    auth = _resolve_auth(request)
+    _db_remove_creator(creator_id, agency_id)
+    return {"status": "removed", "creator_id": creator_id}
+
+@app.post("/api/agency/update-creator-status")
+def agency_update_creator_status(creator_id: str, agency_id: str, status: str, request: Request):
+    """Update a creator's status (active, paused, invited, deactivated)."""
+    auth = _resolve_auth(request)
+    valid_statuses = ["active", "paused", "invited", "deactivated"]
+    if status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Status must be one of {valid_statuses}")
+    _db_update_creator(creator_id, agency_id, {"status": status})
+    return {"status": "updated", "creator_id": creator_id, "new_status": status}
 
 @app.post("/api/agency/process-payout")
 def agency_process_payout(req: AgencyProcessPayoutRequest):
@@ -2275,105 +2419,77 @@ class UpdateSplitRequest(BaseModel):
     split_percentage: float
 
 @app.post("/api/agency/update-split")
-def agency_update_split(req: UpdateSplitRequest):
+def agency_update_split(req: UpdateSplitRequest, request: Request):
     """Update a creator's agency commission split percentage."""
+    auth = _resolve_auth(request)
     if req.split_percentage < 0 or req.split_percentage > 100:
         raise HTTPException(status_code=400, detail="split_percentage must be 0–100")
-    if req.agency_id in agency_store:
-        for c in agency_creators_store.get(req.agency_id, []):
-            if c["creator_id"] == req.creator_id:
-                old = c["split_percentage"]
-                c["split_percentage"] = req.split_percentage
-                return {"status": "updated", "creator_id": req.creator_id,
-                        "old_split": old, "new_split": req.split_percentage}
-    # If agency/creator not in store (demo), just acknowledge
-    return {"status": "acknowledged", "creator_id": req.creator_id,
-            "new_split": req.split_percentage, "source": "demo"}
+    creator_id = req.creator_id
+    # Try DB helpers — look up by creator_id or id field
+    roster = _db_get_roster(req.agency_id)
+    for c in roster:
+        cid = c.get("creator_id") or c.get("id", "")
+        if cid == creator_id:
+            old = c.get("split_percentage", 0)
+            _db_update_creator(cid, req.agency_id, {"split_percentage": float(req.split_percentage)})
+            return {"status": "updated", "creator_id": creator_id, "old_split": old, "new_split": req.split_percentage}
+    return {"status": "acknowledged", "creator_id": creator_id, "new_split": req.split_percentage, "source": "demo"}
 
 
 @app.get("/api/agency/roster")
-def agency_roster(agency_id: str):
+def agency_roster(agency_id: str, request: Request):
     """Returns the list of creators under the agency."""
-    if agency_id not in agency_store:
-        raise HTTPException(status_code=404, detail=f"Agency {agency_id} not found.")
-    creators = agency_creators_store.get(agency_id, [])
+    auth = _resolve_auth(request)
+    agency = _db_get_agency(agency_id)
+    creators = _db_get_roster(agency_id)
     return {
         "agency_id": agency_id,
-        "agency_name": agency_store[agency_id]["name"],
+        "agency_name": agency.get("name", "") if agency else "",
         "creator_count": len(creators),
-        "creators": [
-            {
-                "creator_id": c["creator_id"],
-                "creator_name": c["creator_name"],
-                "creator_email": c["creator_email"],
-                "platform": c["platform"],
-                "split_percentage": c["split_percentage"],
-                "total_volume": c["total_volume"],
-                "status": c["status"],
-            }
-            for c in creators
-        ],
-        "source": "sandbox",
-        "disclaimer": "This is sandbox/demo data. Creator roster is stored in memory and will reset on server restart."
+        "creators": creators,
+        "source": "live" if db else "memory",
     }
 
 @app.get("/api/agency/payouts")
-def agency_payouts(agency_id: str):
+def agency_payouts(agency_id: str, request: Request):
     """Returns payout history for the agency."""
-    if agency_id not in agency_store:
-        raise HTTPException(status_code=404, detail=f"Agency {agency_id} not found.")
-    payouts = agency_payouts_store.get(agency_id, [])
+    auth = _resolve_auth(request)
+    agency = _db_get_agency(agency_id)
+    payouts = _db_get_payouts(agency_id)
     return {
         "agency_id": agency_id,
-        "agency_name": agency_store[agency_id]["name"],
+        "agency_name": agency.get("name", "") if agency else "",
         "total_payouts": len(payouts),
-        "payouts": [
-            {
-                "payout_id": p["payout_id"],
-                "timestamp": p["timestamp"],
-                "total_gross": p["total_gross"],
-                "agency_cut": p["total_agency_cut"],
-                "processing_fee": p["total_processing_fee"],
-                "net_to_creators": p["total_net_to_creators"],
-                "creator_count": len(p["creator_payouts"]),
-                "status": p["status"],
-            }
-            for p in payouts
-        ],
-        "source": "sandbox",
-        "disclaimer": "This is sandbox/demo data. Payout history is stored in memory and will reset on server restart."
+        "payouts": payouts,
+        "source": "live" if db else "memory",
     }
 
 @app.get("/api/agency/stats")
-def agency_stats(agency_id: str):
+def agency_stats(agency_id: str, request: Request):
     """Returns agency dashboard stats."""
-    if agency_id not in agency_store:
-        raise HTTPException(status_code=404, detail=f"Agency {agency_id} not found.")
-    agency = agency_store[agency_id]
-    creators = agency_creators_store.get(agency_id, [])
-    payouts = agency_payouts_store.get(agency_id, [])
+    auth = _resolve_auth(request)
+    agency = _db_get_agency(agency_id)
+    if not agency:
+        return {"agency_id": agency_id, "error": "not found", "source": "demo",
+                "total_volume": 0, "total_revenue": 0, "creator_count": 0, "avg_split": 0}
+    creators = _db_get_roster(agency_id)
+    payouts = _db_get_payouts(agency_id)
 
-    total_volume = sum(p["total_gross"] for p in payouts)
-    total_revenue = sum(p["total_processing_fee"] for p in payouts)
+    total_volume = sum(float(p.get("total_gross", 0)) for p in payouts)
+    total_revenue = sum(float(p.get("total_processing_fee", 0) or p.get("total_agency_cut", 0)) for p in payouts)
     creator_count = len(creators)
-    avg_split = round(sum(c["split_percentage"] for c in creators) / creator_count, 2) if creator_count > 0 else 0.0
-
-    # Simulated monthly subscription revenue based on creator count
-    MONTHLY_SUB_PER_CREATOR = 29.99
-    monthly_sub_revenue = round(creator_count * MONTHLY_SUB_PER_CREATOR, 2)
+    avg_split = round(sum(float(c.get("split_percentage", 0)) for c in creators) / creator_count, 2) if creator_count > 0 else 0.0
 
     return {
         "agency_id": agency_id,
-        "agency_name": agency["name"],
+        "agency_name": agency.get("name", ""),
         "total_volume": round(total_volume, 2),
         "total_revenue": round(total_revenue, 2),
         "creator_count": creator_count,
         "avg_split": avg_split,
-        "monthly_sub_revenue": monthly_sub_revenue,
-        "platforms": agency["platforms"],
-        "status": agency["status"],
-        "source": "sandbox",
-        "disclaimer": "This is sandbox/demo data. Stats are computed from in-memory sandbox transactions. Monthly subscription revenue is simulated at $29.99 per creator."
+        "platforms": agency.get("platforms", []),
+        "status": agency.get("status", "active"),
+        "source": "live" if db else "memory",
     }
 
 
