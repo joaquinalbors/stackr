@@ -147,12 +147,43 @@ h1 em{font-style:normal;color:var(--accent)}
 .ch-body{font-size:clamp(15px,1.5vw,18px);color:var(--muted);line-height:1.65;margin-bottom:28px;font-weight:500}
 .ch-meta{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding-top:24px;border-top:1px solid var(--border)}
 
+/* Chapter visual panel (below text) */
+.ch-visual{margin-top:40px;background:var(--white);border:1px solid var(--border);border-radius:20px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.05)}
+.chapter.alt .ch-visual{background:var(--bg)}
+.cv-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.cv-title{font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--text)}
+.cv-meta{font-size:11px;color:var(--muted);font-weight:600}
+.cv-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);font-size:13px}
+.cv-row:last-child{border-bottom:none}
+.cv-bar-track{flex:1;height:8px;background:var(--surface);border-radius:99px;overflow:hidden;margin:0 16px}
+.cv-bar-fill{height:100%;border-radius:99px}
+.cv-amt{font-size:13px;font-weight:800;color:var(--green)}
+.cv-label{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--text);min-width:140px}
+.cv-ico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:var(--surface)}
+
+/* Card-style visual — banking */
+.cv-card{background:linear-gradient(135deg,#1a0d3a,#2d1760);border-radius:16px;padding:24px;color:#fff;margin-top:8px;position:relative;overflow:hidden;min-height:180px}
+.cv-card::before{content:'';position:absolute;top:-40%;right:-20%;width:70%;height:180%;border-radius:50%;background:radial-gradient(circle,rgba(167,139,250,.25) 0%,transparent 60%);pointer-events:none}
+.cv-card-top{display:flex;justify-content:space-between;font-size:11px;font-weight:800;letter-spacing:1.2px;margin-bottom:36px;position:relative;z-index:1}
+.cv-card-chip{width:34px;height:24px;border-radius:6px;background:linear-gradient(135deg,#d4af37,#f4d37f);margin-bottom:22px;position:relative;z-index:1}
+.cv-card-num{font-size:17px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.9);margin-bottom:18px;position:relative;z-index:1}
+.cv-card-foot{display:flex;justify-content:space-between;font-size:10px;font-weight:700;letter-spacing:1.2px;color:rgba(255,255,255,.55);position:relative;z-index:1}
+.cv-card-foot strong{display:block;color:#fff;font-size:13px;letter-spacing:0;margin-top:3px}
+
+/* Pie-chart-ish allocation bars */
+.cv-alloc{display:flex;height:10px;border-radius:99px;overflow:hidden;margin:14px 0}
+.cv-legend{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.cv-leg{font-size:11px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px}
+.cv-leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
 @media(max-width:860px){
   .chapters-intro{padding:80px 24px 40px}
   .chapter{padding:64px 24px}
   .ch-inner{grid-template-columns:1fr;gap:24px}
   .ch-left{position:static}
   .ch-num{font-size:64px;letter-spacing:-3px;margin-bottom:6px}
+  .ch-visual{padding:20px}
+  .cv-label{min-width:100px;font-size:12px}
 }
 
 /* PROOF */
@@ -400,6 +431,9 @@ html[data-theme="dark"] .chapter.alt{background:var(--white)}
 html[data-theme="dark"] .chapters-intro{background:var(--bg)}
 html[data-theme="dark"] .ch-num{color:var(--text)}
 html[data-theme="dark"] .ci-h2 em{color:rgba(255,255,255,.35)}
+html[data-theme="dark"] .ch-visual{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.08);box-shadow:none}
+html[data-theme="dark"] .chapter.alt .ch-visual{background:rgba(255,255,255,.04)}
+html[data-theme="dark"] .cv-ico{background:rgba(255,255,255,.06)}
 html[data-theme="dark"] .nav-aud{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.08)}
 html[data-theme="dark"] #nav-as-creator.on{background:rgba(255,255,255,.12);color:#fff}
 html[data-theme="dark"] #nav-as-agency.on{background:#3b82f6;color:#fff}
@@ -478,6 +512,19 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
     <div class="ch-right rev d1">
       <h3 class="ch-h">Taxes, withheld before<br>you can spend them.</h3>
       <p class="ch-body">Set your rate once. Every dollar that lands in Apexa — YouTube, TikTok, brand deals — is split instantly. 28% to your Tax Vault. Automatic quarterly payments. April stops being a crisis.</p>
+      <div class="ch-visual">
+        <div class="cv-head">
+          <div class="cv-title">Tax Vault · Q1 2026</div>
+          <div class="cv-meta">Due Apr 15 · 22 days</div>
+        </div>
+        <div class="cv-row">
+          <span style="font-size:28px;font-weight:900;letter-spacing:-1px;color:#f59e0b">$4,820</span>
+          <div class="cv-bar-track"><div class="cv-bar-fill" style="width:78%;background:#f59e0b"></div></div>
+          <span style="font-size:13px;font-weight:700;color:var(--muted)">78%</span>
+        </div>
+        <div class="cv-row"><span style="color:var(--muted);font-size:12px">Target</span><span style="font-weight:700">$6,200</span></div>
+        <div class="cv-row"><span style="color:var(--muted);font-size:12px">Remaining this quarter</span><span style="font-weight:700;color:#f59e0b">$1,380</span></div>
+      </div>
       <div class="ch-meta">Built on Plaid · Powered by Apexa AI</div>
     </div>
   </div>
@@ -492,6 +539,20 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
     <div class="ch-right rev d1">
       <h3 class="ch-h">A real bank account.<br>Built for creator income.</h3>
       <p class="ch-body">FDIC-insured checking. A debit card in your name. Direct deposit routing so YouTube, Stripe, and sponsors land directly in Apexa — where the split happens before the money hits your spending.</p>
+      <div class="ch-visual" style="padding:20px">
+        <div class="cv-card">
+          <div class="cv-card-top"><span>APEXA</span><span>VISA</span></div>
+          <div class="cv-card-chip"></div>
+          <div class="cv-card-num">•••• •••• •••• 4821</div>
+          <div class="cv-card-foot">
+            <div>CARD HOLDER<strong>A. RIVERA</strong></div>
+            <div>EXPIRES<strong>03 / 29</strong></div>
+            <div>BALANCE<strong style="color:#a78bfa">$24,830</strong></div>
+          </div>
+        </div>
+        <div class="cv-row" style="margin-top:12px"><span class="cv-label"><span class="cv-ico">🔀</span>Routing</span><span style="font-weight:700">026073150</span></div>
+        <div class="cv-row"><span class="cv-label"><span class="cv-ico">💳</span>Account</span><span style="font-weight:700">••••4821</span></div>
+      </div>
       <div class="ch-meta">Powered by AtomicVest · Stripe Treasury</div>
     </div>
   </div>
@@ -506,6 +567,16 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
     <div class="ch-right rev d1">
       <h3 class="ch-h">Every dollar.<br>Every platform. One view.</h3>
       <p class="ch-body">Apexa watches your income across twelve+ platforms and categorizes every deposit automatically. Deductions found. Trends surfaced. The part-time accounting job you never signed up for — eliminated.</p>
+      <div class="ch-visual">
+        <div class="cv-head">
+          <div class="cv-title">This Month · $26,340</div>
+          <div class="cv-meta">+18.4% vs last month</div>
+        </div>
+        <div class="cv-row"><span class="cv-label"><span class="cv-ico" style="background:rgba(255,0,0,.08)">▶️</span>YouTube</span><div class="cv-bar-track"><div class="cv-bar-fill" style="width:47%;background:#ef4444"></div></div><span class="cv-amt">$12,400</span></div>
+        <div class="cv-row"><span class="cv-label"><span class="cv-ico" style="background:rgba(0,0,0,.06)">🎵</span>TikTok</span><div class="cv-bar-track"><div class="cv-bar-fill" style="width:31%;background:#0a0a12"></div></div><span class="cv-amt">$8,200</span></div>
+        <div class="cv-row"><span class="cv-label"><span class="cv-ico" style="background:rgba(245,158,11,.1)">🤝</span>Brand Deals</span><div class="cv-bar-track"><div class="cv-bar-fill" style="width:17%;background:#7c3aed"></div></div><span class="cv-amt">$4,500</span></div>
+        <div class="cv-row"><span class="cv-label"><span class="cv-ico" style="background:rgba(255,107,107,.08)">🎨</span>Patreon</span><div class="cv-bar-track"><div class="cv-bar-fill" style="width:5%;background:#f59e0b"></div></div><span class="cv-amt">$1,240</span></div>
+      </div>
       <div class="ch-meta">Powered by Tight · Plaid categorization</div>
     </div>
   </div>
@@ -520,6 +591,24 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
     <div class="ch-right rev d1">
       <h3 class="ch-h">Your money works<br>while you create.</h3>
       <p class="ch-body">Set a percentage. Every payment buys into a diversified ETF portfolio automatically. No stock picking, no timing the market — just compounding growth on autopilot.</p>
+      <div class="ch-visual">
+        <div class="cv-head">
+          <div class="cv-title">Portfolio · $11,240</div>
+          <div class="cv-meta" style="color:#00c853">+$362 (+3.2%) YTD</div>
+        </div>
+        <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:1.2px;margin-bottom:8px">ALLOCATION</div>
+        <div class="cv-alloc">
+          <div style="width:60%;background:#7c3aed"></div>
+          <div style="width:25%;background:#3b82f6"></div>
+          <div style="width:15%;background:#00c853"></div>
+        </div>
+        <div class="cv-legend">
+          <div class="cv-leg"><span class="cv-leg-dot" style="background:#7c3aed"></span>VTI · 60%</div>
+          <div class="cv-leg"><span class="cv-leg-dot" style="background:#3b82f6"></span>QQQ · 25%</div>
+          <div class="cv-leg"><span class="cv-leg-dot" style="background:#00c853"></span>SPY · 15%</div>
+        </div>
+        <div class="cv-row" style="margin-top:10px"><span style="color:var(--muted);font-size:12px">Weekly auto-invest</span><span style="font-weight:700;color:#7c3aed">$500 every Monday</span></div>
+      </div>
       <div class="ch-meta">Managed by DriveWealth · SPY · QQQ · VTI</div>
     </div>
   </div>
@@ -534,6 +623,17 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
     <div class="ch-right rev d1">
       <h3 class="ch-h">Pay your roster<br>in a single click.</h3>
       <p class="ch-body">One dashboard, custom splits per creator, automatic 1099s at year-end. Agencies moving $1M+/month cut payout admin from hours to seconds.</p>
+      <div class="ch-visual">
+        <div class="cv-head">
+          <div class="cv-title">April Payout · 5 creators</div>
+          <div class="cv-meta" style="color:#00c853">✓ Processing</div>
+        </div>
+        <div class="cv-row"><span class="cv-label"><span class="cv-ico" style="background:rgba(255,0,0,.08)">▶️</span>Marcus T.<span style="font-weight:500;color:var(--muted);margin-left:6px">70%</span></span><span class="cv-amt">$8,680</span></div>
+        <div class="cv-row"><span class="cv-label"><span class="cv-ico" style="background:rgba(0,0,0,.06)">🎵</span>Priya K.<span style="font-weight:500;color:var(--muted);margin-left:6px">75%</span></span><span class="cv-amt">$5,250</span></div>
+        <div class="cv-row"><span class="cv-label"><span class="cv-ico" style="background:rgba(255,107,107,.08)">📸</span>Alex M.<span style="font-weight:500;color:var(--muted);margin-left:6px">80%</span></span><span class="cv-amt">$3,120</span></div>
+        <div class="cv-row"><span class="cv-label"><span class="cv-ico" style="background:rgba(147,51,234,.1)">🎮</span>Jordan L.<span style="font-weight:500;color:var(--muted);margin-left:6px">72%</span></span><span class="cv-amt">$6,840</span></div>
+        <div class="cv-row" style="border-top:2px solid var(--text);padding-top:14px;margin-top:4px"><span style="font-weight:900;color:var(--text);font-size:14px">Total dispatched</span><span style="font-weight:900;color:#00c853;font-size:16px">$23,890</span></div>
+      </div>
       <div class="ch-meta">Built on Stripe Connect · Instant ACH</div>
     </div>
   </div>
