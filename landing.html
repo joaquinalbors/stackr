@@ -125,6 +125,65 @@ h1 em{font-style:normal;color:var(--accent)}
 .tick-item{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:8px}
 @keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
+/* VIDEO SECTION */
+.video-sec{padding:80px 40px 40px;background:var(--bg);border-top:1px solid var(--border);text-align:center}
+.video-wrap{max-width:1100px;margin:0 auto}
+.video-eyebrow{font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:20px}
+.video-h{font-size:clamp(26px,3vw,40px);font-weight:900;letter-spacing:-1.2px;line-height:1.1;margin-bottom:40px;max-width:760px;margin-left:auto;margin-right:auto}
+.video-frame{position:relative;width:100%;aspect-ratio:16/9;background:#0a0a12;border-radius:20px;overflow:hidden;border:1px solid var(--border);box-shadow:0 32px 80px rgba(0,0,0,.12);cursor:pointer;transition:transform .25s,box-shadow .25s}
+.video-frame:hover{transform:translateY(-3px);box-shadow:0 40px 100px rgba(124,58,237,.2)}
+.video-frame iframe,.video-frame video{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
+.video-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#0a0a12,#1e1040);color:#fff}
+.vp-play{width:84px;height:84px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:22px;box-shadow:0 8px 32px rgba(124,58,237,.45);transition:transform .2s}
+.video-frame:hover .vp-play{transform:scale(1.08)}
+.vp-text{font-size:14px;font-weight:700;color:rgba(255,255,255,.75);letter-spacing:.5px}
+@media(max-width:640px){.video-sec{padding:56px 20px 24px}.vp-play{width:64px;height:64px;font-size:22px}}
+
+/* MID-PAGE CTA */
+.mid-cta{padding:100px 40px;background:var(--dark);text-align:center;border-top:1px solid rgba(255,255,255,.04)}
+.mid-cta-inner{max-width:900px;margin:0 auto}
+.mid-cta-eyebrow{font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--accent2);margin-bottom:20px}
+.mid-cta-h{font-size:clamp(32px,4.5vw,60px);font-weight:900;letter-spacing:-2px;line-height:1.02;color:#fff;margin-bottom:28px}
+.mid-cta-h em{font-style:normal;color:var(--accent2)}
+.mid-cta-sub{font-size:15px;color:rgba(255,255,255,.5);margin-bottom:36px;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.6}
+.mid-cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.mc-btn{font-family:inherit;font-size:15px;font-weight:800;padding:15px 32px;border-radius:99px;cursor:pointer;transition:all .2s;border:none}
+.mc-btn-p{background:var(--accent);color:#fff;box-shadow:0 4px 20px rgba(124,58,237,.35)}
+.mc-btn-p:hover{background:#6d28d9;transform:translateY(-2px)}
+.mc-btn-s{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.18)}
+.mc-btn-s:hover{border-color:var(--accent2);color:var(--accent2)}
+@media(max-width:640px){.mid-cta{padding:64px 24px}}
+
+/* SECURITY / TRUST BAR */
+.trust-bar{padding:56px 40px;background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.trust-inner{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
+.trust-item{display:flex;flex-direction:column;gap:4px}
+.trust-ico{font-size:20px;margin-bottom:8px;line-height:1}
+.trust-t{font-size:13px;font-weight:800;letter-spacing:-.2px}
+.trust-d{font-size:12px;color:var(--muted);line-height:1.45;font-weight:500}
+html[data-theme="dark"] .trust-bar{background:var(--white)}
+@media(max-width:760px){.trust-bar{padding:40px 24px}.trust-inner{grid-template-columns:repeat(2,1fr);gap:20px}}
+
+/* FOOTER MULTI-COLUMN */
+footer.footer-wide{padding:72px 40px 32px;border-top:1px solid var(--border);background:var(--bg)}
+.fw-inner{max-width:1160px;margin:0 auto}
+.fw-top{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr 1fr;gap:40px;padding-bottom:56px;border-bottom:1px solid var(--border)}
+.fw-brand .flogo{font-size:22px;font-weight:900;letter-spacing:-1px;cursor:pointer;margin-bottom:14px;display:inline-block}
+.fw-brand .flogo span{color:var(--accent)}
+.fw-tag{font-size:13px;color:var(--muted);line-height:1.55;font-weight:500;max-width:240px;margin-bottom:16px}
+.fw-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:5px 10px;border:1px solid var(--border);border-radius:99px}
+.fw-col-h{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--text);margin-bottom:16px}
+.fw-links{display:flex;flex-direction:column;gap:10px}
+.fw-links a{font-size:13px;color:var(--muted);font-weight:500;transition:color .15s}
+.fw-links a:hover{color:var(--accent)}
+.fw-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:28px;flex-wrap:wrap;gap:14px}
+.fw-copy{font-size:11px;color:var(--muted)}
+.fw-social{display:flex;gap:10px}
+.fw-social a{width:32px;height:32px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;border:1px solid var(--border)}
+.fw-social a:hover{border-color:var(--accent);color:var(--accent)}
+@media(max-width:900px){.fw-top{grid-template-columns:1fr 1fr;gap:32px}}
+@media(max-width:560px){footer.footer-wide{padding:48px 24px 20px}.fw-top{grid-template-columns:1fr;gap:28px}}
+
 /* S-eyebrow + S-h2 (still used by other sections) */
 .s-eyebrow{font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:16px;text-align:center}
 .s-h2{font-size:clamp(30px,3.5vw,46px);font-weight:900;letter-spacing:-1.5px;line-height:1.06;text-align:center;margin-bottom:60px}
@@ -495,6 +554,24 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
   </div>
 </section>
 
+<!-- VIDEO — drop your URL into the iframe src below, or keep placeholder -->
+<section class="video-sec">
+  <div class="video-wrap">
+    <div class="video-eyebrow rev">See it in action</div>
+    <h2 class="video-h rev d1">Ninety seconds from sign up<br>to autopilot.</h2>
+    <div class="video-frame rev d2" id="videoFrame" onclick="loadVideo()">
+      <!-- Replace <iframe> below with real video when ready. Set data-video-url on #videoFrame. -->
+      <div class="video-placeholder" id="videoPlaceholder">
+        <div class="vp-play">▶</div>
+        <div class="vp-text">Watch the demo · 90 sec</div>
+      </div>
+      <!-- Example YouTube replacement:
+           <iframe src="https://www.youtube.com/embed/YOUR_ID?autoplay=1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+      -->
+    </div>
+  </div>
+</section>
+
 <!-- CHAPTERS — Terminal-style numbered sections -->
 <section class="chapters-intro">
   <div class="ci-inner">
@@ -667,6 +744,19 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
   </div>
 </section>
 
+<!-- MID-PAGE CTA -->
+<section class="mid-cta">
+  <div class="mid-cta-inner">
+    <div class="mid-cta-eyebrow rev">Get started</div>
+    <h2 class="mid-cta-h rev d1">Ready in <em>90 seconds.</em><br>Free forever.</h2>
+    <p class="mid-cta-sub rev d2">No credit card. No setup call. Just sign up and let Apexa run your money in the background.</p>
+    <div class="mid-cta-btns rev d3">
+      <button class="mc-btn mc-btn-p" onclick="window.location.href='/creator-login'">Start Free →</button>
+      <button class="mc-btn mc-btn-s" onclick="window.location.href='/agency-login'">Book a demo</button>
+    </div>
+  </div>
+</section>
+
 <!-- PARTNERS -->
 <section class="partners">
   <div class="partners-inner">
@@ -682,48 +772,28 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
   </div>
 </section>
 
-<!-- AGENCY STRIP -->
-<section class="agency-strip">
-  <div class="ag-inner">
-    <div class="ag-left rev">
-      <div class="ag-eyebrow">For Agencies</div>
-      <h2 class="ag-h2">Pay your entire roster<br>in one click.</h2>
-      <p class="ag-sub">Stop sending 12 separate wire transfers. Apexa batches your entire creator payroll — custom splits, automatic 1099s, real-time tracking.</p>
-      <ul class="ag-list">
-        <li><div class="ag-check">✓</div>Custom split rules per creator, per platform</li>
-        <li><div class="ag-check">✓</div>Automatic 1099 generation at year-end</li>
-        <li><div class="ag-check">✓</div>Real-time payout tracking & reports</li>
-        <li><div class="ag-check">✓</div>From $149.99/mo — pay for itself in hours saved</li>
-      </ul>
-      <button class="ag-cta" onclick="window.location.href='/agency-login'">See Agency Plans →</button>
+<!-- SECURITY / TRUST BAR -->
+<section class="trust-bar">
+  <div class="trust-inner">
+    <div class="trust-item rev">
+      <div class="trust-ico">🛡</div>
+      <div class="trust-t">FDIC-insured</div>
+      <div class="trust-d">Bank accounts held in your name via AtomicVest partner banks.</div>
     </div>
-    <div class="ag-right rev d2">
-      <div class="ag-card">
-        <div class="ag-card-header">
-          <div class="ag-card-title">April Payout · 5 creators</div>
-          <div class="ag-card-badge">Processing…</div>
-        </div>
-        <div class="ag-creator-row">
-          <div class="ag-cr-left"><div class="ag-cr-av">▶️</div><div><div>Marcus T.</div><div class="ag-cr-split">70% split</div></div></div>
-          <div class="ag-cr-amt">$8,680</div>
-        </div>
-        <div class="ag-creator-row">
-          <div class="ag-cr-left"><div class="ag-cr-av">🎵</div><div><div>Priya K.</div><div class="ag-cr-split">75% split</div></div></div>
-          <div class="ag-cr-amt">$5,250</div>
-        </div>
-        <div class="ag-creator-row">
-          <div class="ag-cr-left"><div class="ag-cr-av">📸</div><div><div>Alex M.</div><div class="ag-cr-split">80% split</div></div></div>
-          <div class="ag-cr-amt">$3,120</div>
-        </div>
-        <div class="ag-creator-row">
-          <div class="ag-cr-left"><div class="ag-cr-av">🎮</div><div><div>Jordan L.</div><div class="ag-cr-split">72% split</div></div></div>
-          <div class="ag-cr-amt">$6,840</div>
-        </div>
-        <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between">
-          <div style="font-size:11px;color:rgba(255,255,255,.4)">Total dispatched</div>
-          <div style="font-size:16px;font-weight:900;color:#00c853">$23,890</div>
-        </div>
-      </div>
+    <div class="trust-item rev d1">
+      <div class="trust-ico">🔐</div>
+      <div class="trust-t">AES-256 encryption</div>
+      <div class="trust-d">Bank-level security at rest and in transit. Never see your passwords.</div>
+    </div>
+    <div class="trust-item rev d2">
+      <div class="trust-ico">📜</div>
+      <div class="trust-t">SOC 2 in progress</div>
+      <div class="trust-d">Built on Stripe + Plaid + AtomicVest — same standards as your bank.</div>
+    </div>
+    <div class="trust-item rev d3">
+      <div class="trust-ico">🇺🇸</div>
+      <div class="trust-t">US-regulated stack</div>
+      <div class="trust-d">Apexa Web App LLC · EIN 41-5230947 · Puerto Rico-based.</div>
     </div>
   </div>
 </section>
@@ -901,17 +971,62 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
   <div class="fin-micro rev d3">Free plan forever · Pro from $49.99/mo · Cancel anytime</div>
 </section>
 
-<footer>
-  <div class="footer-inner">
-    <div class="flogo" onclick="window.location.href='/landing.html'">apexa<span>.</span></div>
-    <div class="flinks">
-      <a href="#pricing">Pricing</a>
-      <a href="/features">Features</a>
-      <a href="/agencies">For Agencies</a>
-      <a href="/privacy.html">Privacy</a>
-      <a href="/terms.html">Terms</a>
+<footer class="footer-wide">
+  <div class="fw-inner">
+    <div class="fw-top">
+      <div class="fw-brand">
+        <div class="flogo" onclick="window.location.href='/landing.html'">apexa<span>.</span></div>
+        <div class="fw-tag">The financial operating system for creators. Five products. One stack.</div>
+        <div class="fw-badge"><span style="color:#00c853">●</span> Built in Puerto Rico</div>
+      </div>
+      <div>
+        <div class="fw-col-h">Product</div>
+        <div class="fw-links">
+          <a href="#ch01">Tax Vault</a>
+          <a href="#ch02">Banking</a>
+          <a href="#ch03">Earnings</a>
+          <a href="#ch04">Investing</a>
+          <a href="#pricing">Pricing</a>
+          <a href="/creator-login">Sign In</a>
+        </div>
+      </div>
+      <div>
+        <div class="fw-col-h">For Agencies</div>
+        <div class="fw-links">
+          <a href="#ch05">Payouts</a>
+          <a href="/agencies">Overview</a>
+          <a href="#pricing">Plans</a>
+          <a href="/agency-login">Agency Login</a>
+          <a href="mailto:alborsadvisory@gmail.com">Book a demo</a>
+        </div>
+      </div>
+      <div>
+        <div class="fw-col-h">Company</div>
+        <div class="fw-links">
+          <a href="#">About</a>
+          <a href="#">Press</a>
+          <a href="mailto:alborsadvisory@gmail.com">Contact</a>
+          <a href="#">Changelog</a>
+        </div>
+      </div>
+      <div>
+        <div class="fw-col-h">Legal</div>
+        <div class="fw-links">
+          <a href="/privacy.html">Privacy</a>
+          <a href="/terms.html">Terms</a>
+          <a href="#">Compliance</a>
+          <a href="#">Security</a>
+        </div>
+      </div>
     </div>
-    <div class="fcopy">© 2026 Apexa Web App LLC · Not a registered investment adviser.</div>
+    <div class="fw-bottom">
+      <div class="fw-copy">© 2026 Apexa Web App LLC · EIN 41-5230947 · Not a registered investment adviser. Banking via AtomicVest. Investments via DriveWealth LLC.</div>
+      <div class="fw-social">
+        <a href="#" title="Twitter">𝕏</a>
+        <a href="#" title="Instagram">📷</a>
+        <a href="#" title="LinkedIn">in</a>
+      </div>
+    </div>
   </div>
 </footer>
 
@@ -921,6 +1036,24 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
 
 <script>
 // Theme toggle
+// Video — set window._apexaVideoUrl (YouTube embed URL or mp4) when you have one
+// Example: window._apexaVideoUrl = 'https://www.youtube.com/embed/YOUR_ID?autoplay=1'
+function loadVideo(){
+  const url = window._apexaVideoUrl || '';
+  if(!url){
+    alert('Video coming soon. We\'ll drop the demo link in here once it\'s recorded.');
+    return;
+  }
+  const frame = document.getElementById('videoFrame');
+  const ph = document.getElementById('videoPlaceholder');
+  if(ph) ph.remove();
+  const iframe = document.createElement('iframe');
+  iframe.src = url;
+  iframe.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; fullscreen');
+  iframe.setAttribute('allowfullscreen', '');
+  frame.appendChild(iframe);
+}
+
 function toggleTheme(){
   const html=document.documentElement;
   const next=html.getAttribute('data-theme')==='dark'?'light':'dark';
