@@ -264,46 +264,67 @@ footer.footer-wide{padding:72px 40px 32px;border-top:1px solid var(--border);bac
 .partners-inner{max-width:1160px;margin:0 auto}
 .plbl{font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;text-align:center}
 .plbl-sub{font-size:clamp(24px,3vw,36px);font-weight:900;letter-spacing:-1.2px;line-height:1.15;text-align:center;margin-bottom:56px;max-width:720px;margin-left:auto;margin-right:auto}
-.plogos{display:grid;grid-template-columns:repeat(5,1fr);gap:32px;align-items:center}
-.plogo{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px 16px;border:1px solid var(--border);border-radius:20px;background:var(--bg);font-size:15px;font-weight:800;color:var(--text);transition:all .25s;min-height:120px}
+.plogos{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;align-items:center}
+.plogo{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:32px 16px;border:1px solid var(--border);border-radius:20px;background:var(--bg);transition:all .25s;min-height:160px;position:relative;overflow:hidden}
 .plogo:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 12px 32px rgba(124,58,237,.08)}
-.pico{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
-.plogo-role{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
-html[data-theme="dark"] .plogo{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.08);color:#fff}
+.pmark{height:28px;width:auto;display:block;color:var(--text);transition:color .2s}
+.plogo-role{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding-top:14px;border-top:1px solid var(--border);width:70%;text-align:center}
+html[data-theme="dark"] .plogo{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.08)}
 html[data-theme="dark"] .plogo:hover{border-color:var(--accent);background:rgba(124,58,237,.08)}
+html[data-theme="dark"] .pmark{color:#fff}
+html[data-theme="dark"] .plogo-role{border-top-color:rgba(255,255,255,.08)}
 @media(max-width:900px){.plogos{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:560px){.partners{padding:64px 20px}.plogos{grid-template-columns:repeat(2,1fr);gap:12px}.plogo{min-height:100px;padding:16px 8px}}
 
-/* PRICING */
-.pricing{padding:100px 40px;background:var(--bg);border-top:1px solid var(--border)}
-.pricing-inner{max-width:1020px;margin:0 auto}
-.ptoggle{display:flex;justify-content:center;margin-bottom:44px}
-.ptwrap{display:inline-flex;background:var(--white);border:1px solid var(--border);border-radius:99px;padding:4px;gap:2px}
-.ptbtn{padding:8px 22px;border-radius:99px;font-size:13px;font-weight:700;cursor:pointer;background:none;border:none;font-family:inherit;color:var(--muted);transition:all .2s}
+/* PRICING — Terminal editorial */
+.pricing{padding:120px 40px;background:var(--bg);border-top:1px solid var(--border)}
+.pricing-inner{max-width:1160px;margin:0 auto}
+.p-eyebrow{font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:18px;text-align:center}
+.p-h{font-size:clamp(36px,5vw,64px);font-weight:900;letter-spacing:-2.5px;line-height:1.02;text-align:center;margin-bottom:16px}
+.p-h em{font-style:normal;color:var(--muted)}
+.p-sub{font-size:16px;color:var(--muted);text-align:center;max-width:560px;margin:0 auto 48px;line-height:1.55;font-weight:500}
+.ptoggle-row{display:flex;flex-direction:column;align-items:center;gap:20px;margin-bottom:56px}
+.ptoggle{display:flex;justify-content:center}
+.ptwrap{display:inline-flex;background:var(--white);border:1.5px solid var(--border);border-radius:99px;padding:4px;gap:2px}
+.ptbtn{padding:9px 24px;border-radius:99px;font-size:13px;font-weight:700;cursor:pointer;background:none;border:none;font-family:inherit;color:var(--muted);transition:all .2s;white-space:nowrap}
 .ptbtn.on{background:var(--text);color:#fff}
-.pg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+html[data-theme="dark"] .ptbtn.on{background:var(--accent)}
+/* Annual toggle */
+.ann-toggle{display:inline-flex;align-items:center;gap:12px;font-size:13px;color:var(--muted);font-weight:600}
+.ann-switch{position:relative;width:46px;height:26px;background:var(--border);border-radius:99px;cursor:pointer;transition:background .2s;flex-shrink:0}
+.ann-switch::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 2px 4px rgba(0,0,0,.15)}
+.ann-switch.on{background:var(--accent)}
+.ann-switch.on::after{transform:translateX(20px)}
+.ann-save{font-size:11px;font-weight:800;color:var(--green);background:rgba(0,200,83,.1);border-radius:99px;padding:3px 10px;letter-spacing:.3px}
+.pg{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:stretch}
 .pcr,.pag{display:none}
 .pcr.on,.pag.on{display:block}
-.pcard{border:1.5px solid var(--border);border-radius:24px;padding:32px;position:relative;background:var(--white);transition:all .2s}
-.pcard:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.08)}
-.pcard.pop{border-color:var(--accent);background:linear-gradient(160deg,rgba(124,58,237,.04) 0%,var(--white) 50%)}
-.pbadge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:3px 12px;border-radius:99px;letter-spacing:.5px;white-space:nowrap}
-.pn{font-size:15px;font-weight:800;margin-bottom:4px}
-.pdesc{font-size:12px;color:var(--muted);margin-bottom:18px}
-.pamt{font-size:36px;font-weight:900;letter-spacing:-2px;line-height:1}
-.pamt sup{font-size:18px;letter-spacing:0;vertical-align:top;margin-top:6px;display:inline-block}
-.pper{font-size:11px;color:var(--muted);margin-bottom:20px;margin-top:3px}
-.pfeats{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:22px}
-.pfeats li{font-size:13px;font-weight:500;display:flex;align-items:flex-start;gap:7px;line-height:1.4}
-.pfeats li::before{content:'✓';font-weight:800;color:var(--green);flex-shrink:0;margin-top:1px}
-.pfeats li.off{opacity:.3}
-.pfeats li.off::before{content:'✕';color:var(--muted)}
-.pbtn{width:100%;padding:12px;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s}
-.pbtn-p{background:var(--accent);color:#fff}
-.pbtn-p:hover{background:#6d28d9}
-.pbtn-s{background:var(--surface);color:var(--text);border:1.5px solid var(--border)}
+.pcard{border:1.5px solid var(--border);border-radius:24px;padding:36px 32px;position:relative;background:var(--white);transition:all .25s;display:flex;flex-direction:column;height:100%}
+.pcard:hover{transform:translateY(-4px);box-shadow:0 20px 48px rgba(0,0,0,.08);border-color:rgba(124,58,237,.25)}
+.pcard.pop{border-color:var(--accent);border-width:2px;background:linear-gradient(165deg,rgba(124,58,237,.05) 0%,var(--white) 55%);transform:scale(1.015)}
+.pcard.pop:hover{transform:scale(1.015) translateY(-4px)}
+.pbadge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:5px 14px;border-radius:99px;letter-spacing:1px;white-space:nowrap;box-shadow:0 4px 12px rgba(124,58,237,.3)}
+.pn{font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.pdesc{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.5;font-weight:500;min-height:36px}
+.pamt-row{display:flex;align-items:baseline;gap:6px;margin-bottom:4px}
+.pamt{font-size:48px;font-weight:900;letter-spacing:-2.5px;line-height:1}
+.pamt sup{font-size:24px;letter-spacing:0;vertical-align:top;margin-top:4px;display:inline-block;font-weight:800}
+.pamt-cents{font-size:20px;font-weight:800;letter-spacing:-.5px;color:var(--muted)}
+.pper{font-size:12px;color:var(--muted);margin-bottom:26px;font-weight:600}
+.pfeats{list-style:none;display:flex;flex-direction:column;gap:11px;margin-bottom:28px;flex:1}
+.pfeats li{font-size:13px;font-weight:500;display:flex;align-items:flex-start;gap:9px;line-height:1.5;color:var(--text)}
+.pfeats li::before{content:'';flex-shrink:0;margin-top:6px;width:6px;height:6px;border-radius:50%;background:var(--green)}
+.pfeats li.off{opacity:.35}
+.pfeats li.off::before{background:var(--muted)}
+.pbtn{width:100%;padding:14px;border:none;border-radius:14px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;transition:all .2s}
+.pbtn-p{background:var(--accent);color:#fff;box-shadow:0 4px 14px rgba(124,58,237,.28)}
+.pbtn-p:hover{background:#6d28d9;transform:translateY(-1px);box-shadow:0 8px 20px rgba(124,58,237,.35)}
+.pbtn-s{background:var(--bg);color:var(--text);border:1.5px solid var(--border)}
 .pbtn-s:hover{border-color:var(--accent);color:var(--accent)}
-@media(max-width:860px){.pg{grid-template-columns:1fr}.pricing{padding:60px 20px}}
+html[data-theme="dark"] .pcard{background:var(--white);border-color:var(--border)}
+html[data-theme="dark"] .pcard.pop{background:linear-gradient(165deg,rgba(124,58,237,.12) 0%,var(--white) 60%)}
+html[data-theme="dark"] .pbtn-s{background:var(--surface)}
+@media(max-width:860px){.pg{grid-template-columns:1fr;gap:14px}.pricing{padding:72px 20px}.pcard.pop{transform:none}.pcard.pop:hover{transform:translateY(-4px)}}
 
 /* FINAL CTA */
 .final{padding:120px 40px;text-align:center;background:var(--dark);position:relative;overflow:hidden}
@@ -763,11 +784,41 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
     <div class="plbl rev">Infrastructure</div>
     <h2 class="plbl-sub rev d1">Built on the rails<br>that power modern finance.</h2>
     <div class="plogos">
-      <div class="plogo rev"><div class="pico" style="background:rgba(99,91,255,.12)">💳</div>Stripe<div class="plogo-role">Payments</div></div>
-      <div class="plogo rev d1"><div class="pico" style="background:rgba(124,58,237,.12)">🏛</div>AtomicVest<div class="plogo-role">Banking</div></div>
-      <div class="plogo rev d2"><div class="pico" style="background:rgba(0,114,255,.12)">🔗</div>Plaid<div class="plogo-role">Bank Link</div></div>
-      <div class="plogo rev d3"><div class="pico" style="background:rgba(0,168,107,.12)">📈</div>DriveWealth<div class="plogo-role">Investing</div></div>
-      <div class="plogo rev d4"><div class="pico" style="background:rgba(0,196,180,.12)">⚡</div>Tight<div class="plogo-role">Income Data</div></div>
+      <!-- Stripe -->
+      <div class="plogo rev">
+        <svg class="pmark" viewBox="0 0 110 32" fill="currentColor" aria-label="Stripe">
+          <text x="0" y="25" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="28" letter-spacing="-1.2">Stripe</text>
+        </svg>
+        <div class="plogo-role">Payments</div>
+      </div>
+      <!-- AtomicVest -->
+      <div class="plogo rev d1">
+        <svg class="pmark" viewBox="0 0 160 32" fill="currentColor" aria-label="AtomicVest">
+          <text x="0" y="25" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="24" letter-spacing="-.8">Atomic<tspan font-weight="400">Vest</tspan></text>
+        </svg>
+        <div class="plogo-role">Banking</div>
+      </div>
+      <!-- Plaid -->
+      <div class="plogo rev d2">
+        <svg class="pmark" viewBox="0 0 90 32" fill="currentColor" aria-label="Plaid">
+          <text x="0" y="25" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="28" letter-spacing="-.5">Plaid</text>
+        </svg>
+        <div class="plogo-role">Bank Link</div>
+      </div>
+      <!-- DriveWealth -->
+      <div class="plogo rev d3">
+        <svg class="pmark" viewBox="0 0 180 32" fill="currentColor" aria-label="DriveWealth">
+          <text x="0" y="25" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="22" letter-spacing="-.5">Drive<tspan font-weight="400">Wealth</tspan></text>
+        </svg>
+        <div class="plogo-role">Investing</div>
+      </div>
+      <!-- Tight -->
+      <div class="plogo rev d4">
+        <svg class="pmark" viewBox="0 0 80 32" fill="currentColor" aria-label="Tight">
+          <text x="0" y="25" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="28" letter-spacing="-.8">Tight</text>
+        </svg>
+        <div class="plogo-role">Income Data</div>
+      </div>
     </div>
   </div>
 </section>
@@ -801,12 +852,21 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
 <!-- PRICING -->
 <section class="pricing" id="pricing">
   <div class="pricing-inner">
-    <div class="s-eyebrow rev">Pricing</div>
-    <h2 class="s-h2 rev d1">Simple pricing.<br>Free to start.</h2>
-    <div class="ptoggle rev d2">
-      <div class="ptwrap">
-        <button class="ptbtn on" id="ptc" onclick="setPt('creator')">For Creators</button>
-        <button class="ptbtn" id="pta" onclick="setPt('agency')">For Agencies</button>
+    <div class="p-eyebrow rev">Pricing</div>
+    <h2 class="p-h rev d1">Simple for creators.<br><em>Scaled for agencies.</em></h2>
+    <p class="p-sub rev d2">Start free. Upgrade when you outgrow it. Every plan includes Tax Vault, banking, and auto-splits.</p>
+    <div class="ptoggle-row rev d2">
+      <div class="ptoggle">
+        <div class="ptwrap">
+          <button class="ptbtn on" id="ptc" onclick="setPt('creator')">For Creators</button>
+          <button class="ptbtn" id="pta" onclick="setPt('agency')">For Agencies</button>
+        </div>
+      </div>
+      <div class="ann-toggle">
+        <span id="annMonthLabel" style="color:var(--text);font-weight:700">Monthly</span>
+        <div class="ann-switch" id="annSwitch" onclick="toggleAnnual()"></div>
+        <span id="annYearLabel">Annual</span>
+        <span class="ann-save">SAVE 20%</span>
       </div>
     </div>
 
@@ -814,9 +874,9 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
       <div class="pg">
         <div class="pcard rev">
           <div class="pn">Free</div>
-          <div class="pdesc">Start with no commitment</div>
-          <div class="pamt"><sup>$</sup>0</div>
-          <div class="pper">forever free</div>
+          <div class="pdesc">Start with no commitment. See what Apexa can do.</div>
+          <div class="pamt-row"><span class="pamt"><sup>$</sup>0</span></div>
+          <div class="pper">Forever free</div>
           <ul class="pfeats">
             <li>Tax Vault (manual)</li>
             <li>1 income source</li>
@@ -831,9 +891,9 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
         <div class="pcard pop rev d1">
           <div class="pbadge">MOST POPULAR</div>
           <div class="pn">Pro</div>
-          <div class="pdesc">For full-time creators</div>
-          <div class="pamt"><sup>$</sup>49<span style="font-size:18px;letter-spacing:0">.99</span></div>
-          <div class="pper">per month</div>
+          <div class="pdesc">For full-time creators earning $50K–$500K/year.</div>
+          <div class="pamt-row"><span class="pamt" data-monthly="49.99" data-annual="39.99"><sup>$</sup>49<span class="pamt-cents">.99</span></span></div>
+          <div class="pper" id="perPro">Per month · billed monthly</div>
           <ul class="pfeats">
             <li>Everything in Free</li>
             <li>Unlimited income sources</li>
@@ -847,9 +907,9 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
         </div>
         <div class="pcard rev d2">
           <div class="pn">Premium</div>
-          <div class="pdesc">For top earners</div>
-          <div class="pamt"><sup>$</sup>99<span style="font-size:18px;letter-spacing:0">.99</span></div>
-          <div class="pper">per month</div>
+          <div class="pdesc">For top earners making $500K+/year.</div>
+          <div class="pamt-row"><span class="pamt" data-monthly="99.99" data-annual="79.99"><sup>$</sup>99<span class="pamt-cents">.99</span></span></div>
+          <div class="pper" id="perPrem">Per month · billed monthly</div>
           <ul class="pfeats">
             <li>Everything in Pro</li>
             <li>Done For You tax filing</li>
@@ -867,10 +927,10 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
     <div class="pag" id="pc-agency">
       <div class="pg">
         <div class="pcard rev">
-          <div class="pn">Agency Starter</div>
-          <div class="pdesc">Up to 10 creators</div>
-          <div class="pamt"><sup>$</sup>149<span style="font-size:18px;letter-spacing:0">.99</span></div>
-          <div class="pper">per month</div>
+          <div class="pn">Starter</div>
+          <div class="pdesc">Up to 10 creators. The solo talent manager.</div>
+          <div class="pamt-row"><span class="pamt" data-monthly="149.99" data-annual="119.99"><sup>$</sup>149<span class="pamt-cents">.99</span></span></div>
+          <div class="pper">Per month · billed monthly</div>
           <ul class="pfeats">
             <li>Batch payouts (10 creators)</li>
             <li>Custom split rules</li>
@@ -882,10 +942,10 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
         </div>
         <div class="pcard pop rev d1">
           <div class="pbadge">MOST POPULAR</div>
-          <div class="pn">Agency Growth</div>
-          <div class="pdesc">Up to 50 creators</div>
-          <div class="pamt"><sup>$</sup>299<span style="font-size:18px;letter-spacing:0">.99</span></div>
-          <div class="pper">per month</div>
+          <div class="pn">Growth</div>
+          <div class="pdesc">Up to 50 creators. The mid-size agency standard.</div>
+          <div class="pamt-row"><span class="pamt" data-monthly="299.99" data-annual="239.99"><sup>$</sup>299<span class="pamt-cents">.99</span></span></div>
+          <div class="pper">Per month · billed monthly</div>
           <ul class="pfeats">
             <li>Everything in Starter</li>
             <li>Up to 50 creators</li>
@@ -896,10 +956,10 @@ html[data-theme="dark"] .mtile{background:rgba(255,255,255,.04)}
           <button class="pbtn pbtn-p" onclick="window.location.href='/agency-login'">Start Free →</button>
         </div>
         <div class="pcard rev d2">
-          <div class="pn">Agency Enterprise</div>
-          <div class="pdesc">Unlimited creators</div>
-          <div class="pamt"><sup>$</sup>499<span style="font-size:18px;letter-spacing:0">.99</span></div>
-          <div class="pper">per month</div>
+          <div class="pn">Enterprise</div>
+          <div class="pdesc">Unlimited creators. White-label, custom integrations.</div>
+          <div class="pamt-row"><span class="pamt" data-monthly="499.99" data-annual="399.99"><sup>$</sup>499<span class="pamt-cents">.99</span></span></div>
+          <div class="pper">Per month · billed monthly</div>
           <ul class="pfeats">
             <li>Everything in Growth</li>
             <li>Unlimited creators</li>
@@ -1180,6 +1240,30 @@ function setAudience(type){
     setPt(d.pricing);
     wrap.classList.remove('switching');
   },160);
+}
+
+// Annual pricing toggle
+let _isAnnual = false;
+function toggleAnnual(){
+  _isAnnual = !_isAnnual;
+  const sw = document.getElementById('annSwitch');
+  const mLabel = document.getElementById('annMonthLabel');
+  const yLabel = document.getElementById('annYearLabel');
+  if(sw) sw.classList.toggle('on', _isAnnual);
+  if(mLabel) mLabel.style.cssText = _isAnnual ? 'color:var(--muted);font-weight:600' : 'color:var(--text);font-weight:700';
+  if(yLabel) yLabel.style.cssText = _isAnnual ? 'color:var(--text);font-weight:700' : 'color:var(--muted);font-weight:600';
+  // Update each price
+  document.querySelectorAll('.pamt[data-monthly]').forEach(el => {
+    const price = _isAnnual ? el.dataset.annual : el.dataset.monthly;
+    if(!price) return;
+    const [dollars, cents] = price.split('.');
+    el.innerHTML = '<sup>$</sup>' + dollars + (cents ? '<span class="pamt-cents">.' + cents + '</span>' : '');
+  });
+  // Update period labels
+  document.querySelectorAll('.pper').forEach(el => {
+    if(el.textContent.includes('Forever')) return;
+    el.textContent = _isAnnual ? 'Per month · billed annually' : 'Per month · billed monthly';
+  });
 }
 
 function toggleFaq(btn){
